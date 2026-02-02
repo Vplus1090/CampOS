@@ -1,0 +1,99 @@
+// schema.prisma
+
+datasource db {
+  provider = "postgresql" // or "sqlite" / "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  password     String
+  role         Role          @default(STUDENT)
+  batch        String?
+  year         String?
+  skills       SkillGig[]    @relation("CreatedSkills")
+  interactions Interaction[]
+  orders       Order[]
+  feedbacks    Feedback[]
+}
+
+model MenuItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Int
+  category  String
+  available Boolean  @default(true)
+  orders    Order[]  @relation("OrderItems")
+}
+
+model MessMenu {
+  id        Int    @id @default(autoincrement())
+  day       String @unique // Mon, Tue, etc.
+  breakfast String
+  lunch     String
+  dinner    String
+}
+
+model Notice {
+  id        Int      @id @default(autoincrement())
+  title     String
+  imageUrl  String
+  date      String
+  postedBy  String
+}
+
+model SkillGig {
+  id           Int           @id @default(autoincrement())
+  offer        String
+  want         String
+  initial      String
+  color        String
+  reports      Int           @default(0)
+  createdAt    DateTime      @default(now())
+  
+  // Relations
+  studentId    String
+  student      User          @relation("CreatedSkills", fields: [studentId], references: [id])
+  interactions Interaction[]
+}
+
+model Interaction {
+  id        Int      @id @default(autoincrement())
+  status    String   // PENDING, ACCEPTED
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  gigId     Int
+  gig       SkillGig @relation(fields: [gigId], references: [id])
+}
+
+model Order {
+  id        Int        @id @default(autoincrement())
+  total     Int
+  timestamp DateTime   @default(now())
+  status    String     @default("PAID")
+  
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  items     MenuItem[] @relation("OrderItems")
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  type      String   // MESS or CANTEEN
+  message   String
+  timestamp DateTime @default(now())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
