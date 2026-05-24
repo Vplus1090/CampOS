@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Utensils, Shield, User, ArrowRight, Download, Calendar, BookOpen, Clock, X, KeyRound, Coffee, Sun, Moon, ChevronDown } from 'lucide-react';
 
+
 export default function LockScreen({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -195,7 +196,7 @@ export default function LockScreen({ onLoginSuccess }) {
         <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#e39695]/8 via-[#9e5c61]/2 to-transparent pointer-events-none z-0 animate-blob3" />
 
         {/* Flowing animated background lines — z-0, content is z-10 so no overlap */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none fill-none z-0" viewBox="0 0 430 932" preserveAspectRatio="none">
+        <svg className="absolute inset-0 z-0 w-full h-full pointer-events-none fill-none" viewBox="0 0 430 932" preserveAspectRatio="none">
           <defs>
             <linearGradient id="gradMess1" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0.05" />
@@ -237,20 +238,20 @@ export default function LockScreen({ onLoginSuccess }) {
           />
         </svg>
 
-        <div className="w-full max-w-5xl mx-auto z-10 relative flex flex-col min-h-full">
-          <header className="w-full flex items-center gap-4 py-6 border-b border-white/5 mb-8">
+        <div className="relative z-10 flex flex-col w-full max-w-5xl min-h-full mx-auto">
+          <header className="flex items-center w-full gap-4 py-6 mb-8 border-b border-white/5">
             <button
               onClick={() => setShowGuestMess(false)}
               className="w-12 h-12 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md select-none cursor-pointer"
             >
               <span className="text-xl font-bold">&larr;</span>
             </button>
-            <h2 className="h-12 flex items-center text-lg font-bold text-white select-none">
+            <h2 className="flex items-center h-12 text-lg font-bold text-white select-none">
               Mess Menu
             </h2>
           </header>
 
-          <div className="flex flex-col gap-6 flex-1 pb-12">
+          <div className="flex flex-col flex-1 gap-6 pb-12">
 
             {/* Render days in exact mock-up layout */}
             <div className="flex flex-col gap-6">
@@ -274,18 +275,18 @@ export default function LockScreen({ onLoginSuccess }) {
 
                     {/* Header */}
                     <div className="flex items-baseline gap-3 mb-6">
-                      <h3 className="text-2xl font-black text-white tracking-tight">{m.day}</h3>
-                      <span className="text-white/30 font-mono text-sm tracking-widest font-bold">
+                      <h3 className="text-2xl font-black tracking-tight text-white">{m.day}</h3>
+                      <span className="font-mono text-sm font-bold tracking-widest text-white/30">
                         {getFormattedDate(m.day)}
                       </span>
                     </div>
 
                     {/* Meal columns (Breakfast, Lunch, Dinner) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
                       {/* Breakfast */}
                       <div className="bg-black/25 border border-white/10 rounded-[22px] p-5 flex flex-col gap-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 font-bold text-sm tracking-wide text-white">
+                          <div className="flex items-center gap-2 text-sm font-bold tracking-wide text-white">
                             <Coffee size={16} className="text-amber-400" />
                             <span>Breakfast</span>
                           </div>
@@ -305,7 +306,7 @@ export default function LockScreen({ onLoginSuccess }) {
                       {/* Lunch */}
                       <div className="bg-black/25 border border-white/10 rounded-[22px] p-5 flex flex-col gap-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 font-bold text-sm tracking-wide text-white">
+                          <div className="flex items-center gap-2 text-sm font-bold tracking-wide text-white">
                             <Sun size={16} className="text-amber-500" />
                             <span>Lunch</span>
                           </div>
@@ -325,7 +326,7 @@ export default function LockScreen({ onLoginSuccess }) {
                       {/* Dinner */}
                       <div className="bg-black/25 border border-white/10 rounded-[22px] p-5 flex flex-col gap-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 font-bold text-sm tracking-wide text-white">
+                          <div className="flex items-center gap-2 text-sm font-bold tracking-wide text-white">
                             <Moon size={16} className="text-[#a3b3e6]" />
                             <span>Dinner</span>
                           </div>
@@ -355,20 +356,20 @@ export default function LockScreen({ onLoginSuccess }) {
   if (showGuestCalendar) {
     return (
       <div className="fixed inset-0 bg-[#141a27] text-white flex flex-col p-6 z-[99999] overflow-y-auto font-sans justify-between">
-        <div className="w-full max-w-md mx-auto flex-1 flex flex-col">
-          <header className="w-full flex items-center gap-4 py-6 border-b border-white/5 mb-4">
+        <div className="flex flex-col flex-1 w-full max-w-md mx-auto">
+          <header className="flex items-center w-full gap-4 py-6 mb-4 border-b border-white/5">
             <button
               onClick={() => setShowGuestCalendar(false)}
               className="w-12 h-12 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md select-none cursor-pointer"
             >
               <span className="text-xl font-bold">&larr;</span>
             </button>
-            <h2 className="h-12 flex items-center text-lg font-bold text-white select-none">
+            <h2 className="flex items-center h-12 text-lg font-bold text-white select-none">
               Calendar
             </h2>
           </header>
 
-          <div className="flex-1 flex flex-col justify-center my-6">
+          <div className="flex flex-col justify-center flex-1 my-6">
             <div className="lock-card public-details-card bg-white/5 backdrop-blur-md rounded-[32px] border border-white/10 p-6 shadow-2xl">
               
               <div className="flex flex-col gap-6 max-h-[50vh] overflow-y-auto pr-2 scrollbar-none">
@@ -378,7 +379,7 @@ export default function LockScreen({ onLoginSuccess }) {
                     <div className="flex flex-col text-left">
                       <span className="text-[11px] font-mono text-indigo-300 font-bold uppercase tracking-wider">{event.date}</span>
                       <span className="text-base font-extrabold text-white mt-0.5">{event.title}</span>
-                      <p className="text-xs text-white/60 mt-1 leading-relaxed">{event.desc}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-white/60">{event.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -427,7 +428,7 @@ export default function LockScreen({ onLoginSuccess }) {
         <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#b06ab3]/15 via-[#7a468c]/5 to-transparent pointer-events-none z-0 animate-blob2" />
         <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#e39695]/8 via-[#9e5c61]/2 to-transparent pointer-events-none z-0 animate-blob3" />
         {/* Animated SVG background lines identical to lockscreen */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none fill-none z-0" viewBox="0 0 430 932" preserveAspectRatio="none">
+        <svg className="absolute inset-0 z-0 w-full h-full pointer-events-none fill-none" viewBox="0 0 430 932" preserveAspectRatio="none">
           <defs>
             <linearGradient id="gradShelf1" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0.05" />
@@ -469,21 +470,21 @@ export default function LockScreen({ onLoginSuccess }) {
           />
         </svg>
 
-        <div className="w-full max-w-5xl mx-auto z-10 relative flex flex-col min-h-full">
-          <header className="w-full flex items-center gap-4 py-6 border-b border-white/5 mb-8">
+        <div className="relative z-10 flex flex-col w-full max-w-5xl min-h-full mx-auto">
+          <header className="flex items-center w-full gap-4 py-6 mb-8 border-b border-white/5">
             <button
               onClick={() => setShowGuestShelf(false)}
               className="w-12 h-12 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md select-none cursor-pointer"
             >
               <span className="text-xl font-bold">&larr;</span>
             </button>
-            <h2 className="h-12 flex items-center text-lg font-bold text-white select-none">
+            <h2 className="flex items-center h-12 text-lg font-bold text-white select-none">
               Study Shelf
             </h2>
           </header>
 
           {/* Main Full-Width Column: Resource Directory with Small Header Countdown */}
-          <div className="flex flex-col gap-6 flex-1 pb-12 w-full animate-fadeIn">
+          <div className="flex flex-col flex-1 w-full gap-6 pb-12 animate-fadeIn">
             
             {/* Nearest upcoming exam clock widget placed cleanly at the top */}
             {nextExam && (
@@ -494,9 +495,9 @@ export default function LockScreen({ onLoginSuccess }) {
                     {nextExamCountdown}
                   </span>
                 </div>
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                <span className="relative flex w-2 h-2">
+                  <span className="absolute inline-flex w-full h-full bg-indigo-400 rounded-full opacity-75 animate-ping"></span>
+                  <span className="relative inline-flex w-2 h-2 bg-indigo-500 rounded-full"></span>
                 </span>
               </div>
             )}
@@ -560,7 +561,7 @@ export default function LockScreen({ onLoginSuccess }) {
                         }`}
                       >
                         {isDownloading ? (
-                          <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-5 h-5 border-2 rounded-full border-amber-400 border-t-transparent animate-spin" />
                         ) : (
                           <Download size={18} />
                         )}
@@ -570,9 +571,9 @@ export default function LockScreen({ onLoginSuccess }) {
                 })
               ) : (
                 <div className="bg-white/[0.06] border border-white/15 backdrop-blur-3xl rounded-[32px] p-12 text-center flex flex-col items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-                  <span className="text-white/20 text-4xl mb-3">🔍</span>
-                  <h3 className="text-white font-extrabold text-lg">No materials found</h3>
-                  <p className="text-white/40 text-sm mt-1">Try adjusting your filters or search query.</p>
+                  <span className="mb-3 text-4xl text-white/20">🔍</span>
+                  <h3 className="text-lg font-extrabold text-white">No materials found</h3>
+                  <p className="mt-1 text-sm text-white/40">Try adjusting your filters or search query.</p>
                 </div>
               )}
             </div>
@@ -592,9 +593,9 @@ export default function LockScreen({ onLoginSuccess }) {
 
       {/* 🟢/🔴 Portal Online/Offline Status Indicator (Top Right) */}
       <div className="absolute top-6 right-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-300 shadow-md">
-        <span className="relative flex h-2 w-2">
+        <span className="relative flex w-2 h-2">
           {isOnline && (
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-emerald-400"></span>
           )}
           <span className={`relative inline-flex rounded-full h-2 w-2 ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]'}`}></span>
         </span>
@@ -607,20 +608,20 @@ export default function LockScreen({ onLoginSuccess }) {
       <div className="w-full max-w-sm flex flex-col justify-between h-[90%] z-10 relative">
         
         {/* ✍️ Times New Roman left-aligned elegant branding header */}
-        <header className="flex flex-col items-start text-left mt-16 select-none animate-fadeIn" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
-          <span className="text-[44px] font-light text-white/95 leading-tight tracking-tight">
+        <header className="flex flex-col items-start mt-16 text-left select-none animate-fadeIn" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
+          <span className="text-[36px] font-light text-white/95 leading-tight tracking-tight">
             Log into your
           </span>
-          <span className="italic font-normal text-[54px] text-white leading-none mt-1 tracking-tight">
+          <span className="italic font-normal text-[44px] text-white leading-none mt-1 tracking-tight">
             CampOS
           </span>
         </header>
 
         {/* 📥 Form input panel */}
-        <form onSubmit={handleLogin} className="flex flex-col gap-8 w-full mt-12">
+        <form onSubmit={handleLogin} className="flex flex-col w-full gap-8 mt-12">
           
           {/* Username Glassmorphic Outlined Input */}
-          <div className="relative w-full group shimmer-glass overflow-hidden rounded-[20px]">
+          <div className="relative w-full group rounded-[20px]">
             <input
               type="text"
               value={email}
@@ -628,13 +629,13 @@ export default function LockScreen({ onLoginSuccess }) {
               required
               className="peer w-full bg-white/[0.05] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-[20px] p-5 text-base font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
             />
-            <span className="absolute -top-3 left-6 px-2 bg-[#141a27] text-[10px] font-sans font-black uppercase tracking-widest text-slate-400 select-none pointer-events-none transition-all duration-300 ease-out peer-focus:text-white peer-focus:-translate-y-[2px] peer-focus:scale-105">
+            <span className="absolute -top-6 left-1 px-2 bg-[#141a2700] text-[14px] font-sans font-black uppercase tracking-widest text-slate-400 select-none pointer-events-none transition-all duration-300 ease-out peer-focus:text-white peer-focus:-translate-y-[2px] peer-focus:scale-105">
               username
             </span>
           </div>
 
           {/* Password Glassmorphic Outlined Input */}
-          <div className="relative w-full group shimmer-glass overflow-hidden rounded-[20px]">
+          <div className="relative w-full group rounded-[20px]">
             <input
               type="password"
               value={password}
@@ -642,19 +643,19 @@ export default function LockScreen({ onLoginSuccess }) {
               required
               className="peer w-full bg-white/[0.05] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-[20px] p-5 text-base font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
             />
-            <span className="absolute -top-3 left-6 px-2 bg-[#141a27] text-[10px] font-sans font-black uppercase tracking-widest text-slate-400 select-none pointer-events-none transition-all duration-300 ease-out peer-focus:text-white peer-focus:-translate-y-[2px] peer-focus:scale-105">
+            <span className="absolute -top-6 left-1 px-2 bg-[#141a2700] text-[14px] font-sans font-black uppercase tracking-widest text-slate-400 select-none pointer-events-none transition-all duration-300 ease-out peer-focus:text-white peer-focus:-translate-y-[2px] peer-focus:scale-105">
               password
             </span>
           </div>
 
           {loginError && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-200 text-xs font-semibold rounded-2xl p-4 text-center mt-2 animate-fadeIn">
+            <div className="p-4 mt-2 text-xs font-semibold text-center text-red-200 border bg-red-500/10 border-red-500/20 rounded-2xl animate-fadeIn">
               ⚠️ {loginError}
             </div>
           )}
 
           {/* Solid White LOGIN Action Button with Glowing Halo */}
-          <div className="flex flex-col w-full mt-2 relative group">
+          <div className="relative flex flex-col w-full mt-2 group">
             {/* Soft, vibrant glowing background halo */}
             <div className="absolute inset-0 bg-[#7085c3]/20 rounded-[20px] blur-xl opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500 pointer-events-none" />
             <button
@@ -663,8 +664,8 @@ export default function LockScreen({ onLoginSuccess }) {
               className="relative w-full bg-white text-[#141a27] hover:bg-slate-50 active:scale-[0.98] disabled:hover:bg-white disabled:active:scale-100 transition-all duration-300 font-extrabold tracking-[0.15em] text-sm uppercase rounded-[20px] py-5 shadow-xl shadow-black/10 flex items-center justify-center gap-2"
             >
               {submitting ? (
-                <div className="flex items-center justify-center gap-3 h-5">
-                  <div className="relative w-5 h-5 flex items-center justify-center">
+                <div className="flex items-center justify-center h-5 gap-3">
+                  <div className="relative flex items-center justify-center w-5 h-5">
                     {/* Inner glowing pulsing core */}
                     <div className="absolute inset-0 rounded-full bg-[#141a27] animate-ping opacity-35" />
                     {/* Center solid core */}
@@ -684,16 +685,16 @@ export default function LockScreen({ onLoginSuccess }) {
         </form>
 
         {/* 🔗 OR Divider line */}
-        <div className="w-full flex items-center justify-between gap-4 mt-12">
+        <div className="flex items-center justify-between w-full gap-4 mt-12">
           <div className="flex-1 border-t border-slate-700/50"></div>
-          <span className="text-slate-400 text-xs font-sans tracking-widest font-bold">OR</span>
+          <span className="font-sans text-xs font-bold tracking-widest text-slate-400">OR</span>
           <div className="flex-1 border-t border-slate-700/50"></div>
         </div>
 
         {/* 🎛️ Bottom Public Access Slate-Blue buttons */}
-        <footer className="w-full mt-8 mb-4 flex flex-col gap-4">
+        <footer className="flex flex-col w-full gap-4 mt-8 mb-4">
           {/* Main public access actions: Symmetrically centered horizontal widgets with inner flex-col containers */}
-          <div className="flex gap-3 w-full">
+          <div className="flex w-full gap-3">
             <button
               type="button"
               onClick={() => setShowGuestMess(true)}
@@ -733,7 +734,7 @@ export default function LockScreen({ onLoginSuccess }) {
           </div>
 
           {/* Dev Utility - Completely separated text link for easy removal later */}
-          <div className="w-full pt-3 border-t border-white/5 flex justify-center">
+          <div className="flex justify-center w-full pt-3 border-t border-white/5">
             <button
               type="button"
               onClick={() => setShowDemoProfiles(true)}
@@ -755,10 +756,10 @@ export default function LockScreen({ onLoginSuccess }) {
           <div className="fixed inset-0 bg-black/45 z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setShowDemoProfiles(false)}>
             <div className="bg-white/[0.06] border border-white/15 rounded-[32px] backdrop-blur-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col gap-6 text-left shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between">
-                <h3 className="text-white font-extrabold text-lg tracking-tight flex items-center gap-2">
+                <h3 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white">
                   <KeyRound size={18} className="text-[#a3b3e6]" /> Demo Profiles
                 </h3>
-                <button onClick={() => setShowDemoProfiles(false)} className="text-white/40 hover:text-white transition-colors">
+                <button onClick={() => setShowDemoProfiles(false)} className="transition-colors text-white/40 hover:text-white">
                   <X size={20} />
                 </button>
               </div>
@@ -783,14 +784,14 @@ export default function LockScreen({ onLoginSuccess }) {
                       {profile.icon}
                     </div>
                     <div className="flex flex-col flex-1 min-w-0">
-                      <span className="text-white font-bold text-sm">{profile.label}</span>
+                      <span className="text-sm font-bold text-white">{profile.label}</span>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-white/40 text-[11px] font-mono truncate">{profile.user}</span>
                         <span className="text-white/20 text-[11px]">•</span>
                         <span className="text-white/40 text-[11px] font-mono truncate">{profile.pass}</span>
                       </div>
                     </div>
-                    <span className="text-white/20 group-hover:text-white/60 text-xs font-bold transition-colors">→</span>
+                    <span className="text-xs font-bold transition-colors text-white/20 group-hover:text-white/60">→</span>
                   </button>
                 ))}
               </div>
@@ -803,10 +804,10 @@ export default function LockScreen({ onLoginSuccess }) {
           <div className="fixed inset-0 bg-black/45 z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setShowShelfSetup(false)}>
             <div className="bg-white/[0.06] border border-white/15 rounded-[32px] backdrop-blur-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col gap-6 text-left shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between">
-                <h3 className="text-white font-extrabold text-lg tracking-tight flex items-center gap-2">
+                <h3 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white">
                   <BookOpen size={18} className="text-[#a3b3e6]" /> Academic Setup
                 </h3>
-                <button onClick={() => setShowShelfSetup(false)} className="text-white/40 hover:text-white transition-colors">
+                <button onClick={() => setShowShelfSetup(false)} className="transition-colors text-white/40 hover:text-white">
                   <X size={20} />
                 </button>
               </div>
@@ -826,7 +827,7 @@ export default function LockScreen({ onLoginSuccess }) {
                     <option className="bg-[#141a27]" value="Information Technology">Information Technology</option>
                     <option className="bg-[#141a27]" value="Biotechnology">Biotechnology</option>
                   </select>
-                  <div className="pointer-events-none text-white/40 absolute right-5 top-1/2 -translate-y-1/2">
+                  <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-5 top-1/2">
                     <ChevronDown size={16} />
                   </div>
                 </div>
@@ -845,7 +846,7 @@ export default function LockScreen({ onLoginSuccess }) {
                       <option className="bg-[#141a27]" key={i} value={`Semester ${i + 1}`}>Semester {i + 1}</option>
                     ))}
                   </select>
-                  <div className="pointer-events-none text-white/40 absolute right-5 top-1/2 -translate-y-1/2">
+                  <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-5 top-1/2">
                     <ChevronDown size={16} />
                   </div>
                 </div>
