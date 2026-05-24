@@ -70,7 +70,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
         
         {/* Header greeting & Controls */}
         <header className="flex justify-between items-center w-full mt-4">
-          <div className="flex flex-col items-start text-left select-none animate-fadeIn" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
+          <div className="flex flex-col items-start text-left select-none animate-fadeIn" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
             <span className="text-[30px] font-light text-white/95 leading-tight tracking-tight">
               Hello,
             </span>

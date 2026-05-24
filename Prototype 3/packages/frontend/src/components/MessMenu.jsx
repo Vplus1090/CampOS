@@ -102,7 +102,7 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
         >
           <span className="text-xl font-bold">&larr;</span>
         </button>
-        <h2 className="flex items-center pl-3.5 text-left translate-y-[2px]" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
+        <h2 className="flex items-center pl-3.5 text-left translate-y-[2px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
           <span className="text-[22px] font-light text-white/90 tracking-tight leading-none">Mess</span>
           <span className="italic font-normal text-[32px] text-white leading-none ml-2 tracking-tight">Menu</span>
         </h2>

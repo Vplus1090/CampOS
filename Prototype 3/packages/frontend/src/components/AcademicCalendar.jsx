@@ -111,7 +111,7 @@ export default function AcademicCalendar({ setActiveTab }) {
   };
 
   return (
-    <div className="academic-calendar-dashboard flex flex-col gap-4 text-white font-sans h-full max-h-full pb-4 relative select-none overflow-hidden">
+    <div className="relative flex flex-col h-full max-h-full gap-4 pb-4 overflow-hidden font-sans text-white select-none academic-calendar-dashboard">
       
       {/* Collapsible Area */}
       <div 
@@ -122,7 +122,7 @@ export default function AcademicCalendar({ setActiveTab }) {
         }`}
       >
         {/* Header title */}
-        <header className="flex justify-between items-center w-full mt-2 pb-2">
+        <header className="flex items-center justify-between w-full pb-2 mt-2">
           <div className="flex items-center gap-3.5">
             <button
               onClick={() => setActiveTab && setActiveTab('home')}
@@ -141,7 +141,7 @@ export default function AcademicCalendar({ setActiveTab }) {
       {/* Timeline Event Cards */}
       <div 
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto pr-1 space-y-5 pb-8 animate-fadeIn scrollbar-none"
+        className="flex-1 pb-8 pr-1 space-y-5 overflow-y-auto animate-fadeIn scrollbar-none"
       >
         {calendarEvents.map((event, idx) => {
           const style = themeStyles[event.theme] || themeStyles.teal;
@@ -151,10 +151,10 @@ export default function AcademicCalendar({ setActiveTab }) {
               className={`rounded-[28px] p-6 transition-all duration-500 relative border-2 ${style.border} ${style.bg} backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-xl flex flex-col gap-4 hover:scale-[1.005]`}
             >
               {/* Header: Title and Tags */}
-              <div className="flex flex-col gap-2 items-start text-left">
+              <div className="flex flex-col items-start gap-2 text-left">
                 <div className="flex items-center flex-wrap gap-2.5">
                   <GraduationCap size={18} className={`${style.iconColor} shrink-0`} />
-                  <h4 className="text-base font-extrabold text-white font-sans tracking-wide leading-none">
+                  <h4 className="font-sans text-base font-extrabold leading-none tracking-wide text-white">
                     {event.category}
                   </h4>
                   <div className="flex items-center gap-1.5">
