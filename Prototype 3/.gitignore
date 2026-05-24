@@ -28,6 +28,9 @@ Thumbs.db
 # Testing
 coverage/
 
+# Vercel
+.vercel/
+
 # Misc
 *.tgz
 .cache/
