@@ -1,7 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GraduationCap, Calendar } from 'lucide-react';
 
 export default function AcademicCalendar({ setActiveTab }) {
+  const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
+  const [lastScrollTop, setLastScrollTop] = useState(0);
+
+  const handleScroll = (e) => {
+    const currentScrollTop = e.target.scrollTop;
+    
+    if (currentScrollTop <= 5) {
+      setIsHeaderMinimized(false);
+      setLastScrollTop(0);
+      return;
+    }
+    
+    if (Math.abs(currentScrollTop - lastScrollTop) < 8) return;
+
+    if (currentScrollTop > lastScrollTop) {
+      setIsHeaderMinimized(true);
+    } else {
+      setIsHeaderMinimized(false);
+    }
+    setLastScrollTop(currentScrollTop);
+  };
   const calendarEvents = [
     {
       date: 'Tuesday, November 18, 2025',
@@ -28,7 +49,7 @@ export default function AcademicCalendar({ setActiveTab }) {
       date: 'Friday, November 21, 2025',
       category: 'Feedback',
       tags: ['Odd Sem', 'Deadline'],
-      desc: 'Students\' Online Feed Back Collection by',
+      desc: "Students' Online Feed Back Collection by",
       theme: 'rose'
     },
     {
@@ -63,96 +84,101 @@ export default function AcademicCalendar({ setActiveTab }) {
 
   const themeStyles = {
     teal: {
-      border: 'border-teal-500/25',
-      bg: 'bg-teal-500/[0.02]',
-      iconColor: 'text-teal-400',
-      badge: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
-      shadow: 'shadow-[0_0_25px_rgba(13,148,136,0.04)]'
+      border: 'border-teal-500/40 bg-teal-950/[0.04]',
+      badge: 'bg-teal-500/10 text-teal-300 border-teal-500/20',
+      iconColor: 'text-[#0d9488]'
     },
     rose: {
-      border: 'border-rose-500/25',
-      bg: 'bg-rose-500/[0.02]',
-      iconColor: 'text-rose-400',
-      badge: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-      shadow: 'shadow-[0_0_25px_rgba(225,29,72,0.04)]'
+      border: 'border-rose-500/40 bg-rose-950/[0.04]',
+      badge: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+      iconColor: 'text-[#e11d48]'
     },
     amber: {
-      border: 'border-amber-500/25',
-      bg: 'bg-amber-500/[0.02]',
-      iconColor: 'text-amber-400',
-      badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-      shadow: 'shadow-[0_0_25px_rgba(217,119,6,0.04)]'
+      border: 'border-amber-500/40 bg-amber-950/[0.04]',
+      badge: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
+      iconColor: 'text-[#d97706]'
     },
     magenta: {
-      border: 'border-pink-500/25',
-      bg: 'bg-pink-500/[0.02]',
-      iconColor: 'text-pink-400',
-      badge: 'bg-pink-500/20 text-pink-300 border-pink-500/30',
-      shadow: 'shadow-[0_0_25px_rgba(219,39,119,0.04)]'
+      border: 'border-pink-500/40 bg-pink-950/[0.04]',
+      badge: 'bg-pink-500/10 text-pink-300 border-pink-500/20',
+      iconColor: 'text-[#db2777]'
     },
     purple: {
-      border: 'border-purple-500/25',
-      bg: 'bg-purple-500/[0.02]',
-      iconColor: 'text-purple-400',
-      badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      shadow: 'shadow-[0_0_25px_rgba(147,51,234,0.04)]'
+      border: 'border-purple-500/40 bg-purple-950/[0.04]',
+      badge: 'bg-purple-500/10 text-purple-300 border-purple-500/20',
+      iconColor: 'text-[#9333ea]'
     }
   };
 
   return (
-    <div className="academic-calendar-dashboard flex flex-col gap-6 text-white font-sans min-h-screen pb-24 relative select-none">
+    <div className="academic-calendar-dashboard flex flex-col gap-4 text-white font-sans h-full max-h-full pb-4 relative select-none overflow-hidden">
       
-      {/* Header title */}
-      <header className="flex justify-between items-center w-full mt-2 border-b border-white/5 pb-4">
-        <div className="flex items-center gap-3.5">
-          <button
-            onClick={() => setActiveTab && setActiveTab('home')}
-            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-            type="button"
-          >
-            <span className="text-xl font-bold">&larr;</span>
-          </button>
-          <div className="header-info text-left">
-            <h2 className="text-xl font-black text-white leading-none font-sans">Academic Calendar</h2>
-            <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Odd Semester 2025-26</p>
+      {/* Collapsible Area */}
+      <div 
+        className={`transition-all duration-500 ease-in-out overflow-hidden flex flex-col gap-4 shrink-0 ${
+          isHeaderMinimized 
+            ? 'max-h-0 opacity-0 scale-95 pointer-events-none mb-0 mt-0 pb-0' 
+            : 'max-h-[150px] opacity-100 scale-100 mb-1'
+        }`}
+      >
+        {/* Header title */}
+        <header className="flex justify-between items-center w-full mt-2 pb-2">
+          <div className="flex items-center gap-3.5">
+            <button
+              onClick={() => setActiveTab && setActiveTab('home')}
+              className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
+              type="button"
+            >
+              <span className="text-xl font-bold">&larr;</span>
+            </button>
+            <h2 className="text-2xl font-bold text-white leading-none flex items-center gap-2 translate-y-[2px]" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
+              <Calendar size={20} className="text-indigo-400" /> Academic Calendar
+            </h2>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
-      <div className="flex flex-col gap-4 animate-fadeIn">
+      {/* Timeline Event Cards */}
+      <div 
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto pr-1 space-y-5 pb-8 animate-fadeIn scrollbar-none"
+      >
         {calendarEvents.map((event, idx) => {
           const style = themeStyles[event.theme] || themeStyles.teal;
           return (
             <div
               key={idx}
-              className={`backdrop-blur-3xl rounded-[28px] border-2 ${style.border} ${style.bg} ${style.shadow} p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 hover:scale-[1.01]`}
+              className={`rounded-[28px] p-6 transition-all duration-500 relative border-2 ${style.border} ${style.bg} backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-xl flex flex-col gap-4 hover:scale-[1.005]`}
             >
-              <div className="flex flex-col items-start text-left gap-2.5">
-                <div className="flex items-center flex-wrap gap-2">
+              {/* Header: Title and Tags */}
+              <div className="flex flex-col gap-2 items-start text-left">
+                <div className="flex items-center flex-wrap gap-2.5">
                   <GraduationCap size={18} className={`${style.iconColor} shrink-0`} />
                   <h4 className="text-base font-extrabold text-white font-sans tracking-wide leading-none">
                     {event.category}
                   </h4>
-                  <div className="flex items-center gap-1.5 ml-1">
+                  <div className="flex items-center gap-1.5">
                     {event.tags.map((tag) => (
                       <span
                         key={tag}
-                        className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${style.badge}`}
+                        className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${style.badge}`}
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-slate-300 pl-[24px] text-left">
+                
+                <p className="text-xs font-semibold text-slate-300 leading-relaxed pl-[28px]">
                   {event.desc}
                 </p>
               </div>
 
-              <div className="flex shrink-0 md:justify-end">
-                <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 shadow-sm">
-                  <Calendar size={14} className="text-slate-400" />
-                  <span className="text-[11px] font-mono font-bold tracking-wide text-slate-300">
+              {/* Date stamp pill aligned nicely */}
+              <div className="flex justify-end mt-1">
+                <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-xl px-3.5 py-1.5 shadow-md">
+                  <Calendar size={12} className="text-slate-400 animate-pulse" />
+                  <span className="text-[10px] font-mono font-bold tracking-wide text-slate-200">
                     {event.date}
                   </span>
                 </div>
@@ -164,4 +190,3 @@ export default function AcademicCalendar({ setActiveTab }) {
     </div>
   );
 }
-

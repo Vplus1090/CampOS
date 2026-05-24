@@ -15,11 +15,10 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
   const [remainingMinutes, setRemainingMinutes] = useState(0);
 
   useEffect(() => {
-    if (!currentUser) return;
-    const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
-    
     const checkPass = () => {
-      const passStr = localStorage.getItem(`cp_token_${username}`);
+      const username = currentUser ? (currentUser.email ? currentUser.email.split('@')[0] : 'user') : 'guest';
+      const key = currentUser ? `cp_token_${username}` : 'cp_token_guest';
+      const passStr = localStorage.getItem(key);
       if (passStr) {
         try {
           const pass = JSON.parse(passStr);
@@ -30,7 +29,7 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
               setActivePass(pass);
               setRemainingMinutes(mins);
             } else {
-              localStorage.removeItem(`cp_token_${username}`);
+              localStorage.removeItem(key);
               setActivePass(null);
               setRemainingMinutes(0);
             }
@@ -50,7 +49,6 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
   }, [currentUser]);
 
   const handleBuyPass = () => {
-    if (!currentUser) return;
     if (triggerPayment) {
       triggerPayment(60, 'MESS_GUEST', {});
     }
@@ -95,6 +93,49 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
   return (
     <div className="mess-menu-dashboard flex flex-col gap-6 text-white font-sans min-h-screen pb-24 relative select-none">
       
+      {/* Segmented Controls Header */}
+      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
+        <button
+          onClick={() => setActiveTab && setActiveTab('home')}
+          className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
+          type="button"
+        >
+          <span className="text-xl font-bold">&larr;</span>
+        </button>
+        <h2 className="flex items-center pl-3.5 text-left translate-y-[2px]" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
+          <span className="text-[22px] font-light text-white/90 tracking-tight leading-none">Mess</span>
+          <span className="italic font-normal text-[32px] text-white leading-none ml-2 tracking-tight">Menu</span>
+        </h2>
+      </header>
+
+      {/* Segmented Tab Switcher shifted below the heading */}
+      <div className="flex justify-center w-full py-1 shrink-0 select-none">
+        <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner">
+          <button
+            onClick={() => setViewMode('daily')}
+            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
+              viewMode === 'daily'
+                ? 'bg-white text-[#141a27] shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+            type="button"
+          >
+            Daily
+          </button>
+          <button
+            onClick={() => setViewMode('weekly')}
+            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
+              viewMode === 'weekly'
+                ? 'bg-white text-[#141a27] shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+            type="button"
+          >
+            Weekly
+          </button>
+        </div>
+      </div>
+
       {/* 💳 Mess Access Pass Panel */}
       <div 
         onClick={() => activePass && setActiveTab && setActiveTab('MESS_QR_FULL')}
@@ -124,7 +165,7 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
               </span>
             </div>
           ) : (
-            isStudent && (
+            (isStudent || !currentUser) && (
               <button
                 onClick={(e) => { e.stopPropagation(); handleBuyPass(); }}
                 className="w-full bg-white text-[#141a27] hover:bg-slate-50 font-black rounded-xl py-3.5 shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] text-xs uppercase tracking-wider cursor-pointer"
@@ -135,46 +176,6 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
           )}
         </div>
       </div>
-
-      {/* Segmented Controls Header */}
-      <header className="flex justify-between items-center w-full mt-2 border-b border-white/5 pb-4">
-        <div className="flex items-center gap-3.5">
-          <button
-            onClick={() => setActiveTab && setActiveTab('home')}
-            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-            type="button"
-          >
-            <span className="text-xl font-bold">&larr;</span>
-          </button>
-          <div className="header-info text-left">
-            <h2 className="text-xl font-black text-white leading-none">Mess Menu</h2>
-            <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Daily & Weekly Catalog</p>
-          </div>
-        </div>
-        
-        <div className="flex bg-white/[0.04] p-1 rounded-full border border-white/10 shadow-inner select-none shrink-0">
-          <button
-            onClick={() => setViewMode('daily')}
-            className={`py-1.5 px-4 text-[9px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
-              viewMode === 'daily'
-                ? 'bg-white text-[#141a27] shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Daily
-          </button>
-          <button
-            onClick={() => setViewMode('weekly')}
-            className={`py-1.5 px-4 text-[9px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
-              viewMode === 'weekly'
-                ? 'bg-white text-[#141a27] shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Weekly
-          </button>
-        </div>
-      </header>
 
       {/* Render selected layout */}
       {viewMode === 'daily' ? (

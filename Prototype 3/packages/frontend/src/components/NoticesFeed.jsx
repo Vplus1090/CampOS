@@ -121,7 +121,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
       )}
 
       {/* Module Header and Controls */}
-      <div className="module-header flex items-center justify-between gap-4 py-4 mb-6 border-b border-white/5">
+      <div className="module-header flex items-center justify-between gap-4 py-2 mb-3">
         <div className="flex items-center gap-3.5">
           <button
             onClick={() => setActiveTab('home')}
@@ -130,8 +130,8 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
           >
             <span className="text-xl font-bold">&larr;</span>
           </button>
-          <div className="header-info text-left">
-            <h2 className="text-xl font-black text-white leading-none">Notices</h2>
+          <div className="header-info text-left translate-y-[1px]">
+            <h2 className="text-2xl font-bold text-white leading-none" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>Notices</h2>
             <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Campus Board & Warnings</p>
           </div>
         </div>

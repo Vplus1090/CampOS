@@ -11,6 +11,15 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
   const [studentId, setStudentId] = useState(currentUser ? currentUser.firstName : '');
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null);
+  const [addedItemIds, setAddedItemIds] = useState({});
+
+  const handleAddToCartClick = (item) => {
+    addToCart(item);
+    setAddedItemIds((prev) => ({ ...prev, [item._id]: true }));
+    setTimeout(() => {
+      setAddedItemIds((prev) => ({ ...prev, [item._id]: false }));
+    }, 1200);
+  };
 
   // Administrative Role checks
   const isCanteenAdmin = currentUser?.role === 'canteen_admin';
@@ -244,7 +253,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     return (
       <div className="canteen-module text-white font-sans min-h-screen pb-24 relative select-none">
         {/* Header summary */}
-        <header className="flex justify-between items-center w-full mt-2 border-b border-white/5 pb-4 shrink-0">
+        <header className="flex justify-between items-center w-full mt-2 pb-2 shrink-0">
           <div className="flex items-center gap-3.5">
             <button
               onClick={() => setActiveTab && setActiveTab('canteen')}
@@ -253,8 +262,8 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
             >
               <span className="text-xl font-bold">&larr;</span>
             </button>
-            <div className="header-info text-left">
-              <h2 className="text-xl font-black text-white leading-none font-sans">Checkout</h2>
+            <div className="header-info text-left translate-y-[1px]">
+              <h2 className="text-2xl font-bold text-white leading-none" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>Checkout</h2>
               <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Review Items & Pay</p>
             </div>
           </div>
@@ -444,7 +453,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     <div className="canteen-module text-white font-sans min-h-screen pb-24 relative select-none">
       
       {/* Module Header and Controls */}
-      <div className="module-header flex items-center justify-between gap-4 py-4 mb-6 border-b border-white/5">
+      <div className="module-header flex items-center justify-between gap-4 py-2 mb-3">
         <div className="flex items-center gap-3.5">
           <button
             onClick={() => setActiveTab('home')}
@@ -453,8 +462,8 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
           >
             <span className="text-xl font-bold">&larr;</span>
           </button>
-          <div className="header-info text-left">
-            <h2 className="text-xl font-black text-white leading-none font-sans">Canteen</h2>
+          <div className="header-info text-left translate-y-[1px]">
+            <h2 className="text-2xl font-bold text-white leading-none" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>Canteen</h2>
             <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Order Foods & Beverages</p>
           </div>
         </div>
@@ -582,12 +591,14 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                                 className={`w-full py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${
                                   isSoldOut 
                                     ? 'bg-white/[0.02] border border-white/5 text-slate-500 cursor-not-allowed' 
-                                    : 'bg-white hover:bg-slate-50 text-[#141a27] shadow-lg active:scale-[0.98]'
+                                    : addedItemIds[item._id]
+                                      ? 'bg-emerald-500/20 border-2 border-emerald-500/40 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+                                      : 'bg-white hover:bg-slate-50 text-[#141a27] shadow-lg active:scale-[0.98]'
                                 }`}
                                 disabled={isSoldOut}
-                                onClick={() => addToCart(item)}
+                                onClick={() => handleAddToCartClick(item)}
                               >
-                                {isSoldOut ? 'Sold Out' : '＋ Add to Cart'}
+                                {isSoldOut ? 'Sold Out' : addedItemIds[item._id] ? '✓ Added!' : '＋ Add to Cart'}
                               </button>
                             )}
                           </div>

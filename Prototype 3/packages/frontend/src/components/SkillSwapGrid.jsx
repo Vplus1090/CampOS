@@ -154,7 +154,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab }) {
       )}
 
       {/* Header title */}
-      <header className="flex justify-between items-center w-full mt-2 border-b border-white/5 pb-4">
+      <header className="flex justify-between items-center w-full mt-2 pb-2">
         <div className="flex items-center gap-3.5">
           <button
             onClick={() => setActiveTab && setActiveTab('home')}
@@ -163,8 +163,8 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab }) {
           >
             <span className="text-xl font-bold">&larr;</span>
           </button>
-          <div className="header-info text-left">
-            <h2 className="text-xl font-black text-white leading-none">Skill Swap</h2>
+          <div className="header-info text-left translate-y-[1px]">
+            <h2 className="text-2xl font-bold text-white leading-none" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>Skill Swap</h2>
             <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Peer Exchange Board</p>
           </div>
         </div>
