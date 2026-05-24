@@ -14,6 +14,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
   const [stats, setStats] = useState({ notices: 0, skillgigs: 0, canteen: 0 });
+  const [canteenCart, setCanteenCart] = useState([]);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [paymentData, setPaymentData] = useState(null);
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -162,268 +163,365 @@ function App() {
     );
   }
 
-  // 💳 Immersive full-screen Checkout / Payment View
-  if (activeTab === 'PAYMENT') {
-    const handlePay = async (method) => {
-      try {
-        setProcessingPayment(true);
-        // Simulate premium payment processing delay
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
-
-        if (paymentData.source === 'MESS_GUEST') {
-          // POST /api/mess/buy-guest-token
-          const res = await fetch('/api/mess/buy-guest-token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.message || 'Payment failed.');
-          }
-
-          const data = await res.json();
-          if (data.token) {
-            localStorage.setItem(`cp_token_${username}`, JSON.stringify(data.token));
-            setActiveTab('MESS_QR_FULL');
-          }
-        } else if (paymentData.source === 'CANTEEN') {
-          // POST /api/canteen/orders
-          const res = await fetch('/api/canteen/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              StudentId: paymentData.payload.studentId,
-              ItemsArray: paymentData.payload.cart.map((cartItem) => ({
-                MenuItemId: cartItem._id,
-                Quantity: cartItem.quantity,
-              })),
-            }),
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.message || 'Payment failed.');
-          }
-
-          const orderData = await res.json();
-          localStorage.setItem(`cp_order_${username}`, JSON.stringify({
-            StudentName: `${currentUser.firstName} ${currentUser.lastName}`,
-            ItemsArray: orderData.ItemsArray,
-            TotalAmount: orderData.TotalAmount,
-            PickupPIN: orderData.PickupPIN,
-            ItemCount: orderData.ItemsArray.reduce((sum, item) => sum + item.Quantity, 0)
-          }));
-
-          setActiveTab('SUCCESS');
-        }
-      } catch (err) {
-        alert(err.message);
-      } finally {
-        setProcessingPayment(false);
-      }
-    };
-
-    const backTarget = paymentData?.source === 'MESS_GUEST' ? 'mess' : 'canteen';
-
-    return (
-      <div className="fixed inset-0 bg-white flex flex-col p-6 z-[9999] overflow-hidden font-sans">
-        {/* Header with circular back button */}
-        <header className="w-full flex items-center justify-between py-4">
-          <button
-            onClick={() => setActiveTab(backTarget)}
-            className="bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-full h-12 w-12 flex items-center justify-center border border-slate-200/50 shadow-sm transition-all duration-300"
-            title="Back"
-          >
-            <ArrowLeft className="text-slate-600" size={20} />
-          </button>
-          <span className="text-slate-400 font-bold uppercase tracking-wider text-xs">CampOS Payment Gateway</span>
-          <div className="w-12 h-12"></div> {/* spacer */}
-        </header>
-
-        <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-          {/* Centered Massive Price */}
-          <div className="text-center mb-12">
-            <span className="text-slate-400 font-bold text-xs uppercase tracking-widest block mb-2">Total Payable Amount</span>
-            <div className="text-6xl font-black text-slate-900 tracking-tight select-none">
-              ₹{paymentData?.amount || 0}
-            </div>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="w-full flex flex-col gap-4">
-            <span className="text-slate-400 font-bold text-xs uppercase tracking-wider pl-1">Select Payment Method</span>
-            
-            {/* UPI / GPay */}
-            <button
-              onClick={() => handlePay('UPI')}
-              className="w-full flex items-center justify-between p-5 rounded-2xl border-2 border-slate-100 hover:border-black active:scale-[0.99] transition-all duration-300 bg-white group shadow-sm hover:shadow-md"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 transition-colors group-hover:bg-indigo-50">
-                  <SmartphoneNfc size={20} className="group-hover:text-indigo-600" />
-                </div>
-                <div className="text-left">
-                  <h4 className="text-slate-800 font-black text-base group-hover:text-black font-sans">UPI / GPay</h4>
-                  <p className="text-slate-400 text-xs mt-0.5 font-medium">Instant transfer using any UPI app</p>
-                </div>
-              </div>
-              <div className="text-slate-400 group-hover:text-black font-extrabold text-sm font-mono">&rarr;</div>
-            </button>
-
-            {/* Credit / Debit Card */}
-            <button
-              onClick={() => handlePay('CARD')}
-              className="w-full flex items-center justify-between p-5 rounded-2xl border-2 border-slate-100 hover:border-black active:scale-[0.99] transition-all duration-300 bg-white group shadow-sm hover:shadow-md"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 transition-colors group-hover:bg-indigo-50">
-                  <CreditCard size={20} className="group-hover:text-indigo-600" />
-                </div>
-                <div className="text-left">
-                  <h4 className="text-slate-800 font-black text-base group-hover:text-black font-sans">Card</h4>
-                  <p className="text-slate-400 text-xs mt-0.5 font-medium">Visa, Mastercard, RuPay, or Maestro</p>
-                </div>
-              </div>
-              <div className="text-slate-400 group-hover:text-black font-extrabold text-sm font-mono">&rarr;</div>
-            </button>
-          </div>
-        </div>
-
-        {/* Full-screen semi-transparent loading overlay */}
-        {processingPayment && (
-          <div className="fixed inset-0 bg-white/90 backdrop-blur-sm z-[99999] flex flex-col items-center justify-center p-6 select-none animate-fadeIn">
-            <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <h3 className="text-slate-900 font-black text-xl mt-6 tracking-tight font-sans">Processing Payment...</h3>
-            <p className="text-slate-500 text-xs font-semibold mt-2 tracking-wide font-mono uppercase">Securing connection to banker</p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // 🎫 Immersive full-screen Mess QR Pass view
-  if (activeTab === 'MESS_QR_FULL') {
-    const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
-    const tokenStr = localStorage.getItem(`cp_token_${username}`);
-    const token = tokenStr ? JSON.parse(tokenStr) : null;
-    
-    // Calculate remaining minutes
-    let remainingMinutes = 90;
-    if (token && token.ExpiryTime) {
-      const remainingMs = new Date(token.ExpiryTime) - new Date();
-      remainingMinutes = Math.max(0, Math.ceil(remainingMs / (60 * 1000)));
+  // 🖥️ Dynamic Mobile Viewport Content Router
+  const renderContent = () => {
+    // 🔒 If user is NOT logged in, show the LockScreen
+    if (!currentUser) {
+      return (
+        <LockScreen 
+          onLoginSuccess={(user) => {
+            setCurrentUser(user);
+            setActiveTab('home');
+          }} 
+        />
+      );
     }
 
+    // 💳 Immersive Checkout / Payment View
+    if (activeTab === 'PAYMENT') {
+      const handlePay = async (method) => {
+        try {
+          setProcessingPayment(true);
+          // Simulate premium payment processing delay
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
+
+          if (paymentData.source === 'MESS_GUEST') {
+            // POST /api/mess/buy-guest-token
+            const res = await fetch('/api/mess/buy-guest-token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (!res.ok) {
+              const errorData = await res.json();
+              throw new Error(errorData.message || 'Payment failed.');
+            }
+
+            const data = await res.json();
+            if (data.token) {
+              localStorage.setItem(`cp_token_${username}`, JSON.stringify(data.token));
+              setActiveTab('MESS_QR_FULL');
+            }
+          } else if (paymentData.source === 'CANTEEN') {
+            // POST /api/canteen/orders
+            const res = await fetch('/api/canteen/orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                StudentId: paymentData.payload.studentId,
+                ItemsArray: paymentData.payload.cart.map((cartItem) => ({
+                  MenuItemId: cartItem._id,
+                  Quantity: cartItem.quantity,
+                })),
+              }),
+            });
+
+            if (!res.ok) {
+              const errorData = await res.json();
+              throw new Error(errorData.message || 'Payment failed.');
+            }
+
+            const orderData = await res.json();
+            localStorage.setItem(`cp_order_${username}`, JSON.stringify({
+              StudentName: `${currentUser.firstName} ${currentUser.lastName}`,
+              ItemsArray: orderData.ItemsArray,
+              TotalAmount: orderData.TotalAmount,
+              PickupPIN: orderData.PickupPIN,
+              ItemCount: orderData.ItemsArray.reduce((sum, item) => sum + item.Quantity, 0)
+            }));
+
+            setCanteenCart([]); // Clear cart upon successful payment checkout
+            setActiveTab('SUCCESS');
+          }
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          setProcessingPayment(false);
+        }
+      };
+
+      const backTarget = paymentData?.source === 'MESS_GUEST' ? 'mess' : 'canteen';
+
+      return (
+        <div className="absolute inset-0 bg-white flex flex-col p-6 z-[9999] overflow-hidden font-sans">
+          {/* Header with circular back button */}
+          <header className="w-full flex items-center justify-between py-4">
+            <button
+              onClick={() => setActiveTab(backTarget)}
+              className="bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-full h-12 w-12 flex items-center justify-center border border-slate-200/50 shadow-sm transition-all duration-300"
+              title="Back"
+            >
+              <ArrowLeft className="text-slate-600" size={20} />
+            </button>
+            <span className="text-slate-400 font-bold uppercase tracking-wider text-xs">CampOS Payment Gateway</span>
+            <div className="w-12 h-12"></div> {/* spacer */}
+          </header>
+
+          <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
+            {/* Centered Massive Price */}
+            <div className="text-center mb-12">
+              <span className="text-slate-400 font-bold text-xs uppercase tracking-widest block mb-2">Total Payable Amount</span>
+              <div className="text-6xl font-black text-slate-900 tracking-tight select-none">
+                ₹{paymentData?.amount || 0}
+              </div>
+            </div>
+
+            {/* Payment Methods */}
+            <div className="w-full flex flex-col gap-4">
+              <span className="text-slate-400 font-bold text-xs uppercase tracking-wider pl-1">Select Payment Method</span>
+              
+              {/* UPI / GPay */}
+              <button
+                onClick={() => handlePay('UPI')}
+                className="w-full flex items-center justify-between p-5 rounded-2xl border-2 border-slate-100 hover:border-black active:scale-[0.99] transition-all duration-300 bg-white group shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 transition-colors group-hover:bg-indigo-50">
+                    <SmartphoneNfc size={20} className="group-hover:text-indigo-600" />
+                  </div>
+                  <div className="text-left">
+                    <h4 className="text-slate-800 font-black text-base group-hover:text-black font-sans">UPI / GPay</h4>
+                    <p className="text-slate-400 text-xs mt-0.5 font-medium">Instant transfer using any UPI app</p>
+                  </div>
+                </div>
+                <div className="text-slate-400 group-hover:text-black font-extrabold text-sm font-mono">&rarr;</div>
+              </button>
+
+              {/* Credit / Debit Card */}
+              <button
+                onClick={() => handlePay('CARD')}
+                className="w-full flex items-center justify-between p-5 rounded-2xl border-2 border-slate-100 hover:border-black active:scale-[0.99] transition-all duration-300 bg-white group shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 transition-colors group-hover:bg-indigo-50">
+                    <CreditCard size={20} className="group-hover:text-indigo-600" />
+                  </div>
+                  <div className="text-left">
+                    <h4 className="text-slate-800 font-black text-base group-hover:text-black font-sans">Card</h4>
+                    <p className="text-slate-400 text-xs mt-0.5 font-medium">Visa, Mastercard, RuPay, or Maestro</p>
+                  </div>
+                </div>
+                <div className="text-slate-400 group-hover:text-black font-extrabold text-sm font-mono">&rarr;</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Full-screen semi-transparent loading overlay */}
+          {processingPayment && (
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-[99999] flex flex-col items-center justify-center p-6 select-none animate-fadeIn">
+              <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <h3 className="text-slate-900 font-black text-xl mt-6 tracking-tight font-sans">Processing Payment...</h3>
+              <p className="text-slate-500 text-xs font-semibold mt-2 tracking-wide font-mono uppercase">Securing connection to banker</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // 🎫 Immersive Mess QR Pass view
+    if (activeTab === 'MESS_QR_FULL') {
+      const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
+      const tokenStr = localStorage.getItem(`cp_token_${username}`);
+      const token = tokenStr ? JSON.parse(tokenStr) : null;
+      
+      // Calculate remaining minutes
+      let remainingMinutes = 90;
+      if (token && token.ExpiryTime) {
+        const remainingMs = new Date(token.ExpiryTime) - new Date();
+        remainingMinutes = Math.max(0, Math.ceil(remainingMs / (60 * 1000)));
+      }
+
+      return (
+        <div className="absolute inset-0 bg-indigo-600 text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans">
+          <div className="w-full max-w-md flex flex-col items-center text-center">
+            <h2 className="text-4xl font-black mt-2 tracking-tight">Guest Pass</h2>
+            
+            <div className="flex items-center gap-2 mt-4 opacity-80">
+              <Clock size={20} className="text-white" />
+              <span className="text-white text-sm font-semibold tracking-wide">
+                {remainingMinutes > 0 ? `Valid for ${remainingMinutes} Mins` : 'Expired'}
+              </span>
+            </div>
+
+            {/* Massive white QR card with exaggerated soft rounded corners */}
+            <div className="w-full max-w-sm bg-white p-8 rounded-[32px] shadow-2xl mt-8 flex flex-col items-center justify-center transform hover:scale-[1.02] transition-transform duration-300">
+              <div className="p-1.5 bg-slate-50 rounded-[24px]">
+                <QrCode size={240} className="text-black" />
+              </div>
+              
+              <div className="mt-6 text-center">
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest font-mono">Pass Verification Code</p>
+                <p className="text-indigo-950 font-black mt-1 text-base tracking-wide font-mono">
+                  {token ? `ID: #${String(token._id || token.id || '').substring(18).toUpperCase()}` : 'ACTIVE PASS'}
+                </p>
+              </div>
+            </div>
+
+            {/* Translucent floating close button */}
+            <button
+              onClick={() => setActiveTab('home')}
+              className="mt-12 h-14 w-14 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 transition-all duration-300"
+              title="Close Pass"
+            >
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // 🍔 Immersive Canteen Success view
+    if (activeTab === 'SUCCESS') {
+      const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
+      const orderStr = localStorage.getItem(`cp_order_${username}`);
+      const order = orderStr ? JSON.parse(orderStr) : null;
+      const pin = order ? order.PickupPIN : '----';
+
+      return (
+        <div className="absolute inset-0 bg-[#141a27] text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans select-none">
+          {/* Premium morphing wallpaper gradient blobs (fixed background) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
+            <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
+            <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent animate-blob3" />
+          </div>
+
+          <div className="w-full max-w-md flex flex-col items-center text-center z-10">
+            {/* Sleek check icon */}
+            <div className="h-20 w-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/30 mb-6 border-4 border-emerald-400/20 z-10 transform hover:scale-105 transition-transform duration-300">
+              <Check size={36} className="text-white stroke-[3px]" />
+            </div>
+
+            <h2 className="text-2xl font-black text-white tracking-tight font-sans mt-2">Order Placed!</h2>
+            <p className="text-slate-300 mt-1.5 text-xs max-w-xs leading-relaxed font-sans">
+              Your hot meal is preparing. Present this digital slip at the counter.
+            </p>
+
+            {/* Sleek Glass Credit Slip with Dotted Border Accents */}
+            <div className="w-full bg-orange-500/[0.03] backdrop-blur-3xl py-6 px-5 rounded-[28px] border-2 border-orange-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_35px_rgba(249,115,22,0.08)] mt-6 flex flex-col items-center relative overflow-hidden max-w-[340px]">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-red-500"></div>
+              
+              <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest font-mono">Pickup PIN</span>
+              <div className="text-5xl font-black text-orange-400 tracking-widest my-4 font-mono select-all animate-pulse">
+                {pin}
+              </div>
+
+              <div className="w-full border-t-2 border-dotted border-white/10 pt-4 mt-1 flex flex-col gap-2.5 text-left font-sans">
+                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                  <span>Customer:</span>
+                  <span className="text-slate-200 font-bold">{order?.StudentName || 'Student'}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                  <span>Total Amount:</span>
+                  <span className="text-white font-extrabold font-mono text-xs">₹{order?.TotalAmount || 0}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                  <span>Items Count:</span>
+                  <span className="text-slate-200 font-bold">{order?.ItemCount || 0} items</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setActiveTab('home')}
+              className="mt-6 px-8 py-3.5 bg-white text-[#141a27] hover:bg-slate-50 font-black rounded-xl shadow-lg transition-all duration-300 text-xs uppercase tracking-wider z-10 cursor-pointer active:scale-95"
+            >
+              Done & Back Home
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Otherwise show main dashboard
     return (
-      <div className="fixed inset-0 bg-indigo-600 text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans">
-        <div className="w-full max-w-md flex flex-col items-center text-center">
-          <h2 className="text-4xl font-black mt-2 tracking-tight">Guest Pass</h2>
-          
-          <div className="flex items-center gap-2 mt-4 opacity-80">
-            <Clock size={20} className="text-white" />
-            <span className="text-white text-sm font-semibold tracking-wide">
-              {remainingMinutes > 0 ? `Valid for ${remainingMinutes} Mins` : 'Expired'}
+      <div className="campos-dashboard flex flex-col justify-between h-full bg-[#141a27] text-white relative font-sans overflow-hidden">
+        
+        {/* Premium morphing wallpaper gradient blobs (fixed background) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent animate-blob3" />
+        </div>
+
+        {/* Main feature display area inside simulated smartphone screen */}
+        <main className="flex-1 overflow-y-auto scrollbar-none bg-transparent relative z-10">
+          {activeTab === 'home' && (
+            <MetroStartScreen
+              currentUser={currentUser}
+              stats={stats}
+              onTileClick={(tabId) => setActiveTab(tabId)}
+              onLogout={handleLogout}
+            />
+          )}
+          {activeTab === 'notices' && allowedTabs.includes('notices') && (
+            <NoticesFeed 
+              currentUser={currentUser} 
+              onUpdate={fetchStats} 
+              setActiveTab={setActiveTab}
+            />
+          )}
+          {activeTab === 'skillgigs' && allowedTabs.includes('skillgigs') && (
+            <SkillSwapGrid 
+              currentUser={currentUser} 
+              onUpdate={fetchStats} 
+              setActiveTab={setActiveTab}
+            />
+          )}
+          {activeTab === 'canteen' && allowedTabs.includes('canteen') && (
+            <CanteenOrder 
+              currentUser={currentUser} 
+              onUpdate={fetchStats} 
+              setActiveTab={setActiveTab}
+              triggerPayment={triggerPayment}
+              cart={canteenCart}
+              setCart={setCanteenCart}
+            />
+          )}
+          {activeTab === 'canteen_cart' && allowedTabs.includes('canteen') && (
+            <CanteenOrder 
+              currentUser={currentUser} 
+              onUpdate={fetchStats} 
+              setActiveTab={setActiveTab}
+              triggerPayment={triggerPayment}
+              cart={canteenCart}
+              setCart={setCanteenCart}
+              isCartCheckout={true}
+            />
+          )}
+          {activeTab === 'mess' && allowedTabs.includes('mess') && (
+            <MessMenu currentUser={currentUser} setActiveTab={setActiveTab} triggerPayment={triggerPayment} />
+          )}
+          {activeTab === 'materials' && allowedTabs.includes('materials') && (
+            <StudyMaterials setActiveTab={setActiveTab} />
+          )}
+          {activeTab === 'calendar' && allowedTabs.includes('calendar') && (
+            <AcademicCalendar setActiveTab={setActiveTab} />
+          )}
+        </main>
+
+        {/* Floating Zomato-Style Cart Button */}
+        {activeTab === 'canteen' && canteenCart.length > 0 && (
+          <button
+            onClick={() => setActiveTab('canteen_cart')}
+            className="absolute bottom-6 right-6 z-[999] bg-orange-500/20 border-2 border-orange-500/40 backdrop-blur-md text-white font-black rounded-full px-5 py-3.5 shadow-2xl flex items-center gap-2.5 transition-all duration-300 active:scale-95 cursor-pointer shadow-orange-500/10 animate-fadeIn"
+            type="button"
+          >
+            <span className="relative flex items-center justify-center">
+              <span className="text-base">🛒</span>
+              <span className="absolute -top-2.5 -right-2.5 bg-orange-500 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-orange-400">
+                {canteenCart.reduce((sum, item) => sum + item.quantity, 0)}
+              </span>
             </span>
-          </div>
-
-          {/* Massive white QR card with exaggerated soft rounded corners */}
-          <div className="w-full max-w-sm bg-white p-8 rounded-[32px] shadow-2xl mt-8 flex flex-col items-center justify-center transform hover:scale-[1.02] transition-transform duration-300">
-            <div className="p-1.5 bg-slate-50 rounded-[24px]">
-              <QrCode size={240} className="text-black" />
-            </div>
-            
-            <div className="mt-6 text-center">
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest font-mono">Pass Verification Code</p>
-              <p className="text-indigo-950 font-black mt-1 text-base tracking-wide font-mono">
-                {token ? `ID: #${String(token._id || token.id || '').substring(18).toUpperCase()}` : 'ACTIVE PASS'}
-              </p>
-            </div>
-          </div>
-
-          {/* Translucent floating close button */}
-          <button
-            onClick={() => setActiveTab('home')}
-            className="mt-12 h-14 w-14 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 transition-all duration-300"
-            title="Close Pass"
-          >
-            <X size={24} />
+            <span className="text-[10px] font-black uppercase tracking-wider font-sans">View Cart &bull; ₹{canteenCart.reduce((sum, item) => sum + item.Price * item.quantity, 0)}</span>
           </button>
-        </div>
+        )}
+
       </div>
     );
-  }
-
-  // 🍔 Immersive full-screen Canteen Success view
-  if (activeTab === 'SUCCESS') {
-    const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
-    const orderStr = localStorage.getItem(`cp_order_${username}`);
-    const order = orderStr ? JSON.parse(orderStr) : null;
-    const pin = order ? order.PickupPIN : '----';
-
-    return (
-      <div className="fixed inset-0 bg-slate-50 flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans">
-        <div className="w-full max-w-md flex flex-col items-center text-center">
-          {/* Large green circle with a white check icon */}
-          <div className="h-28 w-28 bg-green-500 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/40 mb-8 border-4 border-green-400/20 transform hover:scale-105 transition-transform duration-300">
-            <Check size={44} className="text-white stroke-[3px]" />
-          </div>
-
-          <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight font-sans">Order Placed!</h2>
-          <p className="text-slate-500 mt-2 text-sm max-w-xs leading-relaxed font-sans">
-            Your hot meal is preparing. Scan or present the pickup ticket code at the counter.
-          </p>
-
-          {/* White ticket card with soft, exaggerated rounded corners */}
-          <div className="w-full bg-white py-12 px-10 rounded-[32px] shadow-xl border border-slate-100 mt-8 flex flex-col items-center relative overflow-hidden max-w-sm">
-            {/* Ambient subtle background decorative arcs to make it feel like a real ticket */}
-            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-500 to-violet-600"></div>
-            
-            <span className="text-slate-400 text-xs font-bold uppercase tracking-widest font-mono">Pickup Code</span>
-            <div className="text-7xl font-black text-indigo-600 tracking-widest my-8 font-mono select-all animate-pulse">
-              {pin}
-            </div>
-
-            <div className="w-full border-t-2 border-dashed border-slate-100 pt-8 mt-2 flex flex-col gap-3 text-left">
-              <div className="flex justify-between items-center text-xs font-medium text-slate-400 font-sans">
-                <span>Customer:</span>
-                <span className="text-slate-700 font-bold">{order?.StudentName || 'Student'}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs font-medium text-slate-400 font-sans">
-                <span>Total Amount:</span>
-                <span className="text-slate-700 font-extrabold font-mono">₹{order?.TotalAmount || 0}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs font-medium text-slate-400 font-sans">
-                <span>Items Count:</span>
-                <span className="text-slate-700 font-bold">{order?.ItemCount || 0} items</span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setActiveTab('home')}
-            className="mt-8 px-10 py-4 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold rounded-full shadow-lg shadow-slate-900/10 hover:shadow-slate-900/20 transition-all duration-300 text-sm tracking-wide font-sans"
-          >
-            Done & Back Home
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 🔒 If user is NOT logged in, show the LockScreen
-  if (!currentUser) {
-    return (
-      <LockScreen 
-        onLoginSuccess={(user) => {
-          setCurrentUser(user);
-          setActiveTab('home');
-        }} 
-      />
-    );
-  }
+  };
 
   const getTabIcon = (tabId) => {
     switch (tabId) {
@@ -435,76 +533,12 @@ function App() {
     }
   };
 
-  const tabs = getTabs();
-
   return (
     <div className="mobile-device-simulator">
       <div className="mobile-screen-viewport">
-        <div className="campos-dashboard flex flex-col justify-between h-full bg-[#f8fafc] relative font-sans">
-          
-          {/* Main feature display area inside simulated smartphone screen */}
-          <main className="flex-1 overflow-y-auto scrollbar-none bg-[#f8fafc] relative">
-            {activeTab === 'home' && (
-              <MetroStartScreen
-                currentUser={currentUser}
-                stats={stats}
-                onTileClick={(tabId) => setActiveTab(tabId)}
-                onLogout={handleLogout}
-              />
-            )}
-            {activeTab === 'notices' && allowedTabs.includes('notices') && (
-              <NoticesFeed 
-                currentUser={currentUser} 
-                onUpdate={fetchStats} 
-              />
-            )}
-            {activeTab === 'skillgigs' && allowedTabs.includes('skillgigs') && (
-              <SkillSwapGrid 
-                currentUser={currentUser} 
-                onUpdate={fetchStats} 
-              />
-            )}
-            {activeTab === 'canteen' && allowedTabs.includes('canteen') && (
-              <CanteenOrder 
-                currentUser={currentUser} 
-                onUpdate={fetchStats} 
-                setActiveTab={setActiveTab}
-                triggerPayment={triggerPayment}
-              />
-            )}
-            {activeTab === 'mess' && allowedTabs.includes('mess') && (
-              <MessMenu currentUser={currentUser} setActiveTab={setActiveTab} triggerPayment={triggerPayment} />
-            )}
-            {activeTab === 'materials' && allowedTabs.includes('materials') && (
-              <StudyMaterials />
-            )}
-            {activeTab === 'calendar' && allowedTabs.includes('calendar') && (
-              <AcademicCalendar />
-            )}
-          </main>
-
-          {/* Premium Bottom Mobile Navigation Bar */}
-          <nav className="bg-white border-t border-slate-100 rounded-t-[32px] p-4 flex justify-around items-center shadow-2xl z-40 select-none">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex flex-col items-center justify-center gap-1 transition-all duration-300 outline-none ${
-                    isActive
-                      ? 'border-2 border-indigo-600 bg-indigo-50/20 text-indigo-600 rounded-2xl py-2 px-4 font-bold scale-[1.03] shadow-sm shadow-indigo-100'
-                      : 'text-slate-400 hover:text-slate-600 font-semibold text-xs py-2 px-3'
-                  }`}
-                >
-                  {getTabIcon(tab.id)}
-                  <span className="text-[10px] tracking-wide leading-none mt-0.5">{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-
-        </div>
+        {/* iPhone 17 Premium Dynamic Island Pill Camera */}
+        <div className="iphone-dynamic-island" />
+        {renderContent()}
       </div>
     </div>
   );

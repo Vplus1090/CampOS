@@ -136,22 +136,68 @@ code {
 
 .mobile-screen-viewport {
   width: 100%;
-  max-width: 430px;
-  height: 90vh;
-  max-height: 900px;
-  min-height: 750px;
+  max-width: 412px; /* Perfect sleek modern iPhone aspect ratio width */
+  height: 88vh;
+  max-height: 880px;
+  min-height: 760px;
   background-color: #141a27;
-  border-radius: 48px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-  border: 12px solid #1e293b;
+  border-radius: 54px; /* iPhone 17 highly rounded corners */
+  box-shadow: 
+    0 25px 60px -15px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.05), /* Premium outer bezel chrome sheen outline */
+    inset 0 0 0 2px rgba(0, 0, 0, 0.3);
+  border: 8.5px solid #09090b; /* Razor-thin premium Titanium Black bezel (iPhone 17 style) */
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* Simulated iPhone 17 Dynamic Island */
+.iphone-dynamic-island {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 24px;
+  background-color: #000000;
+  border-radius: 9999px;
+  z-index: 999999;
+  pointer-events: none;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.iphone-dynamic-island::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: radial-gradient(circle, #242938 0%, #0c0d12 70%);
+  border-radius: 50%;
+  opacity: 0.6;
+  border: 1px solid #14161f;
+}
+
+.iphone-dynamic-island::after {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background-color: #10b981; /* Premium simulated active dot */
+  border-radius: 50%;
+  margin-left: 6px;
+  opacity: 0.85;
+  box-shadow: 0 0 4px #10b981;
 }
 
 /* Ensure absolute viewport fills on small screens */
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
   .mobile-device-simulator {
     padding: 0;
     background-color: transparent;
@@ -164,54 +210,59 @@ code {
     border-radius: 0;
     border: none;
   }
+  .iphone-dynamic-island {
+    display: none !important;
+  }
 }
 
 /* ─── LockScreen Premium Animations & Transitions ───────────────────────────── */
 
-@keyframes flowLine1 {
-  from { stroke-dashoffset: 600; }
-  to   { stroke-dashoffset: 0; }
+/* Liquid Morphing Lava Lamp Wallpaper Blobs */
+@keyframes liquidBlob1 {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+  }
+  33% { 
+    transform: translate(35px, -55px) scale(1.15) rotate(120deg);
+    border-radius: 70% 30% 52% 48% / 60% 40% 60% 40%;
+  }
+  66% { 
+    transform: translate(-25px, 25px) scale(0.9) rotate(240deg);
+    border-radius: 30% 70% 40% 60% / 50% 60% 40% 50%;
+  }
 }
 
-@keyframes flowLine2 {
-  from { stroke-dashoffset: 400; }
-  to   { stroke-dashoffset: 0; }
+@keyframes liquidBlob2 {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1.1) rotate(0deg);
+    border-radius: 50% 50% 30% 70% / 50% 60% 40% 50%;
+  }
+  50% { 
+    transform: translate(-45px, 35px) scale(0.9) rotate(-180deg);
+    border-radius: 30% 70% 70% 30% / 40% 30% 70% 60%;
+  }
 }
 
-.flow-line-1 {
-  stroke-dasharray: 300;
-  animation: flowLine1 12s linear infinite;
-}
-
-.flow-line-2 {
-  stroke-dasharray: 200;
-  animation: flowLine2 10s linear infinite;
-}
-
-/* Morphing Aurora Wallpaper Blobs */
-@keyframes floatBlob1 {
-  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-  33% { transform: translate(30px, -50px) scale(1.15) rotate(120deg); }
-  66% { transform: translate(-20px, 20px) scale(0.9) rotate(240deg); }
-}
-@keyframes floatBlob2 {
-  0%, 100% { transform: translate(0, 0) scale(1.1) rotate(0deg); }
-  33% { transform: translate(-40px, 30px) scale(0.95) rotate(-120deg); }
-  66% { transform: translate(25px, -30px) scale(1.1) rotate(-240deg); }
-}
-@keyframes floatBlob3 {
-  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-  50% { transform: translate(40px, 40px) scale(1.2) rotate(180deg); }
+@keyframes liquidBlob3 {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    border-radius: 60% 40% 60% 40% / 50% 50% 50% 50%;
+  }
+  50% { 
+    transform: translate(55px, 45px) scale(1.2) rotate(180deg);
+    border-radius: 40% 60% 30% 70% / 60% 50% 50% 40%;
+  }
 }
 
 .animate-blob1 {
-  animation: floatBlob1 15s ease-in-out infinite;
+  animation: liquidBlob1 20s ease-in-out infinite;
 }
 .animate-blob2 {
-  animation: floatBlob2 18s ease-in-out infinite;
+  animation: liquidBlob2 25s ease-in-out infinite;
 }
 .animate-blob3 {
-  animation: floatBlob3 22s ease-in-out infinite;
+  animation: liquidBlob3 30s ease-in-out infinite;
 }
 
 /* Glass Input Shimmer Sweep Animation */

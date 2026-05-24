@@ -31,7 +31,8 @@
 .campos-dashboard {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
+  min-height: 100%;
   padding: 40px 24px;
   background: radial-gradient(circle at 10% 20%, var(--accent-bg) 0%, transparent 40%),
               radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
@@ -168,10 +169,7 @@
   transition: all 0.25s ease;
 }
 
-.nav-tab:hover {
-  color: var(--text-h);
-  background: rgba(255, 255, 255, 0.1);
-}
+/* nav-tab:hover animation disabled */
 
 .nav-tab.active {
   color: #fff !important;
@@ -655,11 +653,11 @@
 /* ─── Glassmorphism Modal Dialogs ────────────────────────────────────────────── */
 
 .modal-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -1622,12 +1620,7 @@ input:checked + .slider:before {
   transition: all 0.2s ease;
 }
 
-.public-tab-btn:hover {
-  border-color: var(--accent-border);
-  background: var(--accent-bg);
-  color: var(--accent);
-  transform: translateY(-2px);
-}
+/* public-tab-btn:hover animation disabled */
 
 /* Pre-login Public details card */
 .public-details-card {
@@ -2697,10 +2690,7 @@ input:checked + .slider:before {
 }
 
 /* Hover dynamic tilts mirroring turnstile perspective */
-.metro-tile:hover {
-  transform: translateY(-4px) scale(1.015) rotateX(1deg) rotateY(-1deg);
-  border-color: rgba(255, 255, 255, 0.22);
-}
+/* metro-tile:hover animation disabled */
 
 .metro-tile:active {
   transform: scale(0.97) translateY(0);

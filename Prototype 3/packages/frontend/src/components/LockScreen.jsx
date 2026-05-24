@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Utensils, Shield, User, ArrowRight, Download, Calendar, BookOpen, Clock, X, KeyRound, Coffee, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Utensils, Shield, User, ArrowRight, Download, Calendar, BookOpen, Clock, X, KeyRound, Coffee, Sun, Moon, ChevronDown, GraduationCap } from 'lucide-react';
 
 
 export default function LockScreen({ onLoginSuccess }) {
@@ -32,6 +32,19 @@ export default function LockScreen({ onLoginSuccess }) {
   const [showShelfSetup, setShowShelfSetup] = useState(false);
   const [setupBranch, setSetupBranch] = useState('Computer Science');
   const [setupSemester, setSetupSemester] = useState('Semester 1');
+
+  // Auto-scroll to today's mess menu card when opening the overlay
+  useEffect(() => {
+    if (showGuestMess) {
+      const timer = setTimeout(() => {
+        const activeCard = document.getElementById('today-mess-card');
+        if (activeCard) {
+          activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showGuestMess]);
 
   // Shelf Search, Category & Filtering states
   const [shelfSearch, setShelfSearch] = useState('');
@@ -122,12 +135,62 @@ export default function LockScreen({ onLoginSuccess }) {
   ];
 
   const calendarEvents = [
-    { date: 'June 01, 2026', title: 'Spring Semester Begins', type: 'academic', desc: 'Orientation for new batches and regular classes commence.' },
-    { date: 'June 25, 2026', title: 'CampOS Hackathon Sprint', type: 'event', desc: '36-hour continuous monorepo coding competition with cash prizes.' },
-    { date: 'July 10-18, 2026', title: 'Mid-Term Examination Weeks', type: 'exam', desc: 'Strict examinations across all departments.' },
-    { date: 'Aug 15, 2026', title: 'Independence Day Holiday', type: 'holiday', desc: 'Flag hoisting ceremony at main sports complex.' },
-    { date: 'Sep 05-08, 2026', title: 'Sparks Campus Cultural Festival', type: 'event', desc: 'Three days of music, arts, food-stalls, and dance matches.' },
-    { date: 'Oct 20, 2026', title: 'Final Semester Exams Begin', type: 'exam', desc: 'Submission of lab projects and end-term exams.' },
+    {
+      date: 'Tuesday, November 18, 2025',
+      category: 'Project / Dissertation',
+      tags: ['Odd Sem', 'Deadline'],
+      desc: 'Major Project allocation for next year by',
+      theme: 'teal'
+    },
+    {
+      date: 'Tuesday, November 18, 2025',
+      category: 'Project / Dissertation',
+      tags: ['Odd Sem', 'Deadline'],
+      desc: 'Minor Project allocation for next Semester by',
+      theme: 'teal'
+    },
+    {
+      date: 'Thursday, November 20, 2025',
+      category: 'Project / Dissertation',
+      tags: ['Odd Sem', 'Exam'],
+      desc: 'Final Project Viva / End-Term Seminar / Evaluation of Dissertation',
+      theme: 'teal'
+    },
+    {
+      date: 'Friday, November 21, 2025',
+      category: 'Feedback',
+      tags: ['Odd Sem', 'Deadline'],
+      desc: 'Students\' Online Feed Back Collection by',
+      theme: 'rose'
+    },
+    {
+      date: 'Tuesday, November 25, 2025',
+      category: 'Attendance Review',
+      tags: ['Odd Sem', 'Academic'],
+      desc: 'End Semester Attendance Review',
+      theme: 'amber'
+    },
+    {
+      date: 'Tuesday, November 25, 2025',
+      category: 'Project / Dissertation',
+      tags: ['Odd Sem', 'Deadline'],
+      desc: 'Submission of Project/Dissertation reports/Term Paper',
+      theme: 'teal'
+    },
+    {
+      date: 'Friday, November 28, 2025',
+      category: 'End of Classes',
+      tags: ['Odd Sem', 'Deadline'],
+      desc: 'Classes to be over',
+      theme: 'magenta'
+    },
+    {
+      date: 'Friday, November 28, 2025',
+      category: 'Academic',
+      tags: ['Odd Sem', 'Meeting'],
+      desc: 'Academic Council Meeting',
+      theme: 'purple'
+    }
   ];
 
   const studyMaterials = [
@@ -188,57 +251,18 @@ export default function LockScreen({ onLoginSuccess }) {
     };
 
     return (
-      <div className="fixed inset-0 bg-[#141a27] text-white flex flex-col p-6 z-[99999] overflow-y-auto font-sans">
+      <div className="absolute inset-0 bg-[#141a27] text-white z-[99999] font-sans overflow-hidden">
 
-        {/* Premium morphing wallpaper gradient blobs (z-0, behind content) */}
-        <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#7085c3]/20 via-[#4f649e]/10 to-transparent pointer-events-none z-0 animate-blob1" />
-        <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#b06ab3]/15 via-[#7a468c]/5 to-transparent pointer-events-none z-0 animate-blob2" />
-        <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#e39695]/8 via-[#9e5c61]/2 to-transparent pointer-events-none z-0 animate-blob3" />
+        {/* Premium morphing wallpaper gradient blobs (fixed background, never scrolls) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent animate-blob3" />
+        </div>
 
-        {/* Flowing animated background lines — z-0, content is z-10 so no overlap */}
-        <svg className="absolute inset-0 z-0 w-full h-full pointer-events-none fill-none" viewBox="0 0 430 932" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="gradMess1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.05" />
-              <stop offset="25%" stopColor="#a3b3e6" stopOpacity="0.25" />
-              <stop offset="50%" stopColor="#7085c3" stopOpacity="0.35" />
-              <stop offset="75%" stopColor="#ffffff" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#7085c3" stopOpacity="0.05" />
-            </linearGradient>
-            <linearGradient id="gradMess2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#7085c3" stopOpacity="0.05" />
-              <stop offset="40%" stopColor="#ffffff" stopOpacity="0.3" />
-              <stop offset="60%" stopColor="#a3b3e6" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#7085c3" stopOpacity="0.1" />
-            </linearGradient>
-          </defs>
-
-          {/* Upper curved sweep */}
-          <path
-            d="M -10,0 C 150,150 250,50 350,180 C 400,240 450,120 440,-10"
-            className="flow-line-1"
-            style={{ stroke: 'url(#gradMess1)', strokeWidth: 5.5, filter: 'blur(4px)', opacity: 0.55 }}
-          />
-          <path
-            d="M -10,0 C 150,150 250,50 350,180 C 400,240 450,120 440,-10"
-            className="flow-line-1"
-            style={{ stroke: 'url(#gradMess1)', strokeWidth: 1.8 }}
-          />
-          
-          {/* Lower curved sweep */}
-          <path
-            d="M -10,960 C 130,850 250,850 440,910"
-            className="flow-line-2"
-            style={{ stroke: 'url(#gradMess2)', strokeWidth: 5.5, filter: 'blur(4px)', opacity: 0.55 }}
-          />
-          <path
-            d="M -10,960 C 130,850 250,850 440,910"
-            className="flow-line-2"
-            style={{ stroke: 'url(#gradMess2)', strokeWidth: 1.8 }}
-          />
-        </svg>
-
-        <div className="relative z-10 flex flex-col w-full max-w-5xl min-h-full mx-auto">
+        {/* Scrollable content layer */}
+        <div className="absolute inset-0 overflow-y-auto z-10 p-6">
+        <div className="flex flex-col w-full max-w-5xl min-h-full mx-auto">
           <header className="flex items-center w-full gap-4 py-6 mb-8 border-b border-white/5">
             <button
               onClick={() => setShowGuestMess(false)}
@@ -260,29 +284,25 @@ export default function LockScreen({ onLoginSuccess }) {
                 return (
                   <div
                     key={m.day}
+                    id={isActive ? 'today-mess-card' : undefined}
                     className={`rounded-[32px] p-7 transition-all duration-500 relative backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] ${
                       isActive
-                        ? 'border border-amber-500/50 bg-white/[0.09] shadow-[0_0_35px_rgba(245,158,11,0.15)]'
+                        ? 'border-[3px] border-amber-500 bg-white/[0.09] shadow-[0_0_35px_rgba(245,158,11,0.15)]'
                         : 'border border-white/15 bg-white/[0.06]'
                     }`}
                   >
-                    {/* Active Running Today Tag */}
-                    {isActive && (
-                      <div className="absolute top-7 right-7 bg-amber-500 text-[#141a27] text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-md shadow-lg select-none">
-                        Running Today
-                      </div>
-                    )}
-
                     {/* Header */}
-                    <div className="flex items-baseline gap-3 mb-6">
-                      <h3 className="text-2xl font-black tracking-tight text-white">{m.day}</h3>
-                      <span className="font-mono text-sm font-bold tracking-widest text-white/30">
-                        {getFormattedDate(m.day)}
-                      </span>
+                    <div className="flex items-center justify-between mb-6 gap-3">
+                      <div className="flex items-baseline gap-2">
+                        <h3 className="text-2xl font-black tracking-tight text-white">{m.day}</h3>
+                        <span className="font-mono text-xs font-bold tracking-wider text-white/30">
+                          {getFormattedDate(m.day)}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Meal columns (Breakfast, Lunch, Dinner) */}
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4">
                       {/* Breakfast */}
                       <div className="bg-black/25 border border-white/10 rounded-[22px] p-5 flex flex-col gap-4">
                         <div className="flex items-center justify-between">
@@ -349,41 +369,109 @@ export default function LockScreen({ onLoginSuccess }) {
             </div>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   if (showGuestCalendar) {
-    return (
-      <div className="fixed inset-0 bg-[#141a27] text-white flex flex-col p-6 z-[99999] overflow-y-auto font-sans justify-between">
-        <div className="flex flex-col flex-1 w-full max-w-md mx-auto">
-          <header className="flex items-center w-full gap-4 py-6 mb-4 border-b border-white/5">
-            <button
-              onClick={() => setShowGuestCalendar(false)}
-              className="w-12 h-12 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md select-none cursor-pointer"
-            >
-              <span className="text-xl font-bold">&larr;</span>
-            </button>
-            <h2 className="flex items-center h-12 text-lg font-bold text-white select-none">
-              Calendar
-            </h2>
-          </header>
+    const themeStyles = {
+      teal: {
+        border: 'border-teal-500/40 bg-teal-950/[0.04]',
+        badge: 'bg-teal-500/10 text-teal-300 border-teal-500/20',
+        iconColor: 'text-[#0d9488]'
+      },
+      rose: {
+        border: 'border-rose-500/40 bg-rose-950/[0.04]',
+        badge: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+        iconColor: 'text-[#e11d48]'
+      },
+      amber: {
+        border: 'border-amber-500/40 bg-amber-950/[0.04]',
+        badge: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
+        iconColor: 'text-[#d97706]'
+      },
+      magenta: {
+        border: 'border-pink-500/40 bg-pink-950/[0.04]',
+        badge: 'bg-pink-500/10 text-pink-300 border-pink-500/20',
+        iconColor: 'text-[#db2777]'
+      },
+      purple: {
+        border: 'border-purple-500/40 bg-purple-950/[0.04]',
+        badge: 'bg-purple-500/10 text-purple-300 border-purple-500/20',
+        iconColor: 'text-[#9333ea]'
+      }
+    };
 
-          <div className="flex flex-col justify-center flex-1 my-6">
-            <div className="lock-card public-details-card bg-white/5 backdrop-blur-md rounded-[32px] border border-white/10 p-6 shadow-2xl">
-              
-              <div className="flex flex-col gap-6 max-h-[50vh] overflow-y-auto pr-2 scrollbar-none">
-                {calendarEvents.map((event, idx) => (
-                  <div key={idx} className="flex gap-4 border-l-2 border-[#7085c3]/40 pl-4 relative py-1">
-                    <div className="absolute -left-[5px] top-2 w-2 h-2 rounded-full bg-[#7085c3]"></div>
-                    <div className="flex flex-col text-left">
-                      <span className="text-[11px] font-mono text-indigo-300 font-bold uppercase tracking-wider">{event.date}</span>
-                      <span className="text-base font-extrabold text-white mt-0.5">{event.title}</span>
-                      <p className="mt-1 text-xs leading-relaxed text-white/60">{event.desc}</p>
+    return (
+      <div className="absolute inset-0 bg-[#141a27] text-white z-[99999] font-sans overflow-hidden">
+        
+        {/* Premium morphing wallpaper gradient blobs (fixed background) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent animate-blob3" />
+        </div>
+
+        {/* Scrollable content layer */}
+        <div className="absolute inset-0 overflow-y-auto z-10 p-6 scrollbar-none">
+          <div className="flex flex-col w-full max-w-md min-h-full mx-auto">
+            <header className="flex items-center w-full gap-4 py-6 mb-8 border-b border-white/5">
+              <button
+                onClick={() => setShowGuestCalendar(false)}
+                className="w-12 h-12 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md select-none cursor-pointer"
+              >
+                <span className="text-xl font-bold">&larr;</span>
+              </button>
+              <h2 className="flex items-center h-12 text-lg font-bold text-white select-none">
+                Calendar
+              </h2>
+            </header>
+
+            <div className="flex flex-col flex-1 gap-5 pb-12">
+              {calendarEvents.map((event, idx) => {
+                const style = themeStyles[event.theme] || themeStyles.teal;
+                return (
+                  <div
+                    key={idx}
+                    className={`rounded-[28px] p-6 transition-all duration-500 relative border-2 ${style.border} ${style.bg} backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-xl flex flex-col gap-4`}
+                  >
+                    {/* Header: Title and Tags */}
+                    <div className="flex flex-col gap-2 items-start text-left">
+                      <div className="flex items-center flex-wrap gap-2.5">
+                        <GraduationCap size={18} className={`${style.iconColor} shrink-0`} />
+                        <h4 className="text-base font-extrabold text-white font-sans tracking-wide leading-none">
+                          {event.category}
+                        </h4>
+                        <div className="flex items-center gap-1.5">
+                          {event.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${style.badge}`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <p className="text-xs font-semibold text-slate-300 leading-relaxed pl-[28px]">
+                        {event.desc}
+                      </p>
+                    </div>
+
+                    {/* Date stamp pill aligned nicely */}
+                    <div className="flex justify-end mt-1">
+                      <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-xl px-3.5 py-1.5 shadow-md">
+                        <Calendar size={12} className="text-slate-400" />
+                        <span className="text-[10px] font-mono font-bold tracking-wide text-slate-200">
+                          {event.date}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -422,55 +510,17 @@ export default function LockScreen({ onLoginSuccess }) {
     };
 
     return (
-      <div className="fixed inset-0 bg-[#141a27] text-white flex flex-col p-6 z-[99999] overflow-y-auto font-sans">
-        {/* Premium morphing wallpaper gradient blobs (z-0, behind content) */}
-        <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#7085c3]/20 via-[#4f649e]/10 to-transparent pointer-events-none z-0 animate-blob1" />
-        <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#b06ab3]/15 via-[#7a468c]/5 to-transparent pointer-events-none z-0 animate-blob2" />
-        <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#e39695]/8 via-[#9e5c61]/2 to-transparent pointer-events-none z-0 animate-blob3" />
-        {/* Animated SVG background lines identical to lockscreen */}
-        <svg className="absolute inset-0 z-0 w-full h-full pointer-events-none fill-none" viewBox="0 0 430 932" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="gradShelf1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.05" />
-              <stop offset="25%" stopColor="#a3b3e6" stopOpacity="0.25" />
-              <stop offset="50%" stopColor="#7085c3" stopOpacity="0.35" />
-              <stop offset="75%" stopColor="#ffffff" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#7085c3" stopOpacity="0.05" />
-            </linearGradient>
-            <linearGradient id="gradShelf2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#7085c3" stopOpacity="0.05" />
-              <stop offset="40%" stopColor="#ffffff" stopOpacity="0.3" />
-              <stop offset="60%" stopColor="#a3b3e6" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#7085c3" stopOpacity="0.1" />
-            </linearGradient>
-          </defs>
+      <div className="absolute inset-0 bg-[#141a27] text-white z-[99999] font-sans overflow-hidden">
+        {/* Premium morphing wallpaper gradient blobs (fixed background, never scrolls) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent animate-blob3" />
+        </div>
 
-          {/* Upper curved sweep */}
-          <path
-            d="M -10,0 C 150,150 250,50 350,180 C 400,240 450,120 440,-10"
-            className="flow-line-1"
-            style={{ stroke: 'url(#gradShelf1)', strokeWidth: 5.5, filter: 'blur(4px)', opacity: 0.55 }}
-          />
-          <path
-            d="M -10,0 C 150,150 250,50 350,180 C 400,240 450,120 440,-10"
-            className="flow-line-1"
-            style={{ stroke: 'url(#gradShelf1)', strokeWidth: 1.8 }}
-          />
-          
-          {/* Lower curved sweep */}
-          <path
-            d="M -10,960 C 130,850 250,850 440,910"
-            className="flow-line-2"
-            style={{ stroke: 'url(#gradShelf2)', strokeWidth: 5.5, filter: 'blur(4px)', opacity: 0.55 }}
-          />
-          <path
-            d="M -10,960 C 130,850 250,850 440,910"
-            className="flow-line-2"
-            style={{ stroke: 'url(#gradShelf2)', strokeWidth: 1.8 }}
-          />
-        </svg>
-
-        <div className="relative z-10 flex flex-col w-full max-w-5xl min-h-full mx-auto">
+        {/* Scrollable content layer */}
+        <div className="absolute inset-0 overflow-y-auto z-10 p-6">
+        <div className="flex flex-col w-full max-w-5xl min-h-full mx-auto">
           <header className="flex items-center w-full gap-4 py-6 mb-8 border-b border-white/5">
             <button
               onClick={() => setShowGuestShelf(false)}
@@ -533,7 +583,7 @@ export default function LockScreen({ onLoginSuccess }) {
                       key={course.code}
                       className="bg-white/[0.06] border border-white/15 hover:border-white/35 hover:bg-white/[0.12] backdrop-blur-3xl rounded-2xl p-5 flex items-center justify-between transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] group"
                     >
-                      <div className="flex flex-col gap-1 pr-4">
+                      <div className="flex flex-col gap-1 pr-4 text-left items-start">
                         <div className="flex items-center gap-2">
                           <span className="bg-[#7085c3]/20 border border-[#7085c3]/30 text-[#a3b3e6] text-[9px] px-2.5 py-0.5 rounded font-mono uppercase font-black tracking-wider">
                             {course.code}
@@ -579,89 +629,89 @@ export default function LockScreen({ onLoginSuccess }) {
             </div>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-[#141a27] flex flex-col justify-center items-center p-8 z-[9999] overflow-hidden select-none font-sans min-h-screen text-white relative">
+    <div className="absolute inset-0 bg-[#141a27] flex flex-col justify-between items-center p-6 z-[9999] overflow-hidden select-none font-sans h-full text-white relative">
       
       {/* Premium morphing wallpaper gradient blobs (z-0, behind content) */}
-      <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#7085c3]/20 via-[#4f649e]/10 to-transparent pointer-events-none z-0 animate-blob1" />
-      <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#b06ab3]/15 via-[#7a468c]/5 to-transparent pointer-events-none z-0 animate-blob2" />
-      <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#e39695]/8 via-[#9e5c61]/2 to-transparent pointer-events-none z-0 animate-blob3" />
+      <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent pointer-events-none z-0 animate-blob1" />
+      <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent pointer-events-none z-0 animate-blob2" />
+      <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent pointer-events-none z-0 animate-blob3" />
 
       {/* 🟢/🔴 Portal Online/Offline Status Indicator (Top Right) */}
-      <div className="absolute top-6 right-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-300 shadow-md">
+      <div className="absolute top-5 right-5 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-300 shadow-md">
         <span className="relative flex w-2 h-2">
           {isOnline && (
             <span className="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-emerald-400"></span>
           )}
           <span className={`relative inline-flex rounded-full h-2 w-2 ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]'}`}></span>
         </span>
-        <span className={`text-[10px] font-sans font-black tracking-[0.15em] select-none ${isOnline ? 'text-emerald-400' : 'text-red-400'}`}>
-          PORTAL {isOnline ? 'ONLINE' : 'OFFLINE'}
+        <span className={`text-[9px] font-sans font-black tracking-[0.15em] select-none ${isOnline ? 'text-emerald-400' : 'text-red-400'}`}>
+          {isOnline ? 'ONLINE' : 'OFFLINE'}
         </span>
       </div>
 
-
-      <div className="w-full max-w-sm flex flex-col justify-between h-[90%] z-10 relative">
+      <div className="w-full max-w-[330px] flex flex-col justify-center items-center h-full z-10 relative pt-[90px] pb-2 gap-5">
         
         {/* ✍️ Times New Roman left-aligned elegant branding header */}
-        <header className="flex flex-col items-start mt-16 text-left select-none animate-fadeIn" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
-          <span className="text-[36px] font-light text-white/95 leading-tight tracking-tight">
+        <header className="flex flex-col items-start w-full text-left select-none animate-fadeIn" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
+          <span className="text-[30px] font-light text-white/95 leading-tight tracking-tight">
             Log into your
           </span>
-          <span className="italic font-normal text-[44px] text-white leading-none mt-1 tracking-tight">
+          <span className="italic font-normal text-[42px] text-white leading-none mt-1 tracking-tight">
             CampOS
           </span>
         </header>
 
         {/* 📥 Form input panel */}
-        <form onSubmit={handleLogin} className="flex flex-col w-full gap-8 mt-12">
+        <form onSubmit={handleLogin} className="flex flex-col w-full gap-5 mt-2">
           
-          {/* Username Glassmorphic Outlined Input */}
-          <div className="relative w-full group rounded-[20px]">
+          {/* Username Outlined Input with Header Label */}
+          <div className="flex flex-col w-full gap-0.5 text-left">
+            <span className="text-[10px] font-sans font-black uppercase tracking-widest text-slate-400 pl-1 select-none pointer-events-none">
+              username
+            </span>
             <input
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="peer w-full bg-white/[0.05] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-[20px] p-5 text-base font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
+              className="w-full bg-white/[0.05] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
             />
-            <span className="absolute -top-6 left-1 px-2 bg-[#141a2700] text-[14px] font-sans font-black uppercase tracking-widest text-slate-400 select-none pointer-events-none transition-all duration-300 ease-out peer-focus:text-white peer-focus:-translate-y-[2px] peer-focus:scale-105">
-              username
-            </span>
           </div>
 
-          {/* Password Glassmorphic Outlined Input */}
-          <div className="relative w-full group rounded-[20px]">
+          {/* Password Outlined Input with Header Label */}
+          <div className="flex flex-col w-full gap-0.5 text-left">
+            <span className="text-[10px] font-sans font-black uppercase tracking-widest text-slate-400 pl-1 select-none pointer-events-none">
+              password
+            </span>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="peer w-full bg-white/[0.05] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-[20px] p-5 text-base font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
+              className="w-full bg-white/[0.05] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
             />
-            <span className="absolute -top-6 left-1 px-2 bg-[#141a2700] text-[14px] font-sans font-black uppercase tracking-widest text-slate-400 select-none pointer-events-none transition-all duration-300 ease-out peer-focus:text-white peer-focus:-translate-y-[2px] peer-focus:scale-105">
-              password
-            </span>
           </div>
 
           {loginError && (
-            <div className="p-4 mt-2 text-xs font-semibold text-center text-red-200 border bg-red-500/10 border-red-500/20 rounded-2xl animate-fadeIn">
+            <div className="p-3 mt-1 text-xs font-semibold text-center text-red-200 border bg-red-500/10 border-red-500/20 rounded-2xl animate-fadeIn">
               ⚠️ {loginError}
             </div>
           )}
 
           {/* Solid White LOGIN Action Button with Glowing Halo */}
-          <div className="relative flex flex-col w-full mt-2 group">
+          <div className="relative flex flex-col w-full mt-2 group rounded-xl">
             {/* Soft, vibrant glowing background halo */}
-            <div className="absolute inset-0 bg-[#7085c3]/20 rounded-[20px] blur-xl opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500 pointer-events-none" />
+            <div className="absolute inset-0 bg-[#7085c3]/20 rounded-xl blur-xl opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500 pointer-events-none" />
             <button
               type="submit"
               disabled={submitting}
-              className="relative w-full bg-white text-[#141a27] hover:bg-slate-50 active:scale-[0.98] disabled:hover:bg-white disabled:active:scale-100 transition-all duration-300 font-extrabold tracking-[0.15em] text-sm uppercase rounded-[20px] py-5 shadow-xl shadow-black/10 flex items-center justify-center gap-2"
+              className="relative w-full bg-white text-[#141a27] hover:bg-slate-50 active:scale-[0.98] disabled:hover:bg-white disabled:active:scale-100 transition-all duration-300 font-extrabold tracking-[0.15em] text-xs uppercase rounded-xl py-3.5 shadow-xl shadow-black/10 flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <div className="flex items-center justify-center h-5 gap-3">
@@ -685,36 +735,32 @@ export default function LockScreen({ onLoginSuccess }) {
         </form>
 
         {/* 🔗 OR Divider line */}
-        <div className="flex items-center justify-between w-full gap-4 mt-12">
+        <div className="flex items-center justify-between w-full gap-4 mt-2">
           <div className="flex-1 border-t border-slate-700/50"></div>
           <span className="font-sans text-xs font-bold tracking-widest text-slate-400">OR</span>
           <div className="flex-1 border-t border-slate-700/50"></div>
         </div>
 
         {/* 🎛️ Bottom Public Access Slate-Blue buttons */}
-        <footer className="flex flex-col w-full gap-4 mt-8 mb-4">
+        <footer className="flex flex-col w-full mt-2 mb-1">
           {/* Main public access actions: Symmetrically centered horizontal widgets with inner flex-col containers */}
-          <div className="flex w-full gap-3">
+          <div className="flex w-full gap-3 mb-5">
             <button
               type="button"
               onClick={() => setShowGuestMess(true)}
-              className="group bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-2xl flex-1 select-none cursor-pointer transition-all duration-300 h-16 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden"
+              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
             >
-              <div className="flex flex-col items-center justify-center h-full w-full gap-1.5 py-1">
-                <Utensils size={18} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">mess menu</span>
-              </div>
+              <Utensils size={16} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
+              <span className="text-[9px] font-bold uppercase tracking-wider">mess menu</span>
             </button>
             
             <button
               type="button"
               onClick={() => setShowGuestCalendar(true)}
-              className="group bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-2xl flex-1 select-none cursor-pointer transition-all duration-300 h-16 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden"
+              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
             >
-              <div className="flex flex-col items-center justify-center h-full w-full gap-1.5 py-1">
-                <Calendar size={18} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">calendar</span>
-              </div>
+              <Calendar size={16} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
+              <span className="text-[9px] font-bold uppercase tracking-wider">calendar</span>
             </button>
             
             <button
@@ -724,17 +770,15 @@ export default function LockScreen({ onLoginSuccess }) {
                 setSetupSemester('Semester 1');
                 setShowShelfSetup(true);
               }}
-              className="group bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-2xl flex-1 select-none cursor-pointer transition-all duration-300 h-16 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden"
+              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
             >
-              <div className="flex flex-col items-center justify-center h-full w-full gap-1.5 py-1">
-                <BookOpen size={18} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">shelf</span>
-              </div>
+              <BookOpen size={16} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
+              <span className="text-[9px] font-bold uppercase tracking-wider">shelf</span>
             </button>
           </div>
 
           {/* Dev Utility - Completely separated text link for easy removal later */}
-          <div className="flex justify-center w-full pt-3 border-t border-white/5">
+          <div className="flex justify-center w-full pt-4 border-t border-white/5">
             <button
               type="button"
               onClick={() => setShowDemoProfiles(true)}
@@ -747,129 +791,130 @@ export default function LockScreen({ onLoginSuccess }) {
         </footer>
 
         {/* 📜 Premium elegant copyright text */}
-        <p className="text-center text-[10px] text-white/20 tracking-[0.25em] uppercase font-bold select-none mt-2 mb-1 font-sans">
+        <p className="text-center text-[9px] text-white/20 tracking-[0.25em] uppercase font-bold select-none mt-1 mb-1 font-sans">
           © 2026 CampOS. All rights reserved.
         </p>
 
-        {/* 🔑 Demo Profiles Popup Overlay */}
-        {showDemoProfiles && (
-          <div className="fixed inset-0 bg-black/45 z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setShowDemoProfiles(false)}>
-            <div className="bg-white/[0.06] border border-white/15 rounded-[32px] backdrop-blur-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col gap-6 text-left shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white">
-                  <KeyRound size={18} className="text-[#a3b3e6]" /> Demo Profiles
-                </h3>
-                <button onClick={() => setShowDemoProfiles(false)} className="transition-colors text-white/40 hover:text-white">
-                  <X size={20} />
-                </button>
-              </div>
-              <p className="text-white/40 text-sm font-sans mt-0.5 leading-relaxed -mt-3">Tap any profile to auto-fill the login form.</p>
+      </div>
 
-              <div className="flex flex-col gap-4">
-                {[
-                  { label: 'Student', icon: <User size={16} />, user: 'student', pass: 'Student@123', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/20' },
-                  { label: 'Canteen Admin', icon: <Utensils size={16} />, user: 'canteen', pass: 'Canteen@123', color: 'bg-amber-500/20 text-amber-300 border-amber-500/20' },
-                  { label: 'Super Admin', icon: <Shield size={16} />, user: 'admin', pass: 'CampOS@Admin123', color: 'bg-red-500/20 text-red-300 border-red-500/20' },
-                ].map((profile) => (
-                  <button
-                    key={profile.user}
-                    onClick={() => {
-                      setEmail(profile.user);
-                      setPassword(profile.pass);
-                      setShowDemoProfiles(false);
-                    }}
-                    className="w-full bg-black/25 hover:bg-white/[0.06] active:scale-[0.98] border border-white/10 rounded-2xl p-4 flex items-center gap-4 transition-all text-left group shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
-                  >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${profile.color}`}>
-                      {profile.icon}
-                    </div>
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <span className="text-sm font-bold text-white">{profile.label}</span>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-white/40 text-[11px] font-mono truncate">{profile.user}</span>
-                        <span className="text-white/20 text-[11px]">•</span>
-                        <span className="text-white/40 text-[11px] font-mono truncate">{profile.pass}</span>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold transition-colors text-white/20 group-hover:text-white/60">→</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 📚 Shelf Setup Popup Overlay */}
-        {showShelfSetup && (
-          <div className="fixed inset-0 bg-black/45 z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setShowShelfSetup(false)}>
-            <div className="bg-white/[0.06] border border-white/15 rounded-[32px] backdrop-blur-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col gap-6 text-left shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white">
-                  <BookOpen size={18} className="text-[#a3b3e6]" /> Academic Setup
-                </h3>
-                <button onClick={() => setShowShelfSetup(false)} className="transition-colors text-white/40 hover:text-white">
-                  <X size={20} />
-                </button>
-              </div>
-              <p className="text-white/40 text-sm font-sans mt-0.5 leading-relaxed -mt-3">Select your academic details to pre-configure your shelf directory.</p>
-
-              {/* Branch Selector */}
-              <div className="flex flex-col gap-2">
-                <span className="text-white/30 text-[10px] font-black uppercase tracking-[0.15em] font-sans pl-1">Branch</span>
-                <div className="relative w-full">
-                  <select
-                    value={setupBranch}
-                    onChange={(e) => setSetupBranch(e.target.value)}
-                    className="w-full bg-black/25 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white font-semibold outline-none focus:border-[#7085c3] cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
-                  >
-                    <option className="bg-[#141a27]" value="Computer Science">Computer Science</option>
-                    <option className="bg-[#141a27]" value="Electronics & Communication">Electronics & Communication</option>
-                    <option className="bg-[#141a27]" value="Information Technology">Information Technology</option>
-                    <option className="bg-[#141a27]" value="Biotechnology">Biotechnology</option>
-                  </select>
-                  <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-5 top-1/2">
-                    <ChevronDown size={16} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Semester Selector */}
-              <div className="flex flex-col gap-2">
-                <span className="text-white/30 text-[10px] font-black uppercase tracking-[0.15em] font-sans pl-1">Semester</span>
-                <div className="relative w-full">
-                  <select
-                    value={setupSemester}
-                    onChange={(e) => setSetupSemester(e.target.value)}
-                    className="w-full bg-black/25 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white font-semibold outline-none focus:border-[#7085c3] cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
-                  >
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <option className="bg-[#141a27]" key={i} value={`Semester ${i + 1}`}>Semester {i + 1}</option>
-                    ))}
-                  </select>
-                  <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-5 top-1/2">
-                    <ChevronDown size={16} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Glowing Button to Open Shelf */}
-              <button
-                onClick={() => {
-                  setShelfBranch(setupBranch);
-                  setShelfSemester(setupSemester);
-                  setShowShelfSetup(false);
-                  setShowGuestShelf(true);
-                }}
-                className="w-full bg-white text-[#141a27] hover:bg-slate-100 active:scale-[0.98] transition-all duration-300 font-black tracking-[0.15em] text-xs uppercase rounded-[20px] py-5 shadow-xl shadow-black/10 flex items-center justify-center gap-2 mt-2"
-              >
-                <span>Open My Shelf</span>
-                <ArrowRight size={16} />
+      {/* 🔑 Demo Profiles Popup Overlay — positioned at root level for full-screen coverage */}
+      {showDemoProfiles && (
+        <div className="absolute inset-0 bg-black/70 z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setShowDemoProfiles(false)}>
+          <div className="bg-[#1c2436]/70 border border-white/10 backdrop-blur-xl rounded-3xl p-6 w-full max-w-[340px] shadow-2xl flex flex-col gap-5 text-left shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white">
+                <KeyRound size={18} className="text-[#a3b3e6]" /> Demo Profiles
+              </h3>
+              <button onClick={() => setShowDemoProfiles(false)} className="transition-colors text-white/40 hover:text-white">
+                <X size={20} />
               </button>
             </div>
-          </div>
-        )}
+            <p className="text-white/40 text-sm font-sans mt-0.5 leading-relaxed -mt-3">Tap any profile to auto-fill the login form.</p>
 
-      </div>
+            <div className="flex flex-col gap-4">
+              {[
+                { label: 'Student', icon: <User size={16} />, user: 'student', pass: 'Student@123', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/20' },
+                { label: 'Canteen Admin', icon: <Utensils size={16} />, user: 'canteen', pass: 'Canteen@123', color: 'bg-amber-500/20 text-amber-300 border-amber-500/20' },
+                { label: 'Super Admin', icon: <Shield size={16} />, user: 'admin', pass: 'CampOS@Admin123', color: 'bg-red-500/20 text-red-300 border-red-500/20' },
+              ].map((profile) => (
+                <button
+                  key={profile.user}
+                  onClick={() => {
+                    setEmail(profile.user);
+                    setPassword(profile.pass);
+                    setShowDemoProfiles(false);
+                  }}
+                  className="w-full bg-black/25 hover:bg-white/[0.06] active:scale-[0.98] border border-white/10 rounded-2xl p-4 flex items-center gap-4 transition-all text-left group shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${profile.color}`}>
+                    {profile.icon}
+                  </div>
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-sm font-bold text-white">{profile.label}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-white/40 text-[11px] font-mono truncate">{profile.user}</span>
+                      <span className="text-white/20 text-[11px]">•</span>
+                      <span className="text-white/40 text-[11px] font-mono truncate">{profile.pass}</span>
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold transition-colors text-white/20 group-hover:text-white/60">→</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 📚 Shelf Setup Popup Overlay — positioned at root level for full-screen coverage */}
+      {showShelfSetup && (
+        <div className="absolute inset-0 bg-black/70 z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setShowShelfSetup(false)}>
+          <div className="bg-[#1c2436]/70 border border-white/10 backdrop-blur-xl rounded-3xl p-6 w-full max-w-[340px] shadow-2xl flex flex-col gap-5 text-left shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white">
+                <BookOpen size={18} className="text-[#a3b3e6]" /> Academic Setup
+              </h3>
+              <button onClick={() => setShowShelfSetup(false)} className="transition-colors text-white/40 hover:text-white">
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-white/40 text-sm font-sans mt-0.5 leading-relaxed -mt-3">Select your academic details to pre-configure your shelf directory.</p>
+
+            {/* Branch Selector */}
+            <div className="flex flex-col gap-2">
+              <span className="text-white/30 text-[10px] font-black uppercase tracking-[0.15em] font-sans pl-1">Branch</span>
+              <div className="relative w-full">
+                <select
+                  value={setupBranch}
+                  onChange={(e) => setSetupBranch(e.target.value)}
+                  className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white font-semibold outline-none focus:border-[#7085c3] cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                >
+                  <option className="bg-[#141a27]" value="Computer Science">Computer Science</option>
+                  <option className="bg-[#141a27]" value="Electronics & Communication">Electronics & Communication</option>
+                  <option className="bg-[#141a27]" value="Information Technology">Information Technology</option>
+                  <option className="bg-[#141a27]" value="Biotechnology">Biotechnology</option>
+                </select>
+                <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-5 top-1/2">
+                  <ChevronDown size={16} />
+                </div>
+              </div>
+            </div>
+
+            {/* Semester Selector */}
+            <div className="flex flex-col gap-2">
+              <span className="text-white/30 text-[10px] font-black uppercase tracking-[0.15em] font-sans pl-1">Semester</span>
+              <div className="relative w-full">
+                <select
+                  value={setupSemester}
+                  onChange={(e) => setSetupSemester(e.target.value)}
+                  className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white font-semibold outline-none focus:border-[#7085c3] cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                >
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <option className="bg-[#141a27]" key={i} value={`Semester ${i + 1}`}>Semester {i + 1}</option>
+                  ))}
+                </select>
+                <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-5 top-1/2">
+                  <ChevronDown size={16} />
+                </div>
+              </div>
+            </div>
+
+            {/* Glowing Button to Open Shelf */}
+            <button
+              onClick={() => {
+                setShelfBranch(setupBranch);
+                setShelfSemester(setupSemester);
+                setShowShelfSetup(false);
+                setShowGuestShelf(true);
+              }}
+              className="w-full bg-white text-[#141a27] hover:bg-slate-100 active:scale-[0.98] transition-all duration-300 font-black tracking-[0.15em] text-xs uppercase rounded-2xl py-4 shadow-xl shadow-black/10 flex items-center justify-center gap-2 mt-2"
+            >
+              <span>Open My Shelf</span>
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
