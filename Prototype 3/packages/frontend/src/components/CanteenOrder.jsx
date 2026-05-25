@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Coffee, Ticket, ArrowRight, Trash2, Search } from 'lucide-react';
 
+const API_BASE = "https://campos-fmjh.onrender.com";
+
 export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, triggerPayment, cart = [], setCart, isCartCheckout = false }) {
   const [menu, setMenu] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -45,8 +47,8 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     try {
       setLoading(true);
       const [menuRes, ordersRes] = await Promise.all([
-        fetch('/api/canteen/menu'),
-        fetch('/api/canteen/orders'),
+        fetch(`${API_BASE}/api/canteen/menu`, { credentials: 'include' }),
+        fetch(`${API_BASE}/api/canteen/orders`, { credentials: 'include' }),
       ]);
 
       if (!menuRes.ok || !ordersRes.ok) {
@@ -111,8 +113,9 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
   const toggleAvailability = async (itemId) => {
     if (!isCanteenAdmin) return;
     try {
-      const res = await fetch(`/api/canteen/menu/${itemId}/toggle`, {
+      const res = await fetch(`${API_BASE}/api/canteen/menu/${itemId}/toggle`, {
         method: 'PATCH',
+        credentials: 'include',
       });
 
       if (!res.ok) {
@@ -138,7 +141,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
 
     try {
       setAddingItem(true);
-      const res = await fetch('/api/canteen/menu', {
+      const res = await fetch(`${API_BASE}/api/canteen/menu`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -147,6 +150,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
           Category: newCategory,
           IsAvailable: newAvailable,
         }),
+        credentials: 'include',
       });
 
       if (!res.ok) {
@@ -176,10 +180,11 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
 
     try {
       setSavingPrice(true);
-      const res = await fetch(`/api/canteen/menu/${itemId}`, {
+      const res = await fetch(`${API_BASE}/api/canteen/menu/${itemId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Price: Number(editPrice) }),
+        credentials: 'include',
       });
 
       if (!res.ok) {
@@ -206,8 +211,9 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     if (!isCanteenAdmin || !window.confirm('Are you sure you want to permanently delete this item from the canteen menu?')) return;
 
     try {
-      const res = await fetch(`/api/canteen/menu/${itemId}`, {
+      const res = await fetch(`${API_BASE}/api/canteen/menu/${itemId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!res.ok) {

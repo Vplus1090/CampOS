@@ -83,7 +83,7 @@ function App() {
   // Check if user session already exists on load
   const checkSession = async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -101,9 +101,9 @@ function App() {
   const fetchStats = async () => {
     try {
       const [noticesRes, gigsRes, canteenRes] = await Promise.all([
-        fetch('/api/notices'),
-        fetch('/api/skillgigs'),
-        fetch('/api/canteen/menu')
+        fetch(`${API_BASE}/api/notices`, { credentials: 'include' }),
+        fetch(`${API_BASE}/api/skillgigs`, { credentials: 'include' }),
+        fetch(`${API_BASE}/api/canteen/menu`, { credentials: 'include' })
       ]);
       if (noticesRes.ok && gigsRes.ok && canteenRes.ok) {
         const notices = await noticesRes.json();
@@ -163,7 +163,7 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     } catch (e) {
       // Ignore logout API failures and clear state anyway
     } finally {
@@ -246,9 +246,10 @@ function App() {
 
           if (paymentData.source === 'MESS_GUEST') {
             // POST /api/mess/buy-guest-token
-            const res = await fetch('/api/mess/buy-guest-token', {
+            const res = await fetch(`${API_BASE}/api/mess/buy-guest-token`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
             });
 
             if (!res.ok) {
@@ -263,7 +264,7 @@ function App() {
             }
           } else if (paymentData.source === 'CANTEEN') {
             // POST /api/canteen/orders
-            const res = await fetch('/api/canteen/orders', {
+            const res = await fetch(`${API_BASE}/api/canteen/orders`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -273,6 +274,7 @@ function App() {
                   Quantity: cartItem.quantity,
                 })),
               }),
+              credentials: 'include',
             });
 
             if (!res.ok) {

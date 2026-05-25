@@ -4,6 +4,7 @@ import MessMenu from './MessMenu';
 import StudyMaterials from './StudyMaterials';
 import AcademicCalendar from './AcademicCalendar';
 
+const API_BASE = "https://campos-fmjh.onrender.com";
 
 export default function LockScreen({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -106,10 +107,11 @@ export default function LockScreen({ onLoginSuccess }) {
         loginEmail = `${loginEmail}@campos.local`;
       }
 
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password }),
+        credentials: 'include',
       });
 
       const data = await res.json();

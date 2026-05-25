@@ -4,6 +4,8 @@ import {
   Mic, Send, CheckCheck, Search, X 
 } from 'lucide-react';
 
+const API_BASE = "https://campos-fmjh.onrender.com";
+
 export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   // Available student peers list
   const studentPeers = ['Kunal', 'Ripunjay', 'Krish', 'Dhruv', 'Abhinav', 'Ashmit', 'Sanya'];
@@ -28,7 +30,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
 
   const fetchChatHistory = async (peerName) => {
     try {
-      const res = await fetch(`/api/messages?userA=${encodeURIComponent(senderName)}&userB=${encodeURIComponent(peerName)}`);
+      const res = await fetch(`${API_BASE}/api/messages?userA=${encodeURIComponent(senderName)}&userB=${encodeURIComponent(peerName)}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load chat history');
       const data = await res.json();
       setMessages(data);
@@ -41,7 +43,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
 
   const fetchPeerGig = async () => {
     try {
-      const res = await fetch('/api/skillgigs');
+      const res = await fetch(`${API_BASE}/api/skillgigs`, { credentials: 'include' });
       if (res.ok) {
         const gigs = await res.json();
         // Find the active peer's active listing
@@ -68,8 +70,9 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
     if (!window.confirm(`Are you sure you want to remove ${activePeer}'s skill swap listing for everyone else? This will mark it as matched and take it offline.`)) return;
 
     try {
-      const res = await fetch(`/api/skillgigs/${peerGigId}`, {
+      const res = await fetch(`${API_BASE}/api/skillgigs/${peerGigId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -122,7 +125,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
       };
       setMessages((prev) => [...prev, tempMessage]);
 
-      const res = await fetch('/api/messages', {
+      const res = await fetch(`${API_BASE}/api/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -130,6 +133,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
           ReceiverName: activePeer,
           Content: messageText,
         }),
+        credentials: 'include',
       });
 
       if (!res.ok) throw new Error('Failed to deliver message');

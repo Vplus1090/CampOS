@@ -4,6 +4,8 @@ import {
   Trash2, Flag, CheckCircle2 
 } from 'lucide-react';
 
+const API_BASE = "https://campos-fmjh.onrender.com";
+
 export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onStartChat }) {
   const [gigs, setGigs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,10 +46,10 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
     try {
       setLoading(true);
       const url = searchVal 
-        ? `/api/skillgigs?search=${encodeURIComponent(searchVal)}` 
-        : '/api/skillgigs';
+        ? `${API_BASE}/api/skillgigs?search=${encodeURIComponent(searchVal)}` 
+        : `${API_BASE}/api/skillgigs`;
       
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load skill gigs');
       const data = await res.json();
       setGigs(data);
@@ -75,7 +77,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
       setSubmitting(true);
       const studentName = currentUser.firstName;
       
-      const res = await fetch('/api/skillgigs', {
+      const res = await fetch(`${API_BASE}/api/skillgigs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -85,6 +87,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
           Status: 'Active',
           ContactInfo: 'chat_only_private',
         }),
+        credentials: 'include',
       });
 
       if (!res.ok) throw new Error('Failed to post skill swap profile');
@@ -105,8 +108,9 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
     if (!window.confirm('Are you sure you want to permanently delete this skill swap listing?')) return;
 
     try {
-      const res = await fetch(`/api/skillgigs/${id}`, {
+      const res = await fetch(`${API_BASE}/api/skillgigs/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -124,10 +128,11 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
     if (!window.confirm('Mark this skill swap match as successfully completed/done?')) return;
 
     try {
-      const res = await fetch(`/api/skillgigs/${id}/status`, {
+      const res = await fetch(`${API_BASE}/api/skillgigs/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Status: 'Completed' }),
+        credentials: 'include',
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -150,10 +155,11 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
     }
 
     try {
-      const res = await fetch(`/api/skillgigs/${id}/report`, {
+      const res = await fetch(`${API_BASE}/api/skillgigs/${id}/report`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ReportReason: reason.trim() }),
+        credentials: 'include',
       });
 
       if (!res.ok) {

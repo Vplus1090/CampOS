@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_BASE = "https://campos-fmjh.onrender.com";
+
 export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,10 +22,10 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
     try {
       setLoading(true);
       const url = filterPriority === 'All' 
-        ? '/api/notices' 
-        : `/api/notices?priority=${filterPriority}`;
+        ? `${API_BASE}/api/notices` 
+        : `${API_BASE}/api/notices?priority=${filterPriority}`;
       
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load notices');
       const data = await res.json();
       setNotices(data);
@@ -45,7 +47,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
 
     try {
       setSubmitting(true);
-      const res = await fetch('/api/notices', {
+      const res = await fetch(`${API_BASE}/api/notices`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,6 +56,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
           PriorityLevel: priority,
           PostedBy: postedBy,
         }),
+        credentials: 'include',
       });
 
       if (!res.ok) {
@@ -81,8 +84,9 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
     if (!window.confirm('Are you sure you want to delete this notice?')) return;
 
     try {
-      const res = await fetch(`/api/notices/${id}`, {
+      const res = await fetch(`${API_BASE}/api/notices/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!res.ok) {
         const errorData = await res.json();
