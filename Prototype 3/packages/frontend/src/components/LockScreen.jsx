@@ -35,6 +35,8 @@ export default function LockScreen({ onLoginSuccess }) {
   const [showShelfSetup, setShowShelfSetup] = useState(false);
   const [setupBranch, setSetupBranch] = useState('Computer Science');
   const [setupSemester, setSetupSemester] = useState('Semester 1');
+  const [guestShelfBranch, setGuestShelfBranch] = useState('All Branches');
+  const [guestShelfSemester, setGuestShelfSemester] = useState('All Semesters');
 
   // Additional Guest State Hooks for pass expiration, payment processing & QR pass
   const [showGuestQr, setShowGuestQr] = useState(false);
@@ -225,11 +227,12 @@ export default function LockScreen({ onLoginSuccess }) {
 
   if (showGuestPayment) {
     return (
-      <div className="absolute inset-0 bg-[#141a27] text-white z-[999999] font-sans overflow-hidden animate-fadeIn flex flex-col p-6">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white z-[999999] font-sans overflow-hidden animate-fadeIn flex flex-col p-6">
         {/* Premium morphing wallpaper gradient blobs */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
         </div>
 
         <div className="relative z-10 flex flex-col justify-between w-full h-full max-w-md mx-auto">
@@ -350,7 +353,7 @@ export default function LockScreen({ onLoginSuccess }) {
 
         {/* Full-screen semi-transparent loading overlay */}
         {processingGuestPayment && (
-          <div className="absolute inset-0 bg-[#141a27]/98 backdrop-blur-md z-[9999999] flex flex-col items-center justify-center p-6 select-none animate-fadeIn">
+          <div className="absolute inset-0 bg-[#050608]/98 backdrop-blur-md z-[9999999] flex flex-col items-center justify-center p-6 select-none animate-fadeIn">
             <div className="border-4 border-indigo-500 rounded-full w-14 h-14 border-t-transparent animate-spin"></div>
             <h3 className="mt-6 font-sans text-lg font-black tracking-tight text-white">Processing Payment...</h3>
             <p className="text-slate-400 text-[10px] font-semibold mt-2 tracking-widest font-mono uppercase">Securing connection to banker</p>
@@ -362,11 +365,12 @@ export default function LockScreen({ onLoginSuccess }) {
 
   if (showGuestQr) {
     return (
-      <div className="absolute inset-0 bg-[#141a27] text-white flex flex-col items-center justify-center p-6 z-[999999] overflow-hidden font-sans">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white flex flex-col items-center justify-center p-6 z-[999999] overflow-hidden font-sans">
         {/* Premium morphing wallpaper gradient blobs */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#4f46e5]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
         </div>
 
         <div className="z-10 flex flex-col items-center w-full max-w-md text-center">
@@ -409,12 +413,12 @@ export default function LockScreen({ onLoginSuccess }) {
 
   if (showGuestMess) {
     return (
-      <div className="absolute inset-0 bg-[#141a27] text-white z-[99999] font-sans overflow-hidden animate-fadeIn">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white z-[99999] font-sans overflow-hidden animate-fadeIn">
         {/* Premium morphing wallpaper gradient blobs */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
         </div>
 
         {/* Scrollable content layer */}
@@ -442,12 +446,12 @@ export default function LockScreen({ onLoginSuccess }) {
 
   if (showGuestCalendar) {
     return (
-      <div className="absolute inset-0 bg-[#141a27] text-white z-[99999] font-sans overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white z-[99999] font-sans overflow-hidden">
         {/* Premium morphing wallpaper gradient blobs (fixed background) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
         </div>
 
         {/* Scrollable content layer */}
@@ -462,18 +466,22 @@ export default function LockScreen({ onLoginSuccess }) {
 
   if (showGuestShelf) {
     return (
-      <div className="absolute inset-0 bg-[#141a27] text-white z-[99999] font-sans overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white z-[99999] font-sans overflow-hidden">
         {/* Premium morphing wallpaper gradient blobs (fixed background, never scrolls) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
         </div>
 
         {/* Scrollable content layer */}
         <div className="absolute inset-0 z-10 p-6 overflow-hidden">
           <div className="w-full h-full max-w-md mx-auto">
-            <StudyMaterials setActiveTab={() => setShowGuestShelf(false)} />
+            <StudyMaterials 
+              setActiveTab={() => setShowGuestShelf(false)} 
+              initialBranch={guestShelfBranch}
+              initialSemester={guestShelfSemester}
+            />
           </div>
         </div>
       </div>
@@ -481,12 +489,12 @@ export default function LockScreen({ onLoginSuccess }) {
   }
 
   return (
-    <div className="absolute inset-0 bg-gradient-to-br from-[#0f1319] via-[#151a26] to-[#0d1017] flex flex-col justify-between items-center p-6 z-[9999] overflow-hidden select-none font-sans h-full text-white relative">
+    <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] flex flex-col justify-between items-center p-6 z-[9999] overflow-hidden select-none font-sans h-full text-white relative">
       
       {/* Premium morphing wallpaper gradient blobs (z-0, behind content) */}
-      <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-[#4f46e5]/0 pointer-events-none z-0 animate-blob1" />
-      <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-[#a855f7]/0 pointer-events-none z-0 animate-blob2" />
-      <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-[#0d9488]/0 pointer-events-none z-0 animate-blob3" />
+      <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent pointer-events-none z-0 animate-blob1" />
+      <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent pointer-events-none z-0 animate-blob2" />
+      <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent pointer-events-none z-0 animate-blob3" />
 
       {/* 🟢/🔴 Portal Online/Offline Status Indicator (Top Right) */}
       <div className="absolute top-5 right-5 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-300 shadow-md">
@@ -503,12 +511,12 @@ export default function LockScreen({ onLoginSuccess }) {
 
       <div className="w-full max-w-[330px] flex flex-col justify-center items-center h-full z-10 relative pt-[90px] pb-2 gap-5">
         
-        {/* ✍️ Times New Roman left-aligned elegant branding header */}
-        <header className="flex flex-col items-start w-full text-left select-none animate-fadeIn" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
-          <span className="text-[30px] font-light text-white/95 leading-tight tracking-tight">
+        {/* ✍️ Playfair Display left-aligned elegant branding header */}
+        <header className="flex flex-col items-start w-full text-left select-none animate-fadeIn" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+          <span className="text-[22px] font-light text-white/95 leading-tight tracking-tight">
             Log into your
           </span>
-          <span className="italic font-normal text-[42px] text-white leading-none mt-1 tracking-tight">
+          <span className="italic font-normal text-[32px] text-white leading-none mt-0.5 tracking-tight">
             CampOS
           </span>
         </header>
@@ -517,11 +525,11 @@ export default function LockScreen({ onLoginSuccess }) {
         {activeGuestPass && (
           <div 
             onClick={() => setShowGuestQr(true)}
-            className="w-full bg-indigo-500/[0.07] backdrop-blur-2xl border border-indigo-500/35 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-indigo-500/10 cursor-pointer select-none transition-all hover:scale-[1.01] active:scale-[0.98] animate-fadeIn w-full text-left"
+            className="w-full bg-emerald-500/[0.07] backdrop-blur-2xl border border-emerald-500/35 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-emerald-500/10 cursor-pointer select-none transition-all hover:scale-[1.01] active:scale-[0.98] animate-fadeIn w-full text-left"
           >
             <div className="flex flex-col">
               <span className="font-sans text-sm font-extrabold tracking-wide text-white">Mess Access Pass</span>
-              <span className="text-indigo-300 font-bold text-xs flex items-center gap-1.5 mt-1 font-sans">
+              <span className="text-emerald-300 font-bold text-xs flex items-center gap-1.5 mt-1 font-sans">
                 <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 Active • {remainingGuestMinutes} Mins Left
               </span>
@@ -545,7 +553,7 @@ export default function LockScreen({ onLoginSuccess }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-white/[0.05] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
+              className="w-full bg-white/[0.05] border border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] focus:border-white/40 focus:ring-2 focus:ring-white/10 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
             />
           </div>
 
@@ -559,7 +567,7 @@ export default function LockScreen({ onLoginSuccess }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full bg-white/[0.05] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
+              className="w-full bg-white/[0.05] border border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] focus:border-white/40 focus:ring-2 focus:ring-white/10 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
             />
           </div>
 
@@ -613,7 +621,7 @@ export default function LockScreen({ onLoginSuccess }) {
             <button
               type="button"
               onClick={() => setShowGuestMess(true)}
-              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
+              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/20 hover:border-white/30 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
             >
               <Utensils size={16} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
               <span className="text-[9px] font-bold uppercase tracking-wider">mess menu</span>
@@ -622,7 +630,7 @@ export default function LockScreen({ onLoginSuccess }) {
             <button
               type="button"
               onClick={() => setShowGuestCalendar(true)}
-              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
+              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/20 hover:border-white/30 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
             >
               <Calendar size={16} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
               <span className="text-[9px] font-bold uppercase tracking-wider">calendar</span>
@@ -635,7 +643,7 @@ export default function LockScreen({ onLoginSuccess }) {
                 setSetupSemester('Semester 1');
                 setShowShelfSetup(true);
               }}
-              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/15 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
+              className="group flex flex-col items-center justify-center gap-1.5 py-3 bg-white/[0.06] border border-white/20 hover:border-white/30 hover:bg-white/[0.12] active:scale-[0.97] text-slate-300 hover:text-white rounded-xl flex-1 select-none cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
             >
               <BookOpen size={16} className="text-slate-400 group-hover:text-[#a3b3e6] transition-colors duration-300" />
               <span className="text-[9px] font-bold uppercase tracking-wider">shelf</span>
@@ -787,8 +795,8 @@ export default function LockScreen({ onLoginSuccess }) {
             {/* Glowing Button to Open Shelf */}
             <button
               onClick={() => {
-                setShelfBranch(setupBranch);
-                setShelfSemester(setupSemester);
+                setGuestShelfBranch(setupBranch);
+                setGuestShelfSemester(setupSemester);
                 setShowShelfSetup(false);
                 setShowGuestShelf(true);
               }}

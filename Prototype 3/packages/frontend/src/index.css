@@ -142,7 +142,7 @@ code {
   height: 88vh;
   max-height: 880px;
   min-height: 760px;
-  background-color: #141a27;
+  background-color: #050608;
   border-radius: 54px; /* iPhone 17 highly rounded corners */
   box-shadow: 
     0 25px 60px -15px rgba(0, 0, 0, 0.85),
@@ -225,13 +225,17 @@ code {
     transform: translate(0, 0) scale(1) rotate(0deg);
     border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
   }
-  33% { 
-    transform: translate(35px, -55px) scale(1.15) rotate(120deg);
+  25% { 
+    transform: translate(110px, -130px) scale(1.4) rotate(90deg);
     border-radius: 70% 30% 52% 48% / 60% 40% 60% 40%;
   }
-  66% { 
-    transform: translate(-25px, 25px) scale(0.9) rotate(240deg);
-    border-radius: 30% 70% 40% 60% / 50% 60% 40% 50%;
+  50% { 
+    transform: translate(150px, -50px) scale(1.15) rotate(180deg);
+    border-radius: 40% 60% 30% 70% / 50% 60% 40% 50%;
+  }
+  75% { 
+    transform: translate(-70px, 90px) scale(1.45) rotate(270deg);
+    border-radius: 50% 50% 60% 40% / 60% 40% 60% 40%;
   }
 }
 
@@ -240,9 +244,13 @@ code {
     transform: translate(0, 0) scale(1.1) rotate(0deg);
     border-radius: 50% 50% 30% 70% / 50% 60% 40% 50%;
   }
-  50% { 
-    transform: translate(-45px, 35px) scale(0.9) rotate(-180deg);
+  33% { 
+    transform: translate(-140px, 90px) scale(1.4) rotate(-120deg);
     border-radius: 30% 70% 70% 30% / 40% 30% 70% 60%;
+  }
+  66% { 
+    transform: translate(90px, -110px) scale(0.95) rotate(-240deg);
+    border-radius: 60% 40% 50% 50% / 50% 50% 50% 50%;
   }
 }
 
@@ -251,20 +259,24 @@ code {
     transform: translate(0, 0) scale(1) rotate(0deg);
     border-radius: 60% 40% 60% 40% / 50% 50% 50% 50%;
   }
-  50% { 
-    transform: translate(55px, 45px) scale(1.2) rotate(180deg);
+  33% { 
+    transform: translate(150px, 110px) scale(1.45) rotate(120deg);
     border-radius: 40% 60% 30% 70% / 60% 50% 50% 40%;
+  }
+  66% { 
+    transform: translate(-110px, -70px) scale(1.15) rotate(240deg);
+    border-radius: 50% 50% 30% 70% / 40% 60% 60% 40%;
   }
 }
 
 .animate-blob1 {
-  animation: liquidBlob1 20s ease-in-out infinite;
+  animation: liquidBlob1 24s ease-in-out infinite;
 }
 .animate-blob2 {
-  animation: liquidBlob2 25s ease-in-out infinite;
+  animation: liquidBlob2 28s ease-in-out infinite;
 }
 .animate-blob3 {
-  animation: liquidBlob3 30s ease-in-out infinite;
+  animation: liquidBlob3 32s ease-in-out infinite;
 }
 
 /* Glass Input Shimmer Sweep Animation */

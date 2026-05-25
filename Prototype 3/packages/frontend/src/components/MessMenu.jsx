@@ -102,9 +102,8 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
         >
           <span className="text-xl font-bold">&larr;</span>
         </button>
-        <h2 className="flex items-center pl-3.5 text-left translate-y-[2px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-          <span className="text-[22px] font-light text-white/90 tracking-tight leading-none">Mess</span>
-          <span className="italic font-normal text-[32px] text-white leading-none ml-2 tracking-tight">Menu</span>
+        <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+          Mess Menu
         </h2>
       </header>
 
@@ -136,12 +135,10 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
         </div>
       </div>
 
-      {/* 💳 Mess Access Pass Panel */}
       <div 
         onClick={() => activePass && setActiveTab && setActiveTab('MESS_QR_FULL')}
-        className={`bg-indigo-500/[0.03] backdrop-blur-3xl border-2 border-indigo-500/35 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_35px_rgba(99,102,241,0.08)] relative overflow-hidden group transition-all duration-300 ${activePass ? 'cursor-pointer hover:scale-[1.01]' : ''}`}
+        className={`bg-emerald-500/[0.03] backdrop-blur-3xl border-2 border-emerald-500/35 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_35px_rgba(16,185,129,0.08)] relative overflow-hidden group transition-all duration-300 ${activePass ? 'cursor-pointer hover:scale-[1.01]' : ''}`}
       >
-        <div className="absolute -right-4 -bottom-4 w-36 h-36 bg-white/5 rounded-full border border-white/5 transition-transform group-hover:scale-110"></div>
         
         <div className="flex justify-between items-start w-full z-10 text-left">
           <div className="flex flex-col gap-1">

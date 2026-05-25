@@ -122,7 +122,7 @@ export default function AcademicCalendar({ setActiveTab }) {
         }`}
       >
         {/* Header title */}
-        <header className="flex items-center justify-between w-full pb-2 mt-2">
+        <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
           <div className="flex items-center gap-3.5">
             <button
               onClick={() => setActiveTab && setActiveTab('home')}
@@ -131,8 +131,8 @@ export default function AcademicCalendar({ setActiveTab }) {
             >
               <span className="text-xl font-bold">&larr;</span>
             </button>
-            <h2 className="text-2xl font-bold text-white leading-none flex items-center gap-2 translate-y-[2px]" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
-              <Calendar size={20} className="text-indigo-400" /> Academic Calendar
+            <h2 className="text-[22px] italic font-normal text-white leading-none flex items-center gap-2 translate-y-[2px] tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Academic Calendar
             </h2>
           </div>
         </header>

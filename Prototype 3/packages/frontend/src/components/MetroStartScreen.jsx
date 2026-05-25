@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Megaphone, Coffee, Utensils, BookOpen, LogOut, 
-  QrCode, Ticket, Clock, ArrowRight, Calendar 
+  QrCode, Ticket, Clock, ArrowRight, Calendar,
+  GraduationCap
 } from 'lucide-react';
 
 export default function MetroStartScreen({ currentUser, stats, onTileClick, onLogout, hasUnreadNotices }) {
@@ -71,10 +72,10 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
         {/* Header greeting & Controls */}
         <header className="flex justify-between items-center w-full mt-4">
           <div className="flex flex-col items-start text-left select-none animate-fadeIn" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-            <span className="text-[30px] font-light text-white/95 leading-tight tracking-tight">
+            <span className="text-[22px] font-light text-white/95 leading-tight tracking-tight">
               Hello,
             </span>
-            <span className="italic font-normal text-[42px] text-white leading-none mt-1 tracking-tight">
+            <span className="italic font-normal text-[32px] text-white leading-none mt-0.5 tracking-tight">
               Vardaan
             </span>
           </div>
@@ -116,16 +117,16 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               {activePass && (
                 <div
                   onClick={() => onTileClick('MESS_QR_FULL')}
-                  className="cursor-pointer bg-indigo-500/[0.03] backdrop-blur-3xl rounded-[28px] shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] text-white p-6 flex items-center justify-between active:scale-[0.98] transition-all duration-300 h-[145px] border border-indigo-500/35 relative overflow-hidden"
+                  className="cursor-pointer bg-emerald-500/[0.03] backdrop-blur-3xl rounded-[28px] shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] text-white p-6 flex items-center justify-between active:scale-[0.98] transition-all duration-300 h-[145px] border border-emerald-500/35 relative overflow-hidden"
                 >
                   <div className="flex flex-col justify-center h-full text-left">
-                    <span className="text-indigo-400 text-[10px] font-black uppercase tracking-widest font-sans">Mess Token</span>
+                    <span className="text-emerald-400 text-[10px] font-black uppercase tracking-widest font-sans">Mess Token</span>
                     <h4 className="text-xl font-black tracking-wide mt-2 text-white">Pass Active</h4>
-                    <p className="text-indigo-300/80 text-[11px] font-semibold mt-1">Tap to display pass QR</p>
+                    <p className="text-emerald-300/80 text-[11px] font-semibold mt-1">Tap to display pass QR</p>
                   </div>
                   
                   <div className="rounded-xl bg-white/[0.08] border border-white/10 p-3 flex items-center justify-center shadow-lg">
-                    <QrCode size={28} className="text-indigo-400" />
+                    <QrCode size={28} className="text-emerald-400" />
                   </div>
                 </div>
               )}
@@ -224,10 +225,10 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               {/* Study Materials */}
               <div
                 onClick={() => onTileClick('materials')}
-                className="cursor-pointer bg-indigo-500/[0.03] backdrop-blur-3xl border border-indigo-500/25 rounded-[24px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+                className="cursor-pointer bg-cyan-500/[0.03] backdrop-blur-3xl border border-cyan-500/25 rounded-[24px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
               >
                 <div className="flex items-center gap-3.5">
-                  <BookOpen className="text-indigo-400 group-hover:text-indigo-300 transition-colors duration-300" size={22} />
+                  <BookOpen className="text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300" size={22} />
                   <span className="text-white font-extrabold text-sm tracking-wide">Shelf</span>
                 </div>
                 <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
@@ -236,15 +237,34 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               {/* Academic Calendar */}
               <div
                 onClick={() => onTileClick('calendar')}
-                className="cursor-pointer bg-indigo-500/[0.03] backdrop-blur-3xl border border-indigo-500/25 rounded-[24px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+                className="cursor-pointer bg-rose-500/[0.03] backdrop-blur-3xl border border-rose-500/25 rounded-[24px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
               >
                 <div className="flex items-center gap-3.5">
-                  <Calendar className="text-indigo-400 group-hover:text-indigo-300 transition-colors duration-300" size={22} />
+                  <Calendar className="text-rose-400 group-hover:text-rose-300 transition-colors duration-300" size={22} />
                   <span className="text-white font-extrabold text-sm tracking-wide">Calendar</span>
                 </div>
                 <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
               </div>
             </div>
+
+            {/* Student Kiosk Portal */}
+            <div className="flex flex-col gap-3 mt-3 animate-fadeIn">
+              <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest font-sans text-left pl-1">Student Kiosk Portal</span>
+              <div
+                onClick={() => onTileClick('student_dashboard')}
+                className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border border-amber-500/30 rounded-[24px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+              >
+                <div className="flex items-center gap-3.5">
+                  <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300" size={24} />
+                  <div className="text-left flex flex-col">
+                    <span className="text-white font-extrabold text-sm tracking-wide">Student Dashboard</span>
+                    <span className="text-[9px] font-bold text-slate-400 font-mono tracking-widest uppercase mt-0.5">JPORTAL CLIENT LINKED</span>
+                  </div>
+                </div>
+                <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
+              </div>
+            </div>
+
           </div>
         )}
       </div>

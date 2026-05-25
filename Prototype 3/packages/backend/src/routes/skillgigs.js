@@ -83,11 +83,41 @@ router.patch('/:id/report', authenticate, async (req, res, next) => {
 });
 
 /**
- * @route   DELETE /api/skillgigs/:id
- * @desc    Delete/Remove a skill swap gig by ID (Moderation Action)
- * @access  Authenticated (Requires admin role)
+ * @route   PATCH /api/skillgigs/:id/status
+ * @desc    Update the status of a skill swap listing (e.g. to Completed or Closed)
+ * @access  Authenticated
  */
-router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next) => {
+router.patch('/:id/status', authenticate, async (req, res, next) => {
+  try {
+    const { Status } = req.body;
+    if (!Status || !['Active', 'Completed', 'Closed'].includes(Status)) {
+      const error = new Error('Invalid status provided');
+      error.statusCode = 400;
+      return next(error);
+    }
+
+    const gig = await SkillGig.findById(req.params.id);
+    if (!gig) {
+      const error = new Error('Skill swap entry not found');
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    gig.Status = Status;
+    await gig.save();
+
+    res.json({ message: `Listing status successfully updated to ${Status}`, gig });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * @route   DELETE /api/skillgigs/:id
+ * @desc    Delete/Remove a skill swap gig by ID
+ * @access  Authenticated
+ */
+router.delete('/:id', authenticate, async (req, res, next) => {
   try {
     const gig = await SkillGig.findByIdAndDelete(req.params.id);
 
@@ -97,7 +127,7 @@ router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next)
       return next(error);
     }
 
-    res.json({ message: 'Skill swap entry successfully removed by moderator', id: req.params.id });
+    res.json({ message: 'Skill swap entry successfully removed', id: req.params.id });
   } catch (err) {
     next(err);
   }

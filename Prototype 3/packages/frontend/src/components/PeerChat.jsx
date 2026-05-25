@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Phone, Video, MoreVertical, Smile, Paperclip, 
+  Mic, Send, CheckCheck, Search, X 
+} from 'lucide-react';
 
 export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   // Available student peers list
@@ -13,6 +17,15 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Helper to color circles dynamically
+  const getAvatarBg = (name) => {
+    const letter = name.charAt(0).toUpperCase();
+    if (letter === 'V' || letter === 'S') return 'bg-pink-500';
+    if (letter === 'K' || letter === 'R') return 'bg-violet-500';
+    if (letter === 'D' || letter === 'A') return 'bg-sky-500';
+    return 'bg-emerald-500';
+  };
+
   const fetchChatHistory = async (peerName) => {
     try {
       const res = await fetch(`/api/messages?userA=${encodeURIComponent(senderName)}&userB=${encodeURIComponent(peerName)}`);
@@ -21,6 +34,53 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
       setMessages(data);
     } catch (e) {
       // Fail silently for interval updates
+    }
+  };
+
+  const [peerGigId, setPeerGigId] = useState(null);
+
+  const fetchPeerGig = async () => {
+    try {
+      const res = await fetch('/api/skillgigs');
+      if (res.ok) {
+        const gigs = await res.json();
+        // Find the active peer's active listing
+        const peerGig = gigs.find(g => g.StudentName.toLowerCase() === activePeer.toLowerCase() && g.Status === 'Active');
+        if (peerGig) {
+          setPeerGigId(peerGig.id || peerGig._id);
+        } else {
+          setPeerGigId(null);
+        }
+      }
+    } catch (e) {
+      // Fail silently
+    }
+  };
+
+  useEffect(() => {
+    if (activePeer) {
+      fetchPeerGig();
+    }
+  }, [activePeer]);
+
+  const handleRemoveListing = async () => {
+    if (!peerGigId) return;
+    if (!window.confirm(`Are you sure you want to remove ${activePeer}'s skill swap listing for everyone else? This will mark it as matched and take it offline.`)) return;
+
+    try {
+      const res = await fetch(`/api/skillgigs/${peerGigId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to remove listing');
+      }
+
+      alert('Listing successfully removed for everyone else!');
+      setPeerGigId(null);
+      if (onClose) onClose();
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -45,7 +105,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   }, [messages]);
 
   const handleSendMessage = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!inputText.trim()) return;
 
     const messageText = inputText.trim();
@@ -87,110 +147,156 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   };
 
   return (
-    <div className="peer-chat-container flex flex-col md:flex-row gap-4 h-full w-full text-white font-sans overflow-hidden select-none bg-[#141a27]/95 backdrop-blur-3xl border border-white/10 rounded-[32px] p-4 relative z-[99999]">
-      {/* Sidebar - Available Conversations */}
-      <div className="peer-chat-sidebar w-full md:w-1/3 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-3xl p-4 flex flex-col gap-4 overflow-y-auto max-h-[180px] md:max-h-none">
-        <div className="sidebar-header border-b border-white/5 pb-2.5 flex items-center justify-between text-left shrink-0">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">💬 Chat Directory</h4>
+    <div className="flex flex-col gap-4 text-white font-sans h-full w-full select-none pb-24 relative min-h-screen">
+      {/* ─── Compact Dividerless Unified Page Header ─── */}
+      <header className="flex items-center w-full mt-6 pb-2 shrink-0 justify-between animate-fadeIn select-none">
+        <div className="flex items-center">
+          <button
+            onClick={onClose}
+            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
+            type="button"
+          >
+            <span className="text-xl font-bold">&larr;</span>
+          </button>
+          <h2 className="flex items-center pl-3.5 text-left translate-y-[2.5px] text-[22px] italic font-bold text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Peer Chat
+          </h2>
         </div>
-        <div className="peer-list flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible shrink-0 pb-1.5 md:pb-0">
-          {studentPeers
-            .filter((p) => p !== senderName) // Don't chat with yourself
-            .map((peer) => (
-              <div
-                key={peer}
-                className={`flex items-center gap-3 p-2.5 rounded-2xl cursor-pointer transition-all duration-300 border-2 select-none min-w-[130px] md:min-w-0 ${activePeer === peer ? 'bg-purple-500/10 border-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.06)]' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10'}`}
-                onClick={() => setActivePeer(peer)}
-              >
-                <div className="peer-avatar w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-black text-xs flex items-center justify-center shadow-inner">
-                  {peer.charAt(0).toUpperCase()}
-                </div>
-                <div className="peer-info flex flex-col text-left justify-center">
-                  <span className="text-xs font-extrabold text-white leading-tight font-sans">{peer}</span>
-                  <span className="text-[8px] font-bold text-slate-500 font-mono tracking-wide uppercase mt-0.5">Active Student</span>
-                </div>
-              </div>
-            ))}
-        </div>
-      </div>
+      </header>
 
-      {/* Main chat log window */}
-      <div className="peer-chat-window flex-1 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-3xl p-4 flex flex-col justify-between overflow-hidden relative shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] h-full min-h-0">
-        {/* Chat window top header */}
-        <div className="chat-window-header flex justify-between items-center w-full border-b border-white/5 pb-3.5 shrink-0">
-          <div className="active-peer-profile flex items-center gap-3">
-            <div className="active-avatar w-10 h-10 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 font-black text-sm flex items-center justify-center shadow-inner">
-              {activePeer.charAt(0).toUpperCase()}
+      {/* ─── Frosted Glassmorphic WhatsApp Web Panel ─── */}
+      <div 
+        className="peer-chat-container flex flex-col h-[460px] w-full text-white font-sans overflow-hidden select-none bg-white/[0.02] border border-white/10 rounded-[32px] p-0 relative z-[999] shadow-2xl backdrop-blur-md animate-fadeIn"
+      >
+        {/* Main chat log window */}
+        <div className="peer-chat-window flex-1 bg-transparent flex flex-col justify-between overflow-hidden relative h-full min-h-0 p-0">
+          {/* Chat window top header */}
+          <div className="chat-window-header flex justify-between items-center w-full border-b border-white/10 py-3 px-4 shrink-0 bg-white/[0.04] backdrop-blur-md">
+            <div className="active-peer-profile flex items-center gap-3">
+              <div className={`active-avatar w-9 h-9 rounded-full text-white font-extrabold text-xs flex items-center justify-center shadow-inner shrink-0 ${getAvatarBg(activePeer)}`}>
+                {activePeer.charAt(0).toUpperCase()}
+              </div>
+              <div className="text-left">
+                <h4 className="text-sm font-bold text-[#e9edef] font-sans leading-none">{activePeer}</h4>
+                <span className="text-[10px] text-slate-400 font-normal mt-1 block">online</span>
+              </div>
             </div>
-            <div className="text-left">
-              <h4 className="text-sm font-extrabold text-white font-sans leading-none">{activePeer}</h4>
-              <span className="text-[9px] font-black text-emerald-400 font-mono tracking-widest uppercase block mt-1">🟢 Online</span>
+            
+            <div className="flex items-center gap-3 text-slate-300">
+              {peerGigId && (
+                <>
+                  <button
+                    onClick={handleRemoveListing}
+                    className="bg-red-500/10 border border-red-500/35 hover:bg-red-500/20 active:scale-95 text-red-400 hover:text-red-300 font-bold px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm shrink-0"
+                  >
+                    Remove Listing ✕
+                  </button>
+                  <div className="w-[1px] h-4 bg-white/10 mx-0.5"></div>
+                </>
+              )}
+              <button type="button" className="hover:text-white transition-colors p-1 cursor-pointer">
+                <Video size={16} />
+              </button>
+              <button type="button" className="hover:text-white transition-colors p-1 cursor-pointer">
+                <Phone size={15} />
+              </button>
+              <div className="w-[1px] h-4 bg-white/10 mx-0.5"></div>
+              <button type="button" className="hover:text-white transition-colors p-1 cursor-pointer">
+                <Search size={15} />
+              </button>
+              <button type="button" className="hover:text-white transition-colors p-1 cursor-pointer">
+                <MoreVertical size={16} />
+              </button>
             </div>
           </div>
-          {onClose && (
-            <button 
-              className="w-9 h-9 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center backdrop-blur-md cursor-pointer shrink-0" 
-              onClick={onClose} 
-              title="Close Chat Area"
-            >
-              ✕
-            </button>
-          )}
-        </div>
 
-        {/* Message bubbles body */}
-        <div className="chat-messages-body flex-1 overflow-y-auto scrollbar-none py-4 min-h-0">
-          {loading ? (
-            <div className="chat-loading font-mono text-xs text-slate-400 mt-4 text-center">
-              Syncing messages...
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="chat-empty flex flex-col items-center justify-center gap-2 h-full select-none opacity-80 py-8 text-center">
-              <span className="text-4xl filter drop-shadow-md animate-bounce">🤝</span>
-              <h4 className="text-sm font-extrabold text-white font-sans mt-2">Start a conversation with {activePeer}!</h4>
-              <p className="text-[11px] font-semibold text-slate-400 font-sans max-w-xs px-4">Say hello to begin sharing peer skills on CampOS.</p>
-            </div>
-          ) : (
-            <div className="messages-scroller flex flex-col gap-3">
-              {messages.map((msg) => {
-                const isSentByMe = msg.SenderName === senderName;
-                return (
-                  <div
-                    key={msg._id}
-                    className={`flex w-full ${isSentByMe ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-[85%] rounded-2xl p-3.5 text-left flex flex-col gap-1 shadow-md relative ${isSentByMe ? 'bg-purple-600 text-white rounded-tr-none border border-purple-500/35' : 'bg-white/[0.05] text-slate-100 rounded-tl-none border border-white/10'}`}>
-                      {!isSentByMe && <span className="text-[8px] font-black text-purple-300 font-mono tracking-wider uppercase block">{msg.SenderName}</span>}
-                      <p className="text-xs font-semibold leading-relaxed break-words font-sans">{msg.Content}</p>
-                      <span className="text-[8px] font-bold text-slate-400/80 font-mono text-right mt-1 select-none">
-                        {formatTime(msg.Timestamp || msg.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-
-        {/* Message send form */}
-        <form onSubmit={handleSendMessage} className="chat-send-form flex items-center gap-2 mt-2 shrink-0 border-t border-white/5 pt-3.5">
-          <input
-            type="text"
-            className="flex-1 bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 rounded-2xl px-4 py-3 text-xs font-semibold transition-all"
-            placeholder={`Message ${activePeer}...`}
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            required
-          />
-          <button 
-            type="submit" 
-            className="bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-bold rounded-2xl px-5 py-3 text-xs uppercase tracking-wider shadow-lg shadow-purple-500/10 cursor-pointer shrink-0 transition-all duration-300"
+          {/* Message bubbles body */}
+          <div 
+            className="chat-messages-body flex-1 overflow-y-auto scrollbar-none p-4 min-h-0 bg-transparent"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0)',
+              backgroundSize: '24px 24px',
+            }}
           >
-            Send ⚡
-          </button>
-        </form>
+            {loading ? (
+              <div className="chat-loading font-mono text-xs text-slate-400 mt-4 text-center">
+                Syncing messages...
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="chat-empty flex flex-col items-center justify-center gap-2 h-full select-none opacity-80 py-8 text-center animate-fadeIn">
+                <span className="text-4xl filter drop-shadow-md animate-bounce">🤝</span>
+                <h4 className="text-sm font-extrabold text-[#e9edef] font-sans mt-2">Start a conversation with {activePeer}!</h4>
+                <p className="text-[11px] font-semibold text-slate-400 font-sans max-w-xs px-4">Say hello to begin sharing peer skills on CampOS.</p>
+              </div>
+            ) : (
+              <div className="messages-scroller flex flex-col gap-1.5">
+                <div className="flex justify-center my-2.5 animate-fadeIn">
+                  <span className="bg-white/[0.05] border border-white/10 text-slate-300 text-[10px] px-3 py-1 rounded-lg uppercase tracking-wide font-sans shadow-sm select-none">
+                    TODAY
+                  </span>
+                </div>
+                
+                {messages.map((msg) => {
+                  const isSentByMe = msg.SenderName === senderName;
+                  return (
+                    <div
+                      key={msg._id}
+                      className={`flex w-full ${isSentByMe ? 'justify-end' : 'justify-start'} my-0.5`}
+                    >
+                      {isSentByMe ? (
+                        <div className="max-w-[75%] bg-emerald-500/10 border border-emerald-500/30 text-[#e9edef] rounded-2xl rounded-tr-none px-3.5 py-2 text-left flex flex-col shadow-md backdrop-blur-md relative font-sans">
+                          <p className="text-xs leading-relaxed break-words font-sans font-normal pr-12">{msg.Content}</p>
+                          <div className="flex items-center justify-end gap-1 text-[9px] text-[#e9edef]/60 select-none self-end absolute bottom-1 right-2">
+                            <span>{formatTime(msg.Timestamp || msg.createdAt)}</span>
+                            <CheckCheck size={13} className="text-cyan-400" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="max-w-[75%] bg-white/[0.04] border border-white/10 text-[#e9edef] rounded-2xl rounded-tl-none px-3.5 py-2 text-left flex flex-col shadow-md backdrop-blur-md relative font-sans">
+                          <p className="text-xs leading-relaxed break-words font-sans font-normal pr-8">{msg.Content}</p>
+                          <span className="text-[9px] text-slate-400 font-sans text-right select-none self-end absolute bottom-1 right-2">
+                            {formatTime(msg.Timestamp || msg.createdAt)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+
+          {/* Message send form */}
+          <form onSubmit={handleSendMessage} className="chat-send-form flex items-center gap-2.5 py-3 px-4 shrink-0 bg-white/[0.03] border-t border-white/10">
+            <button type="button" className="text-slate-400 hover:text-white p-1 transition-colors cursor-pointer shrink-0">
+              <Smile size={20} />
+            </button>
+            <button type="button" className="text-slate-400 hover:text-white p-1 transition-colors cursor-pointer shrink-0">
+              <Paperclip size={18} />
+            </button>
+            
+            <input
+              type="text"
+              className="flex-1 bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 focus:outline-none rounded-xl px-4 py-2 text-xs font-normal transition-all shadow-inner"
+              placeholder="Type a message..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              required
+            />
+            
+            <button 
+              type="submit" 
+              className="w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0 shadow-purple-500/10"
+            >
+              {inputText.trim() ? (
+                <Send size={16} className="translate-x-[1px] text-white" />
+              ) : (
+                <Mic size={16} className="text-white" />
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -107,22 +107,9 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
 
   return (
     <div className="notices-module text-white font-sans min-h-screen pb-24 relative select-none">
-      
-      {/* Ticker / Pulse Bar for High Priority Announcements */}
-      {latestHighPriority && (
-        <div className="w-full flex items-center bg-rose-500/10 border border-rose-500/25 rounded-2xl p-2.5 mb-5 shadow-lg overflow-hidden select-none">
-          <div className="bg-rose-500 text-[#141a27] text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md shrink-0 shadow-sm leading-none mr-3">CRITICAL</div>
-          <div className="flex-1 overflow-hidden relative flex items-center">
-            <div className="animate-pulse text-[11px] font-bold text-rose-300 text-left truncate">
-              💥 {latestHighPriority.Title}: {latestHighPriority.Content}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Module Header and Controls */}
-      <div className="module-header flex items-center justify-between gap-4 py-2 mb-3">
-        <div className="flex items-center gap-3.5">
+      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between gap-4 mb-5">
+        <div className="flex items-center">
           <button
             onClick={() => setActiveTab('home')}
             className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
@@ -130,10 +117,9 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
           >
             <span className="text-xl font-bold">&larr;</span>
           </button>
-          <div className="header-info text-left translate-y-[1px]">
-            <h2 className="text-2xl font-bold text-white leading-none" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>Notices</h2>
-            <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Campus Board & Warnings</p>
-          </div>
+          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Campus Notices
+          </h2>
         </div>
         
         {/* Only Super Admin can post announcements */}
@@ -146,12 +132,24 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
             Post Notice
           </button>
         )}
-      </div>
+      </header>
+
+      {/* Ticker / Pulse Bar for High Priority Announcements */}
+      {latestHighPriority && (
+        <div className="w-full flex items-center bg-rose-500/[0.06] border border-rose-500/25 rounded-2xl p-2.5 mb-5 shadow-lg overflow-hidden select-none animate-fadeIn backdrop-blur-md">
+          <div className="bg-rose-500 text-[#141a27] text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md shrink-0 shadow-sm leading-none mr-3">CRITICAL</div>
+          <div className="flex-1 overflow-hidden relative flex items-center">
+            <div className="animate-pulse text-[11px] font-bold text-rose-300 text-left truncate">
+              💥 {latestHighPriority.Title}: {latestHighPriority.Content}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex items-center justify-between w-full py-2 mb-6">
         <span className="text-[10px] font-sans font-black uppercase tracking-widest text-slate-400 pl-1 select-none">Filter:</span>
-        <div className="flex bg-white/[0.04] p-1 rounded-full border border-white/10 shadow-inner select-none">
+        <div className="flex bg-white/[0.04] p-1 rounded-full border border-white/10 shadow-inner select-none backdrop-blur-md">
           {['All', 'High', 'Medium', 'Low'].map((p) => (
             <button
               key={p}

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee, Ticket, ArrowRight, Trash2 } from 'lucide-react';
+import { Coffee, Ticket, ArrowRight, Trash2, Search } from 'lucide-react';
 
 export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, triggerPayment, cart = [], setCart, isCartCheckout = false }) {
   const [menu, setMenu] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Search query state
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Checkout state
   const [studentId, setStudentId] = useState(currentUser ? currentUser.firstName : '');
@@ -253,20 +256,17 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     return (
       <div className="canteen-module text-white font-sans min-h-screen pb-24 relative select-none">
         {/* Header summary */}
-        <header className="flex justify-between items-center w-full mt-2 pb-2 shrink-0">
-          <div className="flex items-center gap-3.5">
-            <button
-              onClick={() => setActiveTab && setActiveTab('canteen')}
-              className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-              type="button"
-            >
-              <span className="text-xl font-bold">&larr;</span>
-            </button>
-            <div className="header-info text-left translate-y-[1px]">
-              <h2 className="text-2xl font-bold text-white leading-none" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>Checkout</h2>
-              <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Review Items & Pay</p>
-            </div>
-          </div>
+        <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
+          <button
+            onClick={() => setActiveTab && setActiveTab('canteen')}
+            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
+            type="button"
+          >
+            <span className="text-xl font-bold">&larr;</span>
+          </button>
+          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Order Checkout
+          </h2>
         </header>
 
         {loading ? (
@@ -453,8 +453,8 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     <div className="canteen-module text-white font-sans min-h-screen pb-24 relative select-none">
       
       {/* Module Header and Controls */}
-      <div className="module-header flex items-center justify-between gap-4 py-2 mb-3">
-        <div className="flex items-center gap-3.5">
+      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between gap-4 mb-3">
+        <div className="flex items-center">
           <button
             onClick={() => setActiveTab('home')}
             className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
@@ -462,10 +462,9 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
           >
             <span className="text-xl font-bold">&larr;</span>
           </button>
-          <div className="header-info text-left translate-y-[1px]">
-            <h2 className="text-2xl font-bold text-white leading-none" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>Canteen</h2>
-            <p className="text-slate-400 text-[10px] font-semibold tracking-wide mt-1">Order Foods & Beverages</p>
-          </div>
+          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Campus Canteen
+          </h2>
         </div>
         
         {/* Canteen Admin exclusive item creation button */}
@@ -478,7 +477,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
             Add Menu Item
           </button>
         )}
-      </div>
+      </header>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -493,121 +492,134 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
       ) : (
         <div className="flex flex-col gap-6 text-left">
           
+          {/* Glassmorphic Search Bar */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
+              <Search size={16} />
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search canteen menu..."
+              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-400 outline-none focus:border-orange-500/50 transition-all duration-300 shadow-inner"
+            />
+          </div>
+
           {/* Menu Catalog Section */}
           <div className="flex flex-col gap-6 w-full">
-            {categories.map((category) => (
-              <div key={category} className="flex flex-col gap-4">
-                <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 pl-1">{category}</h3>
-                
-                <div className="grid grid-cols-1 gap-4">
-                  {menu
-                    .filter((item) => item.Category === category)
-                    .map((item) => {
-                      const isSoldOut = !item.IsAvailable;
-                      return (
-                        <div
-                          key={item._id}
-                          className={`rounded-[28px] p-6 transition-all duration-300 relative border-2 ${
-                            isSoldOut 
-                              ? 'border-white/10 bg-white/[0.01] opacity-60' 
-                              : 'border-orange-500/25 bg-orange-500/[0.02] shadow-[0_0_25px_rgba(249,115,22,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
-                          } backdrop-blur-3xl flex flex-col gap-3.5 text-left`}
-                        >
-                          <div className="flex justify-between items-center w-full">
-                            <span className="text-[9px] font-sans font-black uppercase tracking-wider text-slate-400">{item.Category}</span>
-                            <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
-                              isSoldOut 
-                                ? 'bg-red-500/10 text-red-300 border-red-500/20' 
-                                : 'bg-orange-500/10 text-orange-300 border-orange-500/20'
-                            }`}>
-                              {isSoldOut ? 'Sold Out' : 'Available'}
-                            </span>
-                          </div>
-                          
-                          <h4 className="text-base font-extrabold text-white leading-none mt-1 select-text font-sans">{item.Name}</h4>
-                          
-                          {/* Price Display / Admin Edit */}
-                          {isCanteenAdmin && editingItemId === item._id ? (
-                            <div className="flex items-center gap-2 mt-1 w-full max-w-[200px]">
-                              <input
-                                type="number"
-                                className="w-full bg-white/[0.05] border border-white/15 focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white outline-none"
-                                placeholder="New Price"
-                                value={editPrice}
-                                onChange={(e) => setEditPrice(e.target.value)}
-                              />
-                              <button 
-                                className="w-7 h-7 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg flex items-center justify-center text-xs font-mono font-bold transition active:scale-90"
-                                onClick={() => handleUpdatePrice(item._id)}
-                                disabled={savingPrice}
-                              >
-                                ✓
-                              </button>
-                              <button 
-                                className="w-7 h-7 bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] text-white rounded-lg flex items-center justify-center text-xs font-mono font-bold transition active:scale-90"
-                                onClick={() => { setEditingItemId(null); setEditPrice(''); }}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 font-sans">
-                              <span>Price:</span>
-                              <span className="text-white font-mono font-black">₹{item.Price}</span>
-                              {isCanteenAdmin && (
-                                <button
-                                  className="w-6 h-6 hover:bg-white/[0.06] border border-transparent hover:border-white/10 text-slate-400 hover:text-white rounded-lg flex items-center justify-center transition"
-                                  onClick={() => { setEditingItemId(item._id); setEditPrice(item.Price); }}
-                                  title="Edit Price"
-                                >
-                                  ✏️
-                                </button>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="w-full mt-1.5">
-                            {/* Stock toggle switches & deletes (Canteen Admin only) */}
-                            {isCanteenAdmin ? (
-                              <div className="flex justify-between items-center border-t border-white/5 pt-3.5">
-                                <button
-                                  className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-400 hover:text-rose-300 transition"
-                                  onClick={() => handleDeleteItem(item._id)}
-                                  title="Delete Item"
-                                >
-                                  🗑️ Delete
-                                </button>
-
-                                <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleAvailability(item._id)}>
-                                  <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-300 ${item.IsAvailable ? 'bg-emerald-500' : 'bg-slate-700'}`}>
-                                    <div className={`w-3 h-3 rounded-full bg-white transition-transform duration-300 ${item.IsAvailable ? 'translate-x-4' : 'translate-x-0'}`} />
-                                  </div>
-                                  <span className="text-[9px] font-sans font-black uppercase tracking-wider text-slate-400">In Stock</span>
-                                </div>
-                              </div>
-                            ) : (
-                              // Add to cart buttons (Students only)
-                              <button
-                                className={`w-full py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${
-                                  isSoldOut 
-                                    ? 'bg-white/[0.02] border border-white/5 text-slate-500 cursor-not-allowed' 
-                                    : addedItemIds[item._id]
-                                      ? 'bg-emerald-500/20 border-2 border-emerald-500/40 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
-                                      : 'bg-white hover:bg-slate-50 text-[#141a27] shadow-lg active:scale-[0.98]'
-                                }`}
-                                disabled={isSoldOut}
-                                onClick={() => handleAddToCartClick(item)}
-                              >
-                                {isSoldOut ? 'Sold Out' : addedItemIds[item._id] ? '✓ Added!' : '＋ Add to Cart'}
-                              </button>
-                            )}
-                          </div>
+            <div className="grid grid-cols-1 gap-4">
+              {menu
+                .filter((item) => item.Name.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map((item) => {
+                  const isSoldOut = !item.IsAvailable;
+                  return (
+                    <div
+                      key={item._id}
+                      className={`rounded-[28px] p-6 transition-all duration-300 relative border-2 ${
+                        isSoldOut 
+                          ? 'border-white/10 bg-white/[0.01] opacity-60' 
+                          : 'border-orange-500/25 bg-orange-500/[0.02] shadow-[0_0_25px_rgba(249,115,22,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
+                      } backdrop-blur-3xl flex flex-col gap-3.5 text-left`}
+                    >
+                      <div className="flex justify-between items-center w-full">
+                        <span className="text-[9px] font-sans font-black uppercase tracking-wider text-slate-400">{item.Category}</span>
+                        <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
+                          isSoldOut 
+                            ? 'bg-red-500/10 text-red-300 border-red-500/20' 
+                            : 'bg-orange-500/10 text-orange-300 border-orange-500/20'
+                        }`}>
+                          {isSoldOut ? 'Sold Out' : 'Available'}
+                        </span>
+                      </div>
+                      
+                      <h4 className="text-base font-extrabold text-white leading-none mt-1 select-text font-sans">{item.Name}</h4>
+                      
+                      {/* Price Display / Admin Edit */}
+                      {isCanteenAdmin && editingItemId === item._id ? (
+                        <div className="flex items-center gap-2 mt-1 w-full max-w-[200px]">
+                          <input
+                            type="number"
+                            className="w-full bg-white/[0.05] border border-white/15 focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white outline-none"
+                            placeholder="New Price"
+                            value={editPrice}
+                            onChange={(e) => setEditPrice(e.target.value)}
+                          />
+                          <button 
+                            className="w-7 h-7 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg flex items-center justify-center text-xs font-mono font-bold transition active:scale-90"
+                            onClick={() => handleUpdatePrice(item._id)}
+                            disabled={savingPrice}
+                          >
+                            ✓
+                          </button>
+                          <button 
+                            className="w-7 h-7 bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] text-white rounded-lg flex items-center justify-center text-xs font-mono font-bold transition active:scale-90"
+                            onClick={() => { setEditingItemId(null); setEditPrice(''); }}
+                          >
+                            ✕
+                          </button>
                         </div>
-                      );
-                    })}
-                </div>
-              </div>
-            ))}
+                      ) : (
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 font-sans">
+                          <span>Price:</span>
+                          <span className="text-white font-mono font-black">₹{item.Price}</span>
+                          {isCanteenAdmin && (
+                            <button
+                              className="w-6 h-6 hover:bg-white/[0.06] border border-transparent hover:border-white/10 text-slate-400 hover:text-white rounded-lg flex items-center justify-center transition"
+                              onClick={() => { setEditingItemId(item._id); setEditPrice(item.Price); }}
+                              title="Edit Price"
+                            >
+                              ✏️
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="w-full mt-1.5">
+                        {/* Stock toggle switches & deletes (Canteen Admin only) */}
+                        {isCanteenAdmin ? (
+                          <div className="flex justify-between items-center border-t border-white/5 pt-3.5">
+                            <button
+                              className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-400 hover:text-rose-300 transition"
+                              onClick={() => handleDeleteItem(item._id)}
+                              title="Delete Item"
+                            >
+                              🗑️ Delete
+                            </button>
+
+                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleAvailability(item._id)}>
+                              <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-300 ${item.IsAvailable ? 'bg-emerald-500' : 'bg-slate-700'}`}>
+                                <div className={`w-3 h-3 rounded-full bg-white transition-transform duration-300 ${item.IsAvailable ? 'translate-x-4' : 'translate-x-0'}`} />
+                              </div>
+                              <span className="text-[9px] font-sans font-black uppercase tracking-wider text-slate-400">In Stock</span>
+                            </div>
+                          </div>
+                        ) : (
+                          // Add to cart buttons (Students only)
+                          <button
+                            className={`w-full py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer backdrop-blur-md ${
+                              isSoldOut 
+                                ? 'bg-white/[0.02] border border-white/5 text-slate-500 cursor-not-allowed' 
+                                : addedItemIds[item._id]
+                                  ? 'bg-emerald-500/[0.08] border border-emerald-500/35 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.08)]'
+                                  : 'bg-orange-500/[0.08] hover:bg-orange-500/[0.15] border border-orange-500/35 text-orange-300 shadow-md active:scale-[0.98]'
+                            }`}
+                            disabled={isSoldOut}
+                            onClick={() => handleAddToCartClick(item)}
+                          >
+                            {isSoldOut ? 'Sold Out' : addedItemIds[item._id] ? '✓ Added!' : '＋ Add to Cart'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+            {menu.filter((item) => item.Name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+              <p className="text-center text-xs font-semibold text-slate-400 uppercase tracking-widest py-12">
+                No items match your search
+              </p>
+            )}
           </div>
         </div>
       )}

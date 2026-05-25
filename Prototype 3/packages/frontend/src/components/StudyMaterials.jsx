@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Download, ChevronDown } from 'lucide-react';
 
-export default function StudyMaterials({ setActiveTab }) {
-  const [shelfBranch, setShelfBranch] = useState('All Branches');
-  const [shelfSemester, setShelfSemester] = useState('All Semesters');
+export default function StudyMaterials({ setActiveTab, initialBranch, initialSemester }) {
+  const [shelfBranch, setShelfBranch] = useState(initialBranch || 'All Branches');
+  const [shelfSemester, setShelfSemester] = useState(initialSemester || 'All Semesters');
   const [shelfCategory, setShelfCategory] = useState('All');
   const [downloadingId, setDownloadingId] = useState(null);
+
+  useEffect(() => {
+    if (initialBranch) setShelfBranch(initialBranch);
+  }, [initialBranch]);
+
+  useEffect(() => {
+    if (initialSemester) setShelfSemester(initialSemester);
+  }, [initialSemester]);
 
   // Scroll dynamics minimize states
   const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
@@ -137,7 +145,7 @@ export default function StudyMaterials({ setActiveTab }) {
         }`}
       >
         {/* Header title */}
-        <header className="flex justify-between items-center w-full mt-2 pb-2">
+        <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
           <div className="flex items-center gap-3.5">
             <button
               onClick={() => setActiveTab && setActiveTab('home')}
@@ -146,8 +154,8 @@ export default function StudyMaterials({ setActiveTab }) {
             >
               <span className="text-xl font-bold">&larr;</span>
             </button>
-            <h2 className="text-2xl font-bold text-white leading-none flex items-center gap-2 translate-y-[2px]" style={{ fontFamily: "'Times New Roman', Times, Georgia, serif" }}>
-              <BookOpen size={20} className="text-indigo-400" /> Shelf
+            <h2 className="text-[22px] italic font-normal text-white leading-none flex items-center gap-2 translate-y-[2px] tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Study Shelf
             </h2>
           </div>
         </header>
@@ -156,14 +164,14 @@ export default function StudyMaterials({ setActiveTab }) {
         {nextExam && (
           <div className="bg-[#1c2436]/40 border border-white/10 backdrop-blur-md rounded-2xl px-5 py-3 flex items-center gap-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] w-full justify-between shrink-0">
             <div className="flex flex-col text-left">
-              <span className="text-[9px] font-black text-[#a3b3e6] uppercase tracking-widest font-mono leading-none">Upcoming Exam: {nextExam.name}</span>
+              <span className="text-[9px] font-black text-cyan-300 uppercase tracking-widest font-mono leading-none">Upcoming Exam: {nextExam.name}</span>
               <span className="text-base font-black font-mono tracking-wider text-white mt-1.5 font-semibold">
                 {nextExamCountdown}
               </span>
             </div>
             <span className="relative flex w-2 h-2">
-              <span className="absolute inline-flex w-full h-full bg-indigo-400 rounded-full opacity-75 animate-ping"></span>
-              <span className="relative inline-flex w-2 h-2 bg-indigo-500 rounded-full"></span>
+              <span className="absolute inline-flex w-full h-full bg-cyan-400 rounded-full opacity-75 animate-ping"></span>
+              <span className="relative inline-flex w-2 h-2 bg-cyan-500 rounded-full"></span>
             </span>
           </div>
         )}
@@ -176,7 +184,7 @@ export default function StudyMaterials({ setActiveTab }) {
               <select
                 value={shelfBranch}
                 onChange={(e) => setShelfBranch(e.target.value)}
-                className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-[#7085c3] cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-cyan-400/50 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
               >
                 <option className="bg-[#141a27]" value="All Branches">All Branches</option>
                 <option className="bg-[#141a27]" value="Computer Science">Computer Science</option>
@@ -196,7 +204,7 @@ export default function StudyMaterials({ setActiveTab }) {
               <select
                 value={shelfSemester}
                 onChange={(e) => setShelfSemester(e.target.value)}
-                className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-[#7085c3] cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-cyan-400/50 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
               >
                 <option className="bg-[#141a27]" value="All Semesters">All Semesters</option>
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -246,14 +254,14 @@ export default function StudyMaterials({ setActiveTab }) {
                 >
                   <div className="flex flex-col gap-1 pr-4 text-left items-start">
                     <div className="flex items-center gap-2">
-                      <span className="bg-[#7085c3]/20 border border-[#7085c3]/30 text-[#a3b3e6] text-[9px] px-2 py-0.5 rounded font-mono uppercase font-black tracking-wider">
+                      <span className="bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 text-[9px] px-2 py-0.5 rounded font-mono uppercase font-black tracking-wider">
                         {course.code}
                       </span>
                       <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
                         {course.type}
                       </span>
                     </div>
-                    <span className="text-base font-extrabold text-white leading-snug mt-1 group-hover:text-[#a3b3e6] transition-colors duration-300">
+                    <span className="text-base font-extrabold text-white leading-snug mt-1 group-hover:text-cyan-300 transition-colors duration-300">
                       {course.name}
                     </span>
                     <span className="text-xs text-white/40 font-mono mt-0.5">
@@ -268,7 +276,7 @@ export default function StudyMaterials({ setActiveTab }) {
                     className={`p-3 rounded-xl border transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 ${
                       isDownloading
                         ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
-                        : 'bg-white/5 hover:bg-[#7085c3]/20 border-white/10 hover:border-[#7085c3]/40 text-white active:scale-90'
+                        : 'bg-white/5 hover:bg-cyan-500/15 border-white/10 hover:border-cyan-500/35 text-white active:scale-90'
                     }`}
                   >
                     {isDownloading ? (

@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import env from './config/env.js';
 import connectDB from './config/db.js';
@@ -14,14 +16,33 @@ import routes from './routes/index.js';
 import notFound from './middleware/notFound.js';
 import errorHandler from './middleware/errorHandler.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // ─── App Initialization ────────────────────────────────────────────────────────
 
 const app = express();
 
 // ─── Security & Parsing Middleware ──────────────────────────────────────────────
 
-app.use(helmet());
-app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+// Disable CSP so that Google Fonts and dynamic CSS styles load perfectly
+app.use(helmet({ contentSecurityPolicy: false }));
+
+const allowedOrigins = env.CORS_ORIGIN
+  ? env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : ['http://localhost:5173'];
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow requests with no origin (mobile apps, curl, same-origin, etc.)
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -37,6 +58,21 @@ if (env.isDev) {
 // ─── Routes ─────────────────────────────────────────────────────────────────────
 
 app.use('/api', routes);
+
+// ─── Production Static Assets ───────────────────────────────────────────────────
+
+if (env.isProd) {
+  const distPath = path.join(__dirname, '../../frontend/dist');
+  app.use(express.static(distPath));
+
+  // Wildcard fallback for React SPA routing
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // ─── Error Handling ─────────────────────────────────────────────────────────────
 

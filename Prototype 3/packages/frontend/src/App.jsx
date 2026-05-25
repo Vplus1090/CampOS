@@ -8,7 +8,11 @@ import StudyMaterials from './components/StudyMaterials';
 import AcademicCalendar from './components/AcademicCalendar';
 import MetroStartScreen from './components/MetroStartScreen';
 import LockScreen from './components/LockScreen';
+import PeerChat from './components/PeerChat';
+import StudentDashboard from './components/StudentDashboard';
 import './App.css';
+
+const API_BASE = "https://campos-fmjh.onrender.com";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -17,6 +21,7 @@ function App() {
   const [canteenCart, setCanteenCart] = useState([]);
   const [isCartPopping, setIsCartPopping] = useState(false);
   const [showCanteenTicketModal, setShowCanteenTicketModal] = useState(false);
+  const [activeChatPeer, setActiveChatPeer] = useState(null);
 
   const totalCartQty = canteenCart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -434,12 +439,12 @@ function App() {
       const pin = order ? order.PickupPIN : '----';
 
       return (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f1319] via-[#151a26] to-[#0d1017] text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans select-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans select-none">
           {/* Premium morphing wallpaper gradient blobs (fixed background) */}
           <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-[#4f46e5]/0 animate-blob1" />
-            <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-[#a855f7]/0 animate-blob2" />
-            <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-[#0d9488]/0 animate-blob3" />
+            <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
+            <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
+            <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
           </div>
 
           <div className="z-10 flex flex-col items-center w-full max-w-md text-center">
@@ -491,18 +496,17 @@ function App() {
 
     // Otherwise show main dashboard
     return (
-      <div className="campos-dashboard flex flex-col justify-between h-full bg-gradient-to-br from-[#0f1319] via-[#151a26] to-[#0d1017] text-white relative font-sans overflow-hidden">
+      <div className="campos-dashboard flex flex-col justify-between h-full bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white relative font-sans overflow-hidden">
         
         {/* Premium morphing wallpaper gradient blobs (fixed background) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#3b82f6]/35 via-[#4f46e5]/20 to-[#4f46e5]/0 animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#ec4899]/25 via-[#a855f7]/15 to-[#a855f7]/0 animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/25 via-[#0d9488]/10 to-[#0d9488]/0 animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
         </div>
 
-        {/* Main feature display area inside simulated smartphone screen */}
         <main className={`flex-1 scrollbar-none bg-transparent relative z-10 ${
-          (activeTab === 'materials' || activeTab === 'calendar') 
+          (activeTab === 'materials' || activeTab === 'calendar' || activeTab === 'peerchat' || activeTab === 'student_dashboard') 
             ? 'overflow-hidden flex flex-col h-full' 
             : 'overflow-y-auto'
         }`}>
@@ -532,6 +536,18 @@ function App() {
             <SkillSwapGrid 
               currentUser={currentUser} 
               onUpdate={fetchStats} 
+              setActiveTab={setActiveTab}
+              onStartChat={(peerName) => {
+                setActiveChatPeer(peerName);
+                setActiveTab('peerchat');
+              }}
+            />
+          )}
+          {activeTab === 'peerchat' && (
+            <PeerChat
+              currentUser={currentUser}
+              initialActivePeer={activeChatPeer}
+              onClose={() => setActiveTab('skillgigs')}
               setActiveTab={setActiveTab}
             />
           )}
@@ -564,6 +580,12 @@ function App() {
           )}
           {activeTab === 'calendar' && allowedTabs.includes('calendar') && (
             <AcademicCalendar setActiveTab={setActiveTab} />
+          )}
+          {activeTab === 'student_dashboard' && (
+            <StudentDashboard 
+              currentUser={currentUser}
+              onClose={() => setActiveTab('home')}
+            />
           )}
         </main>
 
