@@ -4,7 +4,7 @@ import {
   Mic, Send, CheckCheck, Search, X 
 } from 'lucide-react';
 
-const API_BASE = "https://campos-fmjh.onrender.com";
+const API_BASE = import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com";
 
 export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   // Available student peers list

@@ -4,7 +4,7 @@ import MessMenu from './MessMenu';
 import StudyMaterials from './StudyMaterials';
 import AcademicCalendar from './AcademicCalendar';
 
-const API_BASE = "https://campos-fmjh.onrender.com";
+const API_BASE = import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com";
 
 export default function LockScreen({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -232,9 +232,9 @@ export default function LockScreen({ onLoginSuccess }) {
       <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white z-[999999] font-sans overflow-hidden animate-fadeIn flex flex-col p-6">
         {/* Premium morphing wallpaper gradient blobs */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
         </div>
 
         <div className="relative z-10 flex flex-col justify-between w-full h-full max-w-md mx-auto">
@@ -370,9 +370,9 @@ export default function LockScreen({ onLoginSuccess }) {
       <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white flex flex-col items-center justify-center p-6 z-[999999] overflow-hidden font-sans">
         {/* Premium morphing wallpaper gradient blobs */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
         </div>
 
         <div className="z-10 flex flex-col items-center w-full max-w-md text-center">
@@ -418,9 +418,9 @@ export default function LockScreen({ onLoginSuccess }) {
       <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white z-[99999] font-sans overflow-hidden animate-fadeIn">
         {/* Premium morphing wallpaper gradient blobs */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
         </div>
 
         {/* Scrollable content layer */}
@@ -451,9 +451,9 @@ export default function LockScreen({ onLoginSuccess }) {
       <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white z-[99999] font-sans overflow-hidden">
         {/* Premium morphing wallpaper gradient blobs (fixed background) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
         </div>
 
         {/* Scrollable content layer */}
@@ -471,9 +471,9 @@ export default function LockScreen({ onLoginSuccess }) {
       <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white z-[99999] font-sans overflow-hidden">
         {/* Premium morphing wallpaper gradient blobs (fixed background, never scrolls) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
         </div>
 
         {/* Scrollable content layer */}
@@ -494,9 +494,9 @@ export default function LockScreen({ onLoginSuccess }) {
     <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] flex flex-col justify-between items-center p-6 z-[9999] overflow-hidden select-none font-sans h-full text-white relative">
       
       {/* Premium morphing wallpaper gradient blobs (z-0, behind content) */}
-      <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent pointer-events-none z-0 animate-blob1" />
-      <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent pointer-events-none z-0 animate-blob2" />
-      <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent pointer-events-none z-0 animate-blob3" />
+      <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent pointer-events-none z-0 animate-blob1" />
+      <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent pointer-events-none z-0 animate-blob2" />
+      <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent pointer-events-none z-0 animate-blob3" />
 
       {/* 🟢/🔴 Portal Online/Offline Status Indicator (Top Right) */}
       <div className="absolute top-5 right-5 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/15 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-300 shadow-md">

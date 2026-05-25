@@ -4,7 +4,7 @@ import {
   Trash2, Flag, CheckCircle2 
 } from 'lucide-react';
 
-const API_BASE = "https://campos-fmjh.onrender.com";
+const API_BASE = import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com";
 
 export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onStartChat }) {
   const [gigs, setGigs] = useState([]);

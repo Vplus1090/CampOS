@@ -12,7 +12,7 @@ import PeerChat from './components/PeerChat';
 import StudentDashboard from './components/StudentDashboard';
 import './App.css';
 
-const API_BASE = "https://campos-fmjh.onrender.com";
+const API_BASE = import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -444,9 +444,9 @@ function App() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans select-none">
           {/* Premium morphing wallpaper gradient blobs (fixed background) */}
           <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
-            <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
-            <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
+            <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
+            <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
+            <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
           </div>
 
           <div className="z-10 flex flex-col items-center w-full max-w-md text-center">
@@ -502,9 +502,9 @@ function App() {
         
         {/* Premium morphing wallpaper gradient blobs (fixed background) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/45 via-[#a855f7]/30 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/35 via-[#8b5cf6]/25 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/35 via-[#10b981]/15 to-transparent animate-blob3" />
+          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
+          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
+          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
         </div>
 
         <main className={`flex-1 scrollbar-none bg-transparent relative z-10 ${
