@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE !== undefined
+  ? import.meta.env.VITE_API_BASE
+  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
 
 export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
   const [notices, setNotices] = useState([]);

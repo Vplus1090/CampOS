@@ -2,6 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
+const API_BASE = import.meta.env.VITE_API_BASE !== undefined
+  ? import.meta.env.VITE_API_BASE
+  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
+
 // Catch global uncaught errors and display them on the screen!
 window.addEventListener('error', (event) => {
   const rootEl = document.getElementById('root');
@@ -17,7 +21,7 @@ window.addEventListener('error', (event) => {
   }
   
   // Post error to backend logger
-  fetch('http://localhost:5001/api/client-error', {
+  fetch(`${API_BASE}/api/client-error`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -43,7 +47,7 @@ window.addEventListener('unhandledrejection', (event) => {
   }
   
   // Post error to backend logger
-  fetch('http://localhost:5001/api/client-error', {
+  fetch(`${API_BASE}/api/client-error`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

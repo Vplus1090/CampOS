@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Coffee, Ticket, ArrowRight, Trash2, Search } from 'lucide-react';
 
-const API_BASE = import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE !== undefined
+  ? import.meta.env.VITE_API_BASE
+  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
 
 export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, triggerPayment, cart = [], setCart, isCartCheckout = false }) {
   const [menu, setMenu] = useState([]);

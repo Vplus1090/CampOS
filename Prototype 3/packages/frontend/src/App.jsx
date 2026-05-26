@@ -12,7 +12,9 @@ import PeerChat from './components/PeerChat';
 import StudentDashboard from './components/StudentDashboard';
 import './App.css';
 
-const API_BASE = import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE !== undefined
+  ? import.meta.env.VITE_API_BASE
+  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);

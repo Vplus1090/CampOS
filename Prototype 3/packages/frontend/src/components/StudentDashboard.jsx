@@ -26,7 +26,9 @@ import {
 const obsidianCardClass = "border-2 border-indigo-500/25 bg-indigo-500/[0.02] shadow-[0_0_25px_rgba(99,102,241,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-3xl rounded-[28px] p-5 relative overflow-hidden transition-all duration-300";
 const obsidianCardHoverClass = "hover:border-indigo-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.08)]";
 
-const API_BASE = import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE !== undefined
+  ? import.meta.env.VITE_API_BASE
+  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
 
 export default function StudentDashboard({ currentUser, onClose }) {
   // --- Navigation & Core UI States ---
@@ -482,7 +484,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   placeholder="2501200031"
                   value={enrollmentNo}
                   onChange={(e) => setEnrollmentNo(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-indigo-500/50 rounded-xl px-4.5 py-3.5 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
+                  className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-indigo-500/50 rounded-xl px-5 py-3.5 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
                 />
               </div>
 
@@ -495,7 +497,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     placeholder="•••••••••••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-indigo-500/50 rounded-xl px-4.5 py-3.5 pr-12 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
+                    className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-indigo-500/50 rounded-xl px-5 py-3.5 pr-12 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
                   />
                   <button
                     type="button"
@@ -568,7 +570,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
           
           {/* Header ID Card (Translucent Obsidian styling) */}
           {studentProfile && (
-            <div className={`${obsidianCardClass} p-4.5 flex flex-col gap-4 animate-fadeIn`}>
+            <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 animate-fadeIn`}>
               <div className="flex justify-between items-start w-full">
                 <div className="flex items-center gap-3.5 text-left">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white font-sans shadow-md border border-white/10 shrink-0 select-none uppercase">
@@ -749,7 +751,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
               <div className="flex flex-col gap-4 pb-8">
                 
                 {/* GPA summary tracker */}
-                <div className={`${obsidianCardClass} flex items-center justify-between p-4.5`}>
+                <div className={`${obsidianCardClass} flex items-center justify-between p-5`}>
                   <div className="text-left">
                     <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-mono">Academic Trend</span>
                     <h4 className="text-sm font-bold text-white font-sans mt-0.5">Cumulative Index</h4>
@@ -775,7 +777,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       >
                         <div 
                           onClick={() => setExpandedSubject(isExpanded ? null : idx)}
-                          className="p-4.5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02]"
+                          className="p-5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02]"
                         >
                           <div className="text-left flex-1 min-w-0 pr-3">
                             <h4 className="text-sm font-bold text-white font-sans truncate">{item.desc}</h4>
@@ -791,7 +793,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         </div>
 
                         {isExpanded && (
-                          <div className="px-4.5 pb-4.5 pt-1.5 border-t border-white/5 bg-white/[0.01] grid grid-cols-4 gap-2 text-left font-sans animate-fadeIn">
+                          <div className="px-5 pb-5 pt-2 border-t border-white/5 bg-white/[0.01] grid grid-cols-4 gap-2 text-left font-sans animate-fadeIn">
                             <div className="flex flex-col gap-0.5">
                               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T1 (15)</span>
                               <span className="text-xs font-mono font-bold text-slate-200">{item.t1}</span>
@@ -844,7 +846,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         </div>
 
                         {/* Detailed glass card */}
-                        <div className={`${obsidianCardClass} p-4.5 flex justify-between items-start`}>
+                        <div className={`${obsidianCardClass} p-5 flex justify-between items-start`}>
                           <div className="flex-1 min-w-0 pr-3">
                             <h4 className="text-sm font-bold truncate leading-snug">{item.subject}</h4>
                             <span className="text-[10px] font-semibold text-slate-400 block mt-1.5">{item.instructor}</span>
