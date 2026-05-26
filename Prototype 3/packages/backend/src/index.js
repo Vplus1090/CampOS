@@ -1,3 +1,4 @@
+// CampOS entry point (reload trigger)
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -43,8 +44,20 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/webportal/proxy')) {
+    return next();
+  }
+  express.json({ limit: '10mb' })(req, res, next);
+});
+
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/webportal/proxy')) {
+    return next();
+  }
+  express.urlencoded({ extended: true })(req, res, next);
+});
+
 app.use(cookieParser());
 
 // ─── Logging ────────────────────────────────────────────────────────────────────
@@ -54,6 +67,15 @@ if (env.isDev) {
 } else {
   app.use(morgan('combined'));
 }
+
+app.post('/api/client-error', express.json(), (req, res) => {
+  console.error('\n🚨 [CLIENT RUNTIME ERROR] 🚨');
+  console.error('Message:', req.body.message);
+  console.error('At:', `${req.body.filename}:${req.body.lineno}:${req.body.colno}`);
+  console.error('Stack:', req.body.stack);
+  console.error('---------------------------\n');
+  res.sendStatus(204);
+});
 
 // ─── Routes ─────────────────────────────────────────────────────────────────────
 

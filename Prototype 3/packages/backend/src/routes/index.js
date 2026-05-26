@@ -7,6 +7,7 @@ import skillgigsRouter from './skillgigs.js';
 import canteenRouter from './canteen.js';
 import messagesRouter from './messages.js';
 import messRouter from './mess.js';
+import webportalRouter from './webportal.js';
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use('/skillgigs', skillgigsRouter);
 router.use('/canteen', canteenRouter);
 router.use('/messages', messagesRouter);
 router.use('/mess', messRouter);
+router.use('/webportal', webportalRouter);
 
 export default router;

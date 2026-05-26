@@ -110,7 +110,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
         {/* 🌟 Active Live Activity Widgets */}
         {(activePass || activeOrder) && (
           <div className="metro-activity-widgets flex flex-col gap-3">
-            <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest font-sans text-left pl-1">Live Activity</span>
+
             <div className="flex flex-col gap-4">
               
               {/* Mess Pass Widget */}
@@ -155,8 +155,25 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
 
         {/* Primary Dashboard Blocks */}
         <div className="flex flex-col gap-4">
-          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest font-sans text-left pl-1">Services</span>
-          
+
+
+            {/* Student Kiosk Portal — Top Priority */}
+            {isStudent && (
+              <div
+                onClick={() => onTileClick('student_dashboard')}
+                className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border-2 border-amber-500/30 rounded-[28px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+              >
+                <div className="flex items-center gap-3.5">
+                  <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300" size={24} />
+                  <div className="text-left flex flex-col">
+                    <span className="text-white font-extrabold text-sm tracking-wide">Student Dashboard</span>
+                    <span className="text-[9px] font-bold text-slate-400 font-mono tracking-widest uppercase mt-0.5">JPORTAL CLIENT LINKED</span>
+                  </div>
+                </div>
+                <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
+              </div>
+            )}
+
 
           {/* Card 2: Canteen (Glassy Orange) */}
           {(isStudent || isCanteenAdmin) && (
@@ -220,7 +237,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
         {/* Secondary Services List */}
         {isStudent && (
           <div className="flex flex-col gap-3 mt-2">
-            <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest font-sans text-left pl-1">Academic Library</span>
+
             <div className="grid grid-cols-2 gap-4 w-full">
               {/* Study Materials */}
               <div
@@ -247,23 +264,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               </div>
             </div>
 
-            {/* Student Kiosk Portal */}
-            <div className="flex flex-col gap-3 mt-3 animate-fadeIn">
-              <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest font-sans text-left pl-1">Student Kiosk Portal</span>
-              <div
-                onClick={() => onTileClick('student_dashboard')}
-                className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border border-amber-500/30 rounded-[24px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
-              >
-                <div className="flex items-center gap-3.5">
-                  <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300" size={24} />
-                  <div className="text-left flex flex-col">
-                    <span className="text-white font-extrabold text-sm tracking-wide">Student Dashboard</span>
-                    <span className="text-[9px] font-bold text-slate-400 font-mono tracking-widest uppercase mt-0.5">JPORTAL CLIENT LINKED</span>
-                  </div>
-                </div>
-                <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
-              </div>
-            </div>
+
 
           </div>
         )}

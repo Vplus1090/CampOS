@@ -1,0 +1,159 @@
+const crypto = require('crypto');
+
+const IV = Buffer.from('dcek9wb8frty1pnm', 'utf8');
+const DEFCAPTCHA = { captcha: "phw5n", hidden: "gmBctEffdSg=" };
+
+function generate_date_seq(date = null) {
+  if (date === null) date = new Date();
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(2);
+  const weekday = String(date.getDay());
+  return day[0] + month[0] + year[0] + weekday + day[1] + month[1] + year[1];
+}
+
+function k(n) {
+  let t = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    e = "";
+  for (let s = 0; s < n; s++) {
+    let i = Math.floor(Math.random() * t.length);
+    e += t[i];
+  }
+  return e;
+}
+
+function generate_key(date = null) {
+  const dateSeq = generate_date_seq(date);
+  const keyStr = "qa8y" + dateSeq + "ty1pn";
+  return Buffer.from(keyStr, 'utf8');
+}
+
+function encrypt(dataStr, date = null) {
+  const key = generate_key(date);
+  const cipher = crypto.createCipheriv('aes-128-cbc', key, IV);
+  let encrypted = cipher.update(dataStr, 'utf8', 'base64');
+  encrypted += cipher.final('base64');
+  return encrypted;
+}
+
+function serialize_payload(payload, date = null) {
+  return encrypt(JSON.stringify(payload), date);
+}
+
+function generate_local_name(date = null) {
+  const rand4 = k(4);
+  const dateSeq = generate_date_seq(date);
+  const rand5 = k(5);
+  return encrypt(rand4 + dateSeq + rand5, date);
+}
+
+async function hit(path, jsonPayload, token = null) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'LocalName': generate_local_name()
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`http://localhost:5001/api/webportal/proxy${path}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(jsonPayload)
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`HTTP ${res.status}: ${errText}`);
+  }
+
+  const data = await res.json();
+  if (data.status && data.status.responseStatus !== 'Success') {
+    throw new Error(data.status.responseMessage || 'Request failed');
+  }
+  return data;
+}
+
+async function run() {
+  const username = "2501200031";
+  const password = "kyamujheKrishsepyaarhai?";
+
+  console.log(`[1] Authenticating Enrollment ${username} via pretoken...`);
+  const pretokenPayload = serialize_payload({
+    username,
+    usertype: "S",
+    captcha: DEFCAPTCHA
+  });
+
+  const pretokenRes = await hit('/token/pretoken-check', pretokenPayload);
+  console.log(`[2] Pretoken accepted. Exchanging session token...`);
+
+  const loginData = pretokenRes.response;
+  delete loginData.rejectedData;
+  loginData.Modulename = "STUDENTMODULE";
+  loginData.passwordotpvalue = password;
+
+  const tokenPayload = serialize_payload(loginData);
+  const tokenRes = await hit('/token/generatewebtoken', tokenPayload);
+  const regData = tokenRes.response.regdata;
+  console.log(`[3] Session established! Student Name: ${regData.name}`);
+
+  const session = {
+    token: regData.token,
+    clientid: regData.clientid,
+    instituteid: regData.institutelist[0].value,
+    membertype: regData.membertype
+  };
+
+  console.log(`[4] Fetching attendance metadata...`);
+  const metaRes = await hit('/StudentClassAttendance/getstudentInforegistrationforattendence', {
+    clientid: session.clientid,
+    instituteid: session.instituteid,
+    membertype: session.membertype
+  }, session.token);
+
+  const semesters = metaRes.response.semlist || [];
+  if (!semesters || semesters.length === 0) {
+    throw new Error("No semesters found in response");
+  }
+  const latestSem = semesters[0];
+  const header = metaRes.response.headerlist?.[0];
+  const stynumber = header ? (header.stynumber || '2') : '2';
+
+  console.log(`\n=================== LIVE SECTOR PORTAL REPORT ===================`);
+  
+  for (const sem of semesters) {
+    try {
+      console.log(`\n[+] Syncing Semester: ${sem.registrationcode}...`);
+      const attendancePayload = serialize_payload({
+        clientid: session.clientid,
+        instituteid: session.instituteid,
+        registrationcode: sem.registrationcode,
+        registrationid: sem.registrationid,
+        stynumber: stynumber
+      });
+
+      const attRes = await hit('/StudentClassAttendance/getstudentattendancedetail', attendancePayload, session.token);
+      const list = attRes.response.studentattendancelist || [];
+      
+      if (list.length === 0) {
+        console.log(`    ↳ No active attendance records uploaded yet.`);
+      } else {
+        console.table(list.map(sub => ({
+          'Subject Code': sub.subjectcode,
+          'Lecture %': sub.Lpercentage !== null ? `${sub.Lpercentage}%` : '—',
+          'Tutorial %': sub.Tpercentage !== null ? `${sub.Tpercentage}%` : '—',
+          'Practical %': sub.Ppercentage !== null ? `${sub.Ppercentage}%` : '—',
+          'Combined %': `${sub.LTpercantage}%`
+        })));
+      }
+    } catch (semErr) {
+      console.log(`    ❌ Failed to fetch: ${semErr.message}`);
+    }
+  }
+  console.log("\n=============================================================\n");
+}
+
+run().catch(e => {
+  console.error("\n❌ Live Verification Failed:\n", e.message);
+});

@@ -607,18 +607,23 @@ function App() {
  
         {/* Canteen Ticket Glass Popup Modal Overlay */}
         {showCanteenTicketModal && (() => {
-          const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
-          const orderStr = localStorage.getItem(`cp_order_${username}`);
-          const order = orderStr ? JSON.parse(orderStr) : null;
-          
-          if (!order) return null;
+          try {
+            const username = currentUser.email ? currentUser.email.split('@')[0] : 'user';
+            const orderStr = localStorage.getItem(`cp_order_${username}`);
+            const order = orderStr ? JSON.parse(orderStr) : null;
+            
+            if (!order) return null;
 
-          return (
-            <CanteenTicketModal 
-              order={order} 
-              onClose={() => setShowCanteenTicketModal(false)} 
-            />
-          );
+            return (
+              <CanteenTicketModal 
+                order={order} 
+                onClose={() => setShowCanteenTicketModal(false)} 
+              />
+            );
+          } catch (e) {
+            console.error("Failed to parse cp_order from localStorage:", e);
+            return null;
+          }
         })()}
 
       </div>
