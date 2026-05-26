@@ -161,7 +161,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
             {isStudent && (
               <div
                 onClick={() => onTileClick('student_dashboard')}
-                className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border-2 border-amber-500/30 rounded-[28px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+                className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border-2 border-amber-500/30 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
               >
                 <div className="flex items-center gap-3.5">
                   <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300" size={24} />
@@ -179,7 +179,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
           {(isStudent || isCanteenAdmin) && (
             <div
               onClick={() => onTileClick('canteen')}
-              className="cursor-pointer bg-orange-500/[0.03] backdrop-blur-3xl rounded-[28px] p-6 text-white h-[185px] border-2 border-orange-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_30px_rgba(249,115,22,0.08)] flex flex-col justify-between relative overflow-hidden group transition-all duration-300 active:scale-[0.99]"
+              className="cursor-pointer bg-orange-500/[0.03] backdrop-blur-3xl rounded-[28px] p-5 text-white h-[185px] border-2 border-orange-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_30px_rgba(249,115,22,0.08)] flex flex-col justify-between relative overflow-hidden group transition-all duration-300 active:scale-[0.99]"
             >
 
               <div className="flex justify-between items-start w-full z-10 text-left">
@@ -232,17 +232,13 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               </div>
             )}
           </div>
-        </div>
-
-        {/* Secondary Services List */}
-        {isStudent && (
-          <div className="flex flex-col gap-3 mt-2">
-
+          {/* Row of side-by-side cards: Shelf & Calendar */}
+          {isStudent && (
             <div className="grid grid-cols-2 gap-4 w-full">
               {/* Study Materials */}
               <div
                 onClick={() => onTileClick('materials')}
-                className="cursor-pointer bg-cyan-500/[0.03] backdrop-blur-3xl border border-cyan-500/25 rounded-[24px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+                className="cursor-pointer bg-cyan-500/[0.03] backdrop-blur-3xl border-2 border-cyan-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
               >
                 <div className="flex items-center gap-3.5">
                   <BookOpen className="text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300" size={22} />
@@ -254,7 +250,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               {/* Academic Calendar */}
               <div
                 onClick={() => onTileClick('calendar')}
-                className="cursor-pointer bg-rose-500/[0.03] backdrop-blur-3xl border border-rose-500/25 rounded-[24px] p-6 h-[85px] flex items-center justify-between transition-all duration-300 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+                className="cursor-pointer bg-rose-500/[0.03] backdrop-blur-3xl border-2 border-rose-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
               >
                 <div className="flex items-center gap-3.5">
                   <Calendar className="text-rose-400 group-hover:text-rose-300 transition-colors duration-300" size={22} />
@@ -263,11 +259,8 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                 <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
               </div>
             </div>
-
-
-
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
