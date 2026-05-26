@@ -70,7 +70,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
       <div className="w-full flex flex-col gap-6">
         
         {/* Header greeting & Controls */}
-        <header className="flex justify-between items-center w-full mt-4">
+        <header className="flex justify-between items-center w-full mt-4 border-b border-white/10 pb-4">
           <div className="flex flex-col items-start text-left select-none animate-fadeIn" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
             <span className="text-[22px] font-light text-white/95 leading-tight tracking-tight">
               Hello,
@@ -163,14 +163,8 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                 onClick={() => onTileClick('student_dashboard')}
                 className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border-2 border-amber-500/30 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
               >
-                <div className="flex items-center gap-3.5">
-                  <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300" size={24} />
-                  <div className="text-left flex flex-col">
-                    <span className="text-white font-extrabold text-sm tracking-wide">Student Dashboard</span>
-                    <span className="text-[9px] font-bold text-slate-400 font-mono tracking-widest uppercase mt-0.5">JPORTAL CLIENT LINKED</span>
-                  </div>
-                </div>
-                <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
+                <span className="text-white font-extrabold text-sm tracking-wide text-left">Student Dashboard</span>
+                <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300 shrink-0" size={24} />
               </div>
             )}
 
@@ -240,11 +234,8 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                 onClick={() => onTileClick('materials')}
                 className="cursor-pointer bg-cyan-500/[0.03] backdrop-blur-3xl border-2 border-cyan-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
               >
-                <div className="flex items-center gap-3.5">
-                  <BookOpen className="text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300" size={22} />
-                  <span className="text-white font-extrabold text-sm tracking-wide">Shelf</span>
-                </div>
-                <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
+                <span className="text-white font-extrabold text-sm tracking-wide">Shelf</span>
+                <BookOpen className="text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300" size={22} />
               </div>
 
               {/* Academic Calendar */}
@@ -252,11 +243,8 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                 onClick={() => onTileClick('calendar')}
                 className="cursor-pointer bg-rose-500/[0.03] backdrop-blur-3xl border-2 border-rose-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
               >
-                <div className="flex items-center gap-3.5">
-                  <Calendar className="text-rose-400 group-hover:text-rose-300 transition-colors duration-300" size={22} />
-                  <span className="text-white font-extrabold text-sm tracking-wide">Calendar</span>
-                </div>
-                <ArrowRight size={14} className="text-slate-400 group-hover:text-white transition-colors duration-300 stroke-[3px]" />
+                <span className="text-white font-extrabold text-sm tracking-wide">Calendar</span>
+                <Calendar className="text-rose-400 group-hover:text-rose-300 transition-colors duration-300" size={22} />
               </div>
             </div>
           )}

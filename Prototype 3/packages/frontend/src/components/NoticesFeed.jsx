@@ -157,10 +157,10 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
           {['All', 'High', 'Medium', 'Low'].map((p) => (
             <button
               key={p}
-              className={`py-1.5 px-4 text-[9px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
+              className={`py-1.5 px-4 text-[9px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
                 filterPriority === p
-                  ? 'bg-white text-[#141a27] shadow-md font-black'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] font-black'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
               onClick={() => setFilterPriority(p)}
               type="button"

@@ -213,13 +213,13 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
 
       {/* Segmented Tab Switcher */}
       <div className="flex justify-center w-full py-1 shrink-0 select-none animate-fadeIn">
-        <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner">
+        <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner backdrop-blur-md">
           <button
             onClick={() => setViewTab('listings')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
+            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
               viewTab === 'listings'
-                ? 'bg-white text-[#141a27] shadow-md font-extrabold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
             type="button"
           >
@@ -227,10 +227,10 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
           </button>
           <button
             onClick={() => setViewTab('ongoing')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
+            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
               viewTab === 'ongoing'
-                ? 'bg-white text-[#141a27] shadow-md font-extrabold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
             type="button"
           >
@@ -283,12 +283,14 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
 
       {/* Search Input Filter */}
       {viewTab === 'listings' && (
-        <div className="search-filter-container w-full mt-0 mb-[-6px]">
-          <div className="relative flex items-center">
-            <Search size={16} className="absolute left-4 text-slate-400" />
+        <div className="search-filter-container w-full mt-0 !mb-0">
+          <div className="relative flex items-center w-full">
+            <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 z-10">
+              <Search size={16} />
+            </span>
             <input
               type="text"
-              className="w-full bg-white/[0.04] border border-white/10 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 text-white placeholder-slate-400 pl-11 pr-10 py-3.5 rounded-2xl text-xs font-semibold backdrop-blur-md"
+              className="w-full bg-white/[0.04] border border-white/10 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 text-white placeholder-slate-400 pl-11 pr-10 py-3.5 rounded-2xl text-xs font-semibold backdrop-blur-md text-left placeholder:text-left"
               placeholder="Search for skills, listings, or students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

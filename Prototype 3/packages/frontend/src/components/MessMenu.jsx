@@ -109,13 +109,13 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
 
       {/* Segmented Tab Switcher shifted below the heading */}
       <div className="flex justify-center w-full py-1 shrink-0 select-none">
-        <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner">
+        <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner backdrop-blur-md">
           <button
             onClick={() => setViewMode('daily')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
+            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
               viewMode === 'daily'
-                ? 'bg-white text-[#141a27] shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
             type="button"
           >
@@ -123,10 +123,10 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
           </button>
           <button
             onClick={() => setViewMode('weekly')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer ${
+            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
               viewMode === 'weekly'
-                ? 'bg-white text-[#141a27] shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
             type="button"
           >

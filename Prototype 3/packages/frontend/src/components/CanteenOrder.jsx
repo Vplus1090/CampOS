@@ -500,7 +500,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
           
           {/* Glassmorphic Search Bar */}
           <div className="relative w-full">
-            <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
+            <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 z-10">
               <Search size={16} />
             </span>
             <input
@@ -508,7 +508,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search canteen menu..."
-              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-400 outline-none focus:border-orange-500/50 transition-all duration-300 shadow-inner"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-400 outline-none focus:border-orange-500/50 transition-all duration-300 shadow-inner backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
             />
           </div>
 

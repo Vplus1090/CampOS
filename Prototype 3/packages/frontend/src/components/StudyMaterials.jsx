@@ -184,7 +184,7 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
               <select
                 value={shelfBranch}
                 onChange={(e) => setShelfBranch(e.target.value)}
-                className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-cyan-400/50 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-cyan-400/50 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] backdrop-blur-md"
               >
                 <option className="bg-[#141a27]" value="All Branches">All Branches</option>
                 <option className="bg-[#141a27]" value="Computer Science">Computer Science</option>
@@ -204,7 +204,7 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
               <select
                 value={shelfSemester}
                 onChange={(e) => setShelfSemester(e.target.value)}
-                className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-cyan-400/50 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-cyan-400/50 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] backdrop-blur-md"
               >
                 <option className="bg-[#141a27]" value="All Semesters">All Semesters</option>
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -228,7 +228,7 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
                 onClick={() => setShelfCategory(cat)}
                 className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-300 border ${
                   isActive
-                    ? 'bg-white text-[#141a27] border-white shadow-lg font-extrabold'
+                    ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] font-extrabold'
                     : 'bg-white/[0.06] hover:bg-white/[0.12] text-white border-white/15 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] cursor-pointer'
                 }`}
               >
