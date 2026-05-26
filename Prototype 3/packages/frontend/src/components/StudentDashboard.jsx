@@ -433,7 +433,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
     <div className="flex flex-col gap-4 text-white font-sans h-full w-full select-none pb-28 relative min-h-screen bg-transparent">
       
       {/* ─── Compact Glass Page Header ─── */}
-      <header className="flex items-center w-full mt-6 pb-2 shrink-0 justify-between animate-fadeIn z-10">
+      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between animate-fadeIn z-10">
         <div className="flex items-center">
           <button
             onClick={onClose}
@@ -442,7 +442,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
           >
             <ArrowLeft size={18} />
           </button>
-          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-xl font-black text-white leading-none tracking-tight font-sans">
+          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
             Student Portal
           </h2>
         </div>
@@ -641,15 +641,15 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 <div className="grid grid-cols-2 gap-3">
                   
                   {/* Semester Dropdown Selector */}
-                  <div className={`${obsidianCardClass} p-3 flex flex-col gap-1.5 text-left`}>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Academic Term</span>
+                  <div className={`${obsidianCardClass} !pt-3 !pb-3.5 !px-5 flex flex-col gap-1 text-left`}>
+                    <span className="text-[9px] font-black text-slate-400/90 uppercase tracking-widest font-mono">Academic Term</span>
                     <select
                       value={selectedSemester?.registrationid || ''}
                       onChange={(e) => {
                         const match = Array.isArray(semestersList) ? semestersList.find(s => s.registrationid === e.target.value) : null;
                         if (match) handleSemesterChange(match);
                       }}
-                      className="bg-transparent text-slate-200 text-xs font-bold w-full outline-none cursor-pointer font-sans border-none p-0 focus:ring-0"
+                      className="bg-transparent text-slate-200 text-[13px] font-black w-full outline-none cursor-pointer font-sans border-none p-0 pl-0 ml-[-3px] focus:ring-0"
                     >
                       {Array.isArray(semestersList) && semestersList.map((sem, sidx) => (
                         <option key={sidx} value={sem.registrationid} className="bg-[#121620] text-slate-200 font-sans">
@@ -660,9 +660,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   </div>
 
                   {/* Attendance Goal Selector */}
-                  <div className={`${obsidianCardClass} p-3 flex flex-col gap-1.5 text-left`}>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Goal Margin</span>
-                    <div className="flex items-center gap-1">
+                  <div className={`${obsidianCardClass} !pt-3 !pb-3.5 !px-5 flex flex-col gap-1 text-left`}>
+                    <span className="text-[9px] font-black text-slate-400/90 uppercase tracking-widest font-mono">Goal Margin</span>
+                    <div className="flex items-center gap-1.5">
                       <input
                         type="number"
                         min="60"
@@ -673,9 +673,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           setGoalPercentage(val);
                           setAttendanceGoal(val);
                         }}
-                        className="bg-transparent text-indigo-400 text-xs font-extrabold outline-none w-10 font-mono p-0 border-none focus:ring-0"
+                        className="bg-transparent text-indigo-400 text-sm font-black outline-none w-8 font-mono p-0 border-none focus:ring-0 leading-none"
                       />
-                      <span className="text-slate-400 text-xs font-bold font-mono">% threshold</span>
+                      <span className="text-slate-400 text-xs font-extrabold font-mono select-none">% target</span>
                     </div>
                   </div>
 
