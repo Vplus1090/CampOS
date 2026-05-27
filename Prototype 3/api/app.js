@@ -95,8 +95,9 @@ app.use(async (_req, _res, next) => {
 });
 
 // ─── Routes ─────────────────────────────────────────────────────────────────────
-
+// Mount twice: local/Render use /api/* ; Vercel strips the /api prefix before Express.
 app.use('/api', routes);
+app.use(routes);
 
 // ─── Error Handling ─────────────────────────────────────────────────────────────
 

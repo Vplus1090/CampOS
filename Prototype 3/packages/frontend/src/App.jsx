@@ -11,6 +11,7 @@ import LockScreen from './components/LockScreen';
 import PeerChat from './components/PeerChat';
 import StudentDashboard from './components/StudentDashboard';
 import { API_BASE } from './config/api';
+import { parseJsonResponse } from './utils/parseJsonResponse';
 import './App.css';
 
 function App() {

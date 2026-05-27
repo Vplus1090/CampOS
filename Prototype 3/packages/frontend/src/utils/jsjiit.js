@@ -221,7 +221,7 @@ export class WebPortal {
       authenticated: true
     });
     
-    const currentSem = checkRes.response.studentlov.currentsemester;
+    const currentSem = checkRes.response?.studentlov?.currentsemester;
     
     // Now fetch SGPA list
     const path = "/studentsgpacgpa/getallsemesterdata";
@@ -236,7 +236,7 @@ export class WebPortal {
       authenticated: true
     });
     
-    return res.response;
+    return { ...res.response, currentSemester: currentSem };
   }
 
   async get_attendance_meta() {

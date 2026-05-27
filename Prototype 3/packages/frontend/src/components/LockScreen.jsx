@@ -4,6 +4,7 @@ import MessMenu from './MessMenu';
 import StudyMaterials from './StudyMaterials';
 import AcademicCalendar from './AcademicCalendar';
 import { API_BASE } from '../config/api';
+import { parseJsonResponse } from '../utils/parseJsonResponse';
 
 export default function LockScreen({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -114,7 +115,7 @@ export default function LockScreen({ onLoginSuccess }) {
         credentials: 'include',
       });
 
-      const data = await res.json();
+      const data = await parseJsonResponse(res);
       if (!res.ok) throw new Error(data.message || 'Login failed');
 
       onLoginSuccess(data.user);

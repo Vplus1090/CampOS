@@ -22,6 +22,7 @@ import {
   calculateClassesNeeded, calculateClassesCanMiss
 } from '../utils/math';
 import { API_BASE } from '../config/api';
+import { resolveCurrentSemesterLabel } from '../utils/semester';
 
 // Premium HSL double-border and glow classes
 const obsidianCardClass = "border-2 border-indigo-500/25 bg-indigo-500/[0.02] shadow-[0_0_25px_rgba(99,102,241,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-3xl rounded-[28px] p-5 relative overflow-hidden transition-all duration-300";
@@ -134,7 +135,13 @@ export default function StudentDashboard({ currentUser, onClose }) {
   const [studentProfile, setStudentProfile] = useState(() => {
     try {
       const cached = localStorage.getItem('profileData');
-      return cached ? JSON.parse(cached) : null;
+      if (!cached) return null;
+      const parsed = JSON.parse(cached);
+      // Drop legacy demo fallback so the next sync picks up the real semester.
+      if (parsed?.semester === 'VI (Junior)') {
+        parsed.semester = '—';
+      }
+      return parsed;
     } catch (e) {
       console.warn("Failed to parse cached profileData:", e);
       return null;
@@ -264,23 +271,23 @@ export default function StudentDashboard({ currentUser, onClose }) {
       // 2. Fetch Student Profile
       setSyncPhase('fetching_profile');
       const profile = await wp.get_personal_info();
+      let sgpaCurrentSem = null;
       const profileData = {
         name: profile?.generalinformation?.name || session.name,
         enrollment: profile?.generalinformation?.enrollmentno || session.enrollmentno,
-        branch: profile?.generalinformation?.branch || 'Computer Science & Engineering',
-        semester: profile?.generalinformation?.currentsemester || 'VI (Junior)',
-        hostel: profile?.hostelinformation?.hostelname || 'H-3 (Residency)',
+        branch: profile?.generalinformation?.branch || '—',
+        semester: '—',
+        hostel: profile?.hostelinformation?.hostelname || '—',
         room: profile?.hostelinformation?.roomno || 'Not Assigned',
         address: profile?.parentinformation?.permanentaddress || 'Not Available',
-        parents: profile?.parentinformation?.fathername || 'Father Name'
+        parents: profile?.parentinformation?.fathername || '—'
       };
-      setStudentProfile(profileData);
-      saveProfileDataToCache(profileData);
 
-      // 3. Fetch SGPA/CGPA and Semester lists
+      // 3. Fetch SGPA/CGPA (includes authoritative current semester stynumber)
       setSyncPhase('fetching_meta');
       try {
         const sgpaObj = await wp.get_sgpa_cgpa();
+        sgpaCurrentSem = sgpaObj.currentSemester ?? sgpaObj.studentlov?.currentsemester;
         const sortedSems = [...(sgpaObj.semesterList || [])].sort((a, b) => Number(a.stynumber) - Number(b.stynumber));
       } catch (sgpaErr) {
         console.warn('SGPA/CGPA fetch failure bypassed:', sgpaErr);
@@ -328,6 +335,18 @@ export default function StudentDashboard({ currentUser, onClose }) {
       const selectedSem = mappedSems[activeSemIndex] || mappedSems[0];
       setSelectedSemester(selectedSem);
       setAttendanceList(activeParsedAttendance.length > 0 ? activeParsedAttendance : []);
+
+      profileData.semester = resolveCurrentSemesterLabel({
+        profile,
+        sgpaStynumber: sgpaCurrentSem,
+        attHeader: attMeta.headerlist?.[0],
+        activeSem: selectedSem,
+        semlist: attMeta.semlist,
+      });
+      setStudentProfile(profileData);
+      saveProfileDataToCache(profileData);
+
+      const latestSemObj = attMeta.semlist[activeSemIndex] || attMeta.semlist[0];
 
       // 5. Fetch Grade Card lists
       setSyncPhase('fetching_grades');
@@ -694,7 +713,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Semester</span>
-                  <span className="text-[11px] font-bold text-slate-200">{studentProfile.semester}</span>
+                  <span className="text-[11px] font-bold text-slate-200">{studentProfile?.semester || '—'}</span>
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Residency</span>
