@@ -660,20 +660,34 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white font-sans shadow-md border border-white/10 shrink-0 select-none uppercase">
                     {(studentProfile.name || '').split(' ').map(n => n[0]).join('').substring(0, 2)}
                   </div>
-                  <div>
+                  <div className="flex flex-col gap-2">
                     <h3 className="text-base font-extrabold text-white leading-tight font-sans tracking-wide">{studentProfile.name}</h3>
-                    <span className="text-[9px] font-bold text-indigo-400 font-mono tracking-wider block mt-0.5 uppercase">Enrollment ID: {studentProfile.enrollment}</span>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black text-indigo-400 tracking-widest font-mono uppercase leading-normal">Enrollment ID</span>
+                      <span className="text-[11px] font-bold text-indigo-300 font-mono mt-[-0.5px] leading-normal">{studentProfile.enrollment}</span>
+                    </div>
                   </div>
                 </div>
-                {error ? (
-                  <span className="bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0 shadow-sm flex items-center gap-1.5 select-none">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span> Offline
-                  </span>
-                ) : (
-                  <span className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shrink-0 shadow-sm animate-pulse flex items-center gap-1.5 select-none">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Live Synced
-                  </span>
-                )}
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  {error ? (
+                    <span className="bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span> Offline
+                    </span>
+                  ) : (
+                    <span className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5 select-none leading-none">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Live Synced
+                    </span>
+                  )}
+                  
+                  <button
+                    onClick={() => handlePortalSync(enrollmentNo, password)}
+                    disabled={isSyncing}
+                    className="px-2.5 py-1.5 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-indigo-500/30 text-slate-300 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition duration-300 active:scale-95 cursor-pointer flex items-center gap-1 leading-none shadow-sm disabled:opacity-50"
+                  >
+                    <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
+                    {isSyncing ? "Syncing..." : "Sync Again"}
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2 w-full pt-3.5 border-t border-white/10 text-left font-sans">
