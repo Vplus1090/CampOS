@@ -124,6 +124,9 @@ code {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+.overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
 
 /* Mobile device frame simulation */
 .mobile-device-simulator {

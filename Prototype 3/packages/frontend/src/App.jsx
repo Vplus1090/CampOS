@@ -6,6 +6,7 @@ import CanteenOrder from './components/CanteenOrder';
 import MessMenu from './components/MessMenu';
 import StudyMaterials from './components/StudyMaterials';
 import AcademicCalendar from './components/AcademicCalendar';
+import Timetable from './components/Timetable';
 import MetroStartScreen from './components/MetroStartScreen';
 import LockScreen from './components/LockScreen';
 import PeerChat from './components/PeerChat';
@@ -507,9 +508,9 @@ function App() {
           <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
         </div>
 
-        <main className={`flex-1 scrollbar-none bg-transparent relative z-10 ${
-          (activeTab === 'materials' || activeTab === 'calendar' || activeTab === 'peerchat' || activeTab === 'student_dashboard') 
-            ? 'overflow-hidden flex flex-col h-full' 
+        <main className={`flex-1 min-h-0 scrollbar-none bg-transparent relative z-10 ${
+          (activeTab === 'materials' || activeTab === 'calendar' || activeTab === 'peerchat' || activeTab === 'student_dashboard' || activeTab === 'timetable') 
+            ? 'overflow-hidden flex flex-col' 
             : 'overflow-y-auto'
         }`}>
           {activeTab === 'home' && (
@@ -582,6 +583,12 @@ function App() {
           )}
           {activeTab === 'calendar' && allowedTabs.includes('calendar') && (
             <AcademicCalendar setActiveTab={setActiveTab} />
+          )}
+          {activeTab === 'timetable' && (
+            <Timetable 
+              currentUser={currentUser}
+              setActiveTab={setActiveTab}
+            />
           )}
           {activeTab === 'student_dashboard' && (
             <StudentDashboard 

@@ -5,7 +5,7 @@ import {
   DollarSign, CheckCircle2, AlertTriangle, TrendingUp,
   ChevronDown, ChevronUp, RefreshCw, X, Shield, Lock, 
   MapPin, Phone, Mail, User, Building, Landmark, Percent,
-  ArrowLeft, Download, Eye, EyeOff, Calculator, Grid3x3, ListFilter, SortAsc, SortDesc, Archive
+  ArrowLeft, Download, Eye, EyeOff, Calculator, Grid3x3, ListFilter, SortAsc, SortDesc, Archive, Plus, Trash2
 } from 'lucide-react';
 import { WebPortal } from '../utils/jsjiit';
 import { 
@@ -24,9 +24,9 @@ import {
 import { API_BASE } from '../config/api';
 import { resolveCurrentSemesterLabel, formatStyNumber } from '../utils/semester';
 
-// Premium HSL double-border and glow classes
-const obsidianCardClass = "border-2 border-indigo-500/25 bg-indigo-500/[0.02] shadow-[0_0_25px_rgba(99,102,241,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-3xl rounded-[28px] p-5 relative overflow-hidden transition-all duration-300";
-const obsidianCardHoverClass = "hover:border-indigo-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.08)]";
+// Premium ultra-glassy frosted card styles
+const obsidianCardClass = "border border-white/[0.08] bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl rounded-[28px] p-5 relative overflow-hidden transition-all duration-300";
+const obsidianCardHoverClass = "hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.1)]";
 
 const gradePointMap = {
   "A+": 10,
@@ -104,6 +104,68 @@ const parseJPortalAttendance = (rawList) => {
     });
   });
   return parsed;
+};
+
+const parseIcsContent = (text) => {
+  const events = [];
+  const vevents = text.split('BEGIN:VEVENT');
+  vevents.shift(); // remove header
+  
+  vevents.forEach(block => {
+    const summaryMatch = block.match(/SUMMARY:(.*)/);
+    const locationMatch = block.match(/LOCATION:(.*)/);
+    const descriptionMatch = block.match(/DESCRIPTION:(.*)/);
+    const dtstartMatch = block.match(/DTSTART;?(?:TZID=.*)?:(\d{8}T\d{6}Z?|\d{8})/);
+    const dtendMatch = block.match(/DTEND;?(?:TZID=.*)?:(\d{8}T\d{6}Z?|\d{8})/);
+    const rruleMatch = block.match(/RRULE:(.*)/);
+    
+    if (summaryMatch) {
+      const subject = summaryMatch[1].trim();
+      const room = locationMatch ? locationMatch[1].trim() : 'LT-1';
+      const instructor = descriptionMatch ? descriptionMatch[1].trim().split('\\n')[0].replace(/\\/g, '') : 'Faculty';
+      
+      // Parse days/time
+      let day = 'Monday';
+      if (rruleMatch) {
+        const byday = rruleMatch[1].match(/BYDAY=([A-Z,]+)/);
+        if (byday) {
+          const dayMap = { 'MO': 'Monday', 'TU': 'Tuesday', 'WE': 'Wednesday', 'TH': 'Thursday', 'FR': 'Friday', 'SA': 'Saturday' };
+          day = dayMap[byday[1].split(',')[0]] || 'Monday';
+        }
+      }
+      
+      // Time formatting from DTSTART
+      let timeStr = '09:00 AM - 09:50 AM';
+      if (dtstartMatch && dtendMatch) {
+        const start = dtstartMatch[1];
+        const end = dtendMatch[1];
+        if (start.includes('T') && end.includes('T')) {
+          const sTime = start.split('T')[1].substring(0,4); // e.g. "0900"
+          const eTime = end.split('T')[1].substring(0,4);   // e.g. "0950"
+          
+          const formatHour = (hhmm) => {
+            let h = parseInt(hhmm.substring(0,2));
+            const m = hhmm.substring(2,4);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            if (h === 0) h = 12;
+            return `${h}:${m} ${ampm}`;
+          };
+          timeStr = `${formatHour(sTime)} - ${formatHour(eTime)}`;
+        }
+      }
+      
+      events.push({
+        day,
+        time: timeStr,
+        subject,
+        room,
+        instructor,
+        type: subject.toLowerCase().includes('lab') ? 'lab' : 'lecture'
+      });
+    }
+  });
+  return events;
 };
 
 export default function StudentDashboard({ currentUser, onClose }) {
@@ -248,6 +310,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
   const [marksCacheTimestamp, setMarksCacheTimestamp] = useState(null);
   const [timetableEvents, setTimetableEvents] = useState([]);
   const [feeInvoices, setFeeInvoices] = useState([]);
+  const [feesLoading, setFeesLoading] = useState(false);
+  const [feesError, setFeesError] = useState(null);
+  const [isFeesFromCache, setIsFeesFromCache] = useState(false);
+  const [feesCacheTimestamp, setFeesCacheTimestamp] = useState(null);
   const [examScheduleList, setExamScheduleList] = useState([]);
 
   // --- Real-time Synchronized Component Marks Cache ---
@@ -330,6 +396,19 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 setMarksSemesterData(cachedMarks);
               }
             });
+          }
+        }
+      });
+
+      // Load Fee Invoices
+      const feeCacheKey = 'feeInvoices-' + cachedEnroll;
+      localStorage.getItem(feeCacheKey) && getFromCache(feeCacheKey).then(cached => {
+        if (cached) {
+          const list = cached.data || cached;
+          if (list && list.length > 0) {
+            setFeeInvoices(list);
+            setIsFeesFromCache(true);
+            setFeesCacheTimestamp(cached.timestamp);
           }
         }
       });
@@ -494,23 +573,34 @@ export default function StudentDashboard({ currentUser, onClose }) {
       try {
         const timetableRes = await wp.get_registered_subjects_and_faculties(latestSemObj);
         const rawSubjects = timetableRes.subjectlist || [];
-        const parsedTimetable = rawSubjects.map((sub, sidx) => {
-          // Reconstruct dynamic daily timetable entries
+        const parsedTimetable = [];
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        
+        rawSubjects.forEach((sub, sidx) => {
           const times = [
             '09:00 AM - 09:50 AM', '10:00 AM - 10:50 AM', 
             '11:00 AM - 11:50 AM', '01:00 PM - 01:50 PM', 
             '02:00 PM - 02:50 PM', '03:00 PM - 03:50 PM'
           ];
           const rooms = ['LT-1', 'LT-2', 'LT-3', 'CL-1', 'CL-2', 'CL-3'];
-          return {
-            time: times[sidx % times.length],
-            subject: sub.subjectdesc || sub.subjectcode,
-            room: rooms[sidx % rooms.length],
-            instructor: sub.employeename || 'Dr. Sandeep Kumar',
-            type: sub.subjectdesc.toLowerCase().includes('lab') ? 'lab' : 'lecture'
-          };
+          
+          // Distribute each course to 2 different weekdays dynamically
+          const numDays = 2;
+          for (let i = 0; i < numDays; i++) {
+            const dayIdx = (sidx + i * 2) % days.length;
+            parsedTimetable.push({
+              day: days[dayIdx],
+              time: times[(sidx + i) % times.length],
+              subject: sub.subjectdesc || sub.subjectcode,
+              room: rooms[(sidx + i) % rooms.length],
+              instructor: sub.employeename || 'Dr. Sandeep Kumar',
+              type: (sub.subjectdesc || '').toLowerCase().includes('lab') ? 'lab' : 'lecture'
+            });
+          }
         });
+        
         setTimetableEvents(parsedTimetable);
+        saveToCache('timetableEvents-' + enroll, parsedTimetable, 168); // 7-day cache TTL
       } catch (ttErr) {
         console.warn('Timetable mapping failure bypassed:', ttErr);
       }
@@ -529,14 +619,19 @@ export default function StudentDashboard({ currentUser, onClose }) {
         }));
         // Use realistic defaults if fees list is empty
         if (parsedFees.length === 0) {
-          setFeeInvoices([
+          const defaultFees = [
             { sem: 'Semester VI', desc: 'Academic Tuition Fee', amount: '₹1,32,500', status: 'PAID', date: 'Jan 12, 2026', txId: 'TXN603912' },
             { sem: 'Semester VI', desc: 'Hostel & Mess Fee', amount: '₹85,000', status: 'PAID', date: 'Jan 12, 2026', txId: 'TXN603956' },
             { sem: 'Semester V', desc: 'Academic Tuition Fee', amount: '₹1,24,000', status: 'PAID', date: 'Jul 15, 2025', txId: 'TXN508129' }
-          ]);
+          ];
+          setFeeInvoices(defaultFees);
+          saveToCache('feeInvoices-' + enroll, defaultFees, 48);
         } else {
           setFeeInvoices(parsedFees);
+          saveToCache('feeInvoices-' + enroll, parsedFees, 48);
         }
+        setIsFeesFromCache(false);
+        setFeesCacheTimestamp(null);
       } catch (feeErr) {
         console.warn('Fees mapping failure bypassed:', feeErr);
       }
@@ -950,6 +1045,43 @@ export default function StudentDashboard({ currentUser, onClose }) {
     }
   };
 
+  const fetchFreshFees = async (force = false) => {
+    if (feesLoading) return;
+    setFeesLoading(true);
+    setFeesError(null);
+    const enroll = getUsername(currentUser?.email);
+    try {
+      const feesObj = await wp.get_fee_summary();
+      const rawFeesList = feesObj.feesummarylist || [];
+      const parsedFees = rawFeesList.map(fee => ({
+        sem: fee.registrationcode || 'Current Term',
+        desc: fee.feecode || 'Tuition Fees',
+        amount: `₹${Number(fee.demandamount || 0).toLocaleString('en-IN')}`,
+        status: Number(fee.balanceamount || 0) === 0 ? 'PAID' : 'PENDING',
+        date: fee.receiptdate || 'Paid',
+        txId: fee.receiptno || 'TXN603912'
+      }));
+
+      const finalFees = parsedFees.length > 0 ? parsedFees : [
+        { sem: 'Semester VI', desc: 'Academic Tuition Fee', amount: '₹1,32,500', status: 'PAID', date: 'Jan 12, 2026', txId: 'TXN603912' },
+        { sem: 'Semester VI', desc: 'Hostel & Mess Fee', amount: '₹85,000', status: 'PAID', date: 'Jan 12, 2026', txId: 'TXN603956' },
+        { sem: 'Semester V', desc: 'Academic Tuition Fee', amount: '₹1,24,000', status: 'PAID', date: 'Jul 15, 2025', txId: 'TXN508129' }
+      ];
+
+      setFeeInvoices(finalFees);
+      if (enroll) {
+        await saveToCache('feeInvoices-' + enroll, finalFees, 48);
+        setIsFeesFromCache(false);
+        setFeesCacheTimestamp(null);
+      }
+    } catch (err) {
+      console.warn('Fees mapping failure:', err);
+      setFeesError('Unable to connect to registry. Please try again.');
+    } finally {
+      setFeesLoading(false);
+    }
+  };
+
   // Grade card semester dropdown handler
   const handleGradeCardSemChange = async (value) => {
     setGradeCardLoading(true);
@@ -1091,6 +1223,18 @@ export default function StudentDashboard({ currentUser, onClose }) {
             Student Dashboard
           </h2>
         </div>
+
+        {isAuthenticated && (
+          <button
+            onClick={() => handlePortalSync(enrollmentNo, password)}
+            disabled={isSyncing}
+            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-indigo-500/30 text-white hover:text-indigo-300 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0 disabled:opacity-50"
+            type="button"
+            title="Sync Registry"
+          >
+            <RefreshCw size={18} className={isSyncing ? "animate-spin" : ""} />
+          </button>
+        )}
       </header>
 
       {/* ─── Immersive Portal Login Form (When Unauthenticated) ─── */}
@@ -1201,77 +1345,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
       {/* ─── Fully Synced Dashboard UI Layout (When Authenticated) ─── */}
       {isAuthenticated && (
-        <div className="flex-1 flex flex-col gap-4 min-h-0 z-10">
+        <div className="flex-1 flex flex-col gap-0 min-h-0 z-10">
           
-          {/* Header ID Card (Collapsible Obsidian styling) */}
-          {studentProfile && (
-            <div 
-              className={`${obsidianCardClass} p-5 flex flex-col gap-4 animate-fadeIn transition-all duration-500 ease-in-out origin-top`}
-              style={{
-                maxHeight: showHeaderCard ? '220px' : '0px',
-                opacity: showHeaderCard ? 1 : 0,
-                paddingTop: showHeaderCard ? '1.25rem' : '0px',
-                paddingBottom: showHeaderCard ? '1.25rem' : '0px',
-                marginTop: showHeaderCard ? '0px' : '-1rem',
-                borderWidth: showHeaderCard ? '2px' : '0px',
-                marginBottom: showHeaderCard ? '0px' : '-1rem',
-                pointerEvents: showHeaderCard ? 'auto' : 'none'
-              }}
-            >
-              <div className="flex justify-between items-start w-full">
-                <div className="flex items-center gap-3.5 text-left">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white font-sans shadow-md border border-white/10 shrink-0 select-none uppercase">
-                    {(studentProfile.name || '').split(' ').map(n => n[0]).join('').substring(0, 2)}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-base font-extrabold text-white leading-tight font-sans tracking-wide">{studentProfile.name}</h3>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black text-indigo-400 tracking-widest font-mono uppercase leading-normal">Enrollment ID</span>
-                      <span className="text-[11px] font-bold text-indigo-300 font-mono mt-[-0.5px] leading-normal">{studentProfile.enrollment}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  {error ? (
-                    <span className="bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span> Offline
-                    </span>
-                  ) : (
-                    <span className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5 select-none leading-none">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Live Synced
-                    </span>
-                  )}
-                  
-                  <button
-                    onClick={() => handlePortalSync(enrollmentNo, password)}
-                    disabled={isSyncing}
-                    className="px-2.5 py-1.5 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-indigo-500/30 text-slate-300 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition duration-300 active:scale-95 cursor-pointer flex items-center gap-1 leading-none shadow-sm disabled:opacity-50"
-                  >
-                    <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
-                    {isSyncing ? "Syncing..." : "Sync Again"}
-                  </button>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-3 gap-2 w-full pt-3.5 border-t border-white/10 text-left font-sans">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Branch</span>
-                  <span className="text-[11px] font-bold text-slate-200 truncate">{(studentProfile?.branch || 'Computer Science & Engineering').replace('Computer Science & Engineering', 'CSE')}</span>
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Semester</span>
-                  <span className="text-[11px] font-bold text-slate-200">{studentProfile?.semester || '—'}</span>
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Residency</span>
-                  <span className="text-[11px] font-bold text-indigo-400 font-mono truncate">{studentProfile.hostel}</span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {error && (
-            <div className="mx-1 p-4 bg-rose-500/10 border-2 border-rose-500/30 rounded-[24px] shadow-[0_0_20px_rgba(239,68,68,0.06)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-xl flex flex-col gap-3 text-left animate-fadeIn">
+            <div className="mx-1 mb-4 p-4 bg-rose-500/10 border-2 border-rose-500/30 rounded-[24px] shadow-[0_0_20px_rgba(239,68,68,0.06)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-xl flex flex-col gap-3 text-left animate-fadeIn">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="text-rose-400 shrink-0 mt-0.5 animate-pulse" size={16} />
                 <div className="flex flex-col gap-0.5 flex-1">
@@ -1296,7 +1375,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
           {/* ─── Scroll-locked Content Workspace ─── */}
           <div 
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto scrollbar-none min-h-0 animate-fadeIn pr-1 pt-5 pb-24"
+            className="flex-1 overflow-y-auto scrollbar-none min-h-0 animate-fadeIn pr-1 pt-1.5 pb-24"
           >
             
             {/* 📊 TABS 1: ATTENDANCE BLOCK */}
@@ -1357,13 +1436,13 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   attendanceList.map((item, idx) => {
                     const stat = getBunkStatus(item.attended, item.held);
                     const cardBorder = stat.status === 'danger'
-                      ? 'border-rose-500/25 bg-rose-500/[0.01]'
-                      : 'border-indigo-500/25 bg-indigo-500/[0.02] shadow-[0_0_25px_rgba(99,102,241,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]';
+                      ? 'border-rose-500/30 bg-rose-500/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                      : 'border-white/[0.08] bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)]';
 
                     return (
                       <div 
                         key={idx}
-                        className={`rounded-[28px] border-2 p-5 flex flex-col gap-3.5 backdrop-blur-3xl transition-all duration-300 relative overflow-hidden ${cardBorder}`}
+                        className={`rounded-[28px] border p-5 flex flex-col gap-3.5 backdrop-blur-3xl transition-all duration-300 relative overflow-hidden ${cardBorder}`}
                       >
                         <div className="flex justify-between items-start w-full">
                           <div className="text-left flex-1 min-w-0 pr-3">
@@ -1447,7 +1526,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 
                 {/* ─── Premium Glassy Segmented Switcher (Frosted Glass and Breathtaking) ─── */}
                 <div className="flex justify-center mb-1">
-                  <div className="flex bg-white/[0.04] border border-white/[0.08] backdrop-blur-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] rounded-2xl p-1 select-none w-full">
+                  <div className="flex bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] rounded-2xl p-1 select-none w-full">
                     {[
                       { id: 'overview', icon: <TrendingUp size={14} />, label: 'Overview' },
                       { id: 'marks', icon: <Archive size={14} />, label: 'Marks' },
@@ -1459,8 +1538,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         onClick={() => setGradesSubTab(sub.id)}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-300 active:scale-95 cursor-pointer ${
                           gradesSubTab === sub.id
-                            ? 'bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
-                            : 'text-slate-400 hover:text-white border border-transparent'
+                            ? 'bg-white/[0.08] border border-white/[0.12] text-indigo-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                            : 'text-slate-400 hover:text-white hover:bg-white/[0.02] border border-transparent'
                         }`}
                       >
                         {sub.icon}
@@ -1863,7 +1942,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                       </div>
                                     ) : (
                                       <div className="w-full flex flex-col gap-3">
-                                        <div className="grid grid-cols-4 gap-2 text-left">
+                                        <div className="grid grid-cols-4 gap-2 text-left bg-white/[0.02] border border-white/5 rounded-2xl p-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T1</span>
                                             <span className="text-xs font-mono font-black text-emerald-400">{getExamScore('t1')}</span>
@@ -1903,55 +1982,41 @@ export default function StudentDashboard({ currentUser, onClose }) {
               </div>
             )}
 
-            {/* 📅 TABS 3: TIMETABLE TAB */}
-            {activeTab === 'timetable' && (
-              <div className="flex flex-col gap-3.5 relative pl-6 border-l border-white/10 ml-3 pt-3">
-                
-                {!Array.isArray(timetableEvents) || timetableEvents.length === 0 ? (
-                  <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center ml-[-24px]`}>
-                    <Clock className="text-slate-500" size={24} />
-                    <span className="text-xs text-slate-400 font-semibold">No lectures scheduled for today.</span>
-                  </div>
-                ) : (
-                  timetableEvents.map((item, idx) => {
-                    const markerBg = item.type === 'lab' 
-                      ? 'bg-indigo-500 border-indigo-400' 
-                      : 'bg-purple-500 border-purple-400';
 
-                    return (
-                      <div key={idx} className="relative flex flex-col gap-2 animate-fadeIn text-left">
-                        {/* Circular Timeline Pin */}
-                        <div className={`absolute left-[-30px] top-[3px] w-3 h-3 rounded-full border-2 ${markerBg} shadow-md shadow-black/10`} />
-
-                        {/* Time stamp */}
-                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-mono font-bold tracking-wider leading-none select-none pl-1">
-                          <Clock size={11} /> {item.time}
-                        </div>
-
-                        {/* Detailed glass card */}
-                        <div className={`${obsidianCardClass} p-5 flex justify-between items-start`}>
-                          <div className="flex-1 min-w-0 pr-3">
-                            <h4 className="text-sm font-bold truncate leading-snug">{item.subject}</h4>
-                            <span className="text-[10px] font-semibold text-slate-400 block mt-1.5">{item.instructor}</span>
-                          </div>
-
-                          <div className="shrink-0 rounded-xl bg-white/[0.04] border border-white/5 px-3 py-1.5 flex items-center justify-center font-mono font-extrabold text-[10px] text-indigo-400 shadow-inner tracking-wider">
-                            {item.room}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-
-              </div>
-            )}
 
             {/* 💳 TABS 4: FEES TAB */}
             {activeTab === 'fees' && (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 animate-fadeIn">
                 
-                {!Array.isArray(feeInvoices) || feeInvoices.length === 0 ? (
+                {/* Cache Status Details */}
+                {isFeesFromCache && feesCacheTimestamp && (
+                  <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 font-semibold select-none leading-none mt-[-2px] mb-1">
+                    <Archive size={12} className="text-slate-500" />
+                    <span>Cached: {new Date(feesCacheTimestamp).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    <button 
+                      onClick={() => fetchFreshFees(true)} 
+                      className="text-slate-400 hover:text-white transition ml-0.5 focus:outline-none cursor-pointer"
+                      type="button"
+                      title="Force Refresh Live Fees"
+                    >
+                      <RefreshCw size={11} className={feesLoading ? "animate-spin" : ""} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Loader/Errors */}
+                {feesLoading ? (
+                  <div className="py-16 flex flex-col items-center justify-center gap-3.5 text-center">
+                    <RefreshCw className="animate-spin text-indigo-400" size={24} />
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider animate-pulse">Syncing Tuition Ledger...</span>
+                  </div>
+                ) : feesError ? (
+                  <div className={`${obsidianCardClass} p-6 flex flex-col items-center gap-2.5 text-center`}>
+                    <AlertTriangle className="text-rose-400 animate-bounce" size={24} />
+                    <span className="text-xs text-rose-300 font-bold leading-normal">{feesError}</span>
+                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-1">Please try again later.</span>
+                  </div>
+                ) : !Array.isArray(feeInvoices) || feeInvoices.length === 0 ? (
                   <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
                     <DollarSign className="text-slate-500" size={24} />
                     <span className="text-xs text-slate-400 font-semibold">No invoice records available.</span>
@@ -2037,6 +2102,59 @@ export default function StudentDashboard({ currentUser, onClose }) {
             {activeTab === 'profile' && studentProfile && (
               <div className="flex flex-col gap-4">
                 
+                {/* Frosted glass ID Card */}
+                <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 animate-fadeIn`}>
+                  <div className="flex justify-between items-start w-full">
+                    <div className="flex items-center gap-3.5 text-left">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white font-sans shadow-md border border-white/10 shrink-0 select-none uppercase">
+                        {(studentProfile.name || '').split(' ').map(n => n[0]).join('').substring(0, 2)}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <h3 className="text-base font-extrabold text-white leading-tight font-sans tracking-wide">{studentProfile.name}</h3>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] font-black text-indigo-400 tracking-widest font-mono uppercase leading-normal">Enrollment ID</span>
+                          <span className="text-[11px] font-bold text-indigo-300 font-mono mt-[-0.5px] leading-normal">{studentProfile.enrollment}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      {error ? (
+                        <span className="bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span> Offline
+                        </span>
+                      ) : (
+                        <span className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5 select-none leading-none">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Live Synced
+                        </span>
+                      )}
+                      
+                      <button
+                        onClick={() => handlePortalSync(enrollmentNo, password)}
+                        disabled={isSyncing}
+                        className="px-2.5 py-1.5 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-indigo-500/30 text-slate-300 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition duration-300 active:scale-95 cursor-pointer flex items-center gap-1 leading-none shadow-sm disabled:opacity-50"
+                      >
+                        <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
+                        {isSyncing ? "Syncing..." : "Sync Again"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 w-full pt-3.5 border-t border-white/10 text-left font-sans">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Branch</span>
+                      <span className="text-[11px] font-bold text-slate-200 truncate">{(studentProfile?.branch || 'Computer Science & Engineering').replace('Computer Science & Engineering', 'CSE')}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Semester</span>
+                      <span className="text-[11px] font-bold text-slate-200">{studentProfile?.semester || '—'}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Residency</span>
+                      <span className="text-[11px] font-bold text-indigo-400 font-mono truncate">{studentProfile.hostel}</span>
+                    </div>
+                  </div>
+                </div>
+                
                 <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left animate-fadeIn`}>
                   <h4 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
                     <User size={15} /> Student Registry Details
@@ -2089,11 +2207,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
           </div>
 
           {/* ─── Glass Pill Navigation (icons only) ─── */}
-          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-white/[0.06] border border-white/[0.12] backdrop-blur-2xl shadow-[0_18px_40px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.1)] z-[100] animate-fadeIn select-none">
+          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] z-[100] animate-fadeIn select-none">
             {[
               { id: 'attendance', icon: <Percent size={19} className="stroke-[2.5px]" />, label: 'Attendance' },
               { id: 'grades',     icon: <Award    size={19} className="stroke-[2.5px]" />, label: 'Grades' },
-              { id: 'timetable',  icon: <Clock    size={19} className="stroke-[2.5px]" />, label: 'Schedule' },
               { id: 'fees',       icon: <DollarSign size={19} className="stroke-[2.5px]" />, label: 'Ledger' },
               { id: 'exams',      icon: <Calendar size={19} className="stroke-[2.5px]" />, label: 'Exams' },
               { id: 'profile',    icon: <User     size={19} className="stroke-[2.5px]" />, label: 'Profile' },
@@ -2105,8 +2222,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 onClick={() => setActiveTab(id)}
                 className={`w-[42px] h-[42px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${
                   activeTab === id
-                    ? 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 shadow-[0_6px_18px_rgba(99,102,241,0.18)]'
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.05] border border-transparent'
+                    ? 'bg-white/[0.08] border border-white/[0.12] text-indigo-300 shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.03] border border-transparent'
                 }`}
               >
                 {icon}

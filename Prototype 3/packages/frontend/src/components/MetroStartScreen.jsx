@@ -177,14 +177,23 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
         <div className="flex flex-col gap-4">
 
 
-            {/* Student Kiosk Portal — Top Priority */}
+            {/* Student Kiosk Portal & Timetable — Top Priority side-by-side */}
             {isStudent && (
-              <div
-                onClick={() => onTileClick('student_dashboard')}
-                className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border-2 border-amber-500/30 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
-              >
-                <span className="text-white font-extrabold text-sm tracking-wide text-left">Student Dashboard</span>
-                <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300 shrink-0" size={24} />
+              <div className="grid grid-cols-2 gap-4 w-full">
+                <div
+                  onClick={() => onTileClick('student_dashboard')}
+                  className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border-2 border-amber-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+                >
+                  <span className="text-white font-extrabold text-sm tracking-wide text-left">Dashboard</span>
+                  <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300 shrink-0" size={22} />
+                </div>
+                <div
+                  onClick={() => onTileClick('timetable')}
+                  className="cursor-pointer bg-indigo-500/[0.03] backdrop-blur-3xl border-2 border-indigo-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+                >
+                  <span className="text-white font-extrabold text-sm tracking-wide text-left">Timetable</span>
+                  <Clock className="text-indigo-400 group-hover:text-indigo-300 transition-colors duration-300 shrink-0" size={22} />
+                </div>
               </div>
             )}
 
