@@ -5,7 +5,7 @@ import {
   DollarSign, CheckCircle2, AlertTriangle, TrendingUp,
   ChevronDown, ChevronUp, RefreshCw, X, Shield, Lock, 
   MapPin, Phone, Mail, User, Building, Landmark, Percent,
-  ArrowLeft, Download, Eye, EyeOff
+  ArrowLeft, Download, Eye, EyeOff, Calculator, Grid3x3, ListFilter, SortAsc, SortDesc, Archive
 } from 'lucide-react';
 import { WebPortal } from '../utils/jsjiit';
 import { 
@@ -16,17 +16,28 @@ import {
   getProfileDataFromCache, saveProfileDataToCache,
   getExamScheduleFromCache, saveExamScheduleToCache,
   getUsername, getPassword, setCredentials, clearCredentials,
-  getAttendanceGoal, setAttendanceGoal
+  getAttendanceGoal, setAttendanceGoal, getCachedValueIfAny, getFromCache, saveToCache
 } from '../utils/cache';
 import { 
   calculateClassesNeeded, calculateClassesCanMiss
 } from '../utils/math';
 import { API_BASE } from '../config/api';
-import { resolveCurrentSemesterLabel } from '../utils/semester';
+import { resolveCurrentSemesterLabel, formatStyNumber } from '../utils/semester';
 
 // Premium HSL double-border and glow classes
 const obsidianCardClass = "border-2 border-indigo-500/25 bg-indigo-500/[0.02] shadow-[0_0_25px_rgba(99,102,241,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-3xl rounded-[28px] p-5 relative overflow-hidden transition-all duration-300";
 const obsidianCardHoverClass = "hover:border-indigo-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.08)]";
+
+const gradePointMap = {
+  "A+": 10,
+  "A": 9,
+  "B+": 8,
+  "B": 7,
+  "C+": 6,
+  "C": 5,
+  "D": 4,
+  "F": 0,
+};
 
 const parseJPortalAttendance = (rawList) => {
   const parsed = [];
@@ -212,9 +223,47 @@ export default function StudentDashboard({ currentUser, onClose }) {
     return [];
   });
   const [gradesList, setGradesList] = useState([]);
+
+  // --- GPA, Grades & Marks State ---
+  const [gradesSubTab, setGradesSubTab] = useState('overview'); // 'overview' | 'gradecard' | 'marks'
+  const [gpaData, setGpaData] = useState(null); // stores { semesterList: [...], currentSemester: ... }
+  const [gpaLoading, setGpaLoading] = useState(false);
+  const [gpaError, setGpaError] = useState(null);
+  
+  // Grade Card state
+  const [gradeCardSemesters, setGradeCardSemesters] = useState([]);
+  const [selectedGradeCardSem, setSelectedGradeCardSem] = useState(null);
+  const [gradeCardLoading, setGradeCardLoading] = useState(false);
+  const [gradeCardError, setGradeCardError] = useState(null);
+  const [gradeSort, setGradeSort] = useState('default'); // 'default' | 'asc' | 'desc'
+  const [creditSort, setCreditSort] = useState('default'); // 'default' | 'asc' | 'desc'
+  
+  // Component Marks state
+  const [marksSemesters, setMarksSemesters] = useState([]);
+  const [selectedMarksSem, setSelectedMarksSem] = useState(null);
+  const [marksLoading, setMarksLoading] = useState(false);
+  const [marksError, setMarksError] = useState(null);
+  const [marksSemesterData, setMarksSemesterData] = useState(null); // stores { courses: [...] }
+  const [isMarksFromCache, setIsMarksFromCache] = useState(false);
+  const [marksCacheTimestamp, setMarksCacheTimestamp] = useState(null);
   const [timetableEvents, setTimetableEvents] = useState([]);
   const [feeInvoices, setFeeInvoices] = useState([]);
   const [examScheduleList, setExamScheduleList] = useState([]);
+
+  // --- Real-time Synchronized Component Marks Cache ---
+  const cachedSemMarks = useMemo(() => {
+    if (!selectedGradeCardSem || !enrollmentNo) return null;
+    const regCode = selectedGradeCardSem.registrationcode || selectedGradeCardSem.registration_code;
+    const key = `marks-${regCode}-${enrollmentNo}`;
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed?.data || parsed;
+    } catch (e) {
+      return null;
+    }
+  }, [selectedGradeCardSem, enrollmentNo, marksSemesterData]);
 
   // --- Goal Setting State ---
   const [goalPercentage, setGoalPercentage] = useState(() => getAttendanceGoal() || 75);
@@ -238,11 +287,54 @@ export default function StudentDashboard({ currentUser, onClose }) {
     setLastScrollTop(scrollTop);
   };
 
-  // --- Auto Login & Silent Sync Trigger ---
+  // --- Auto Login & Silent Sync Trigger & Cache Load ---
   useEffect(() => {
     const cachedEnroll = getUsername(currentUser?.email);
     const cachedPass = getPassword(currentUser?.email);
     
+    if (cachedEnroll) {
+      // Load GPA Data
+      localStorage.getItem('gpaData-' + cachedEnroll) && getCachedValueIfAny('gpaData-' + cachedEnroll).then(cached => {
+        if (cached) setGpaData(cached);
+      });
+
+      // Load Grade Card Semesters
+      localStorage.getItem('gradeCardSemesters-' + cachedEnroll) && getCachedValueIfAny('gradeCardSemesters-' + cachedEnroll).then(cached => {
+        if (cached && cached.length > 0) {
+          setGradeCardSemesters(cached);
+          const firstSem = cached[0];
+          setSelectedGradeCardSem(firstSem);
+          
+          getGradesFromCache(cachedEnroll, firstSem).then(cachedCard => {
+            const list = cachedCard?.data || cachedCard;
+            if (list) setGradesList(list);
+          });
+        }
+      });
+
+      // Load Marks Semesters
+      localStorage.getItem('marksSemesters-' + cachedEnroll) && getCachedValueIfAny('marksSemesters-' + cachedEnroll).then(cached => {
+        if (cached && cached.length > 0) {
+          setMarksSemesters(cached);
+          const currentYear = new Date().getFullYear().toString();
+          const currentYearSemester = cached.find(sem =>
+            sem.registration_code && sem.registration_code.includes(currentYear)
+          );
+          const selected = currentYearSemester || cached[0];
+          setSelectedMarksSem(selected);
+          
+          if (selected) {
+            const cacheKey = `marks-${selected.registration_code || selected.registrationcode}-${cachedEnroll}`;
+            getCachedValueIfAny(cacheKey).then(cachedMarks => {
+              if (cachedMarks) {
+                setMarksSemesterData(cachedMarks);
+              }
+            });
+          }
+        }
+      });
+    }
+
     if (cachedEnroll && cachedPass) {
       handlePortalSync(cachedEnroll, cachedPass, true);
     } else if (enrollmentNo && password) {
@@ -288,7 +380,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
       try {
         const sgpaObj = await wp.get_sgpa_cgpa();
         sgpaCurrentSem = sgpaObj.currentSemester ?? sgpaObj.studentlov?.currentsemester;
-        const sortedSems = [...(sgpaObj.semesterList || [])].sort((a, b) => Number(a.stynumber) - Number(b.stynumber));
+        setGpaData(sgpaObj);
+        saveToCache('gpaData-' + enroll, sgpaObj, 48);
       } catch (sgpaErr) {
         console.warn('SGPA/CGPA fetch failure bypassed:', sgpaErr);
       }
@@ -353,7 +446,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
       try {
         const gradeCardSems = await wp.get_semesters_for_grade_card();
         if (gradeCardSems && gradeCardSems.length > 0) {
+          setGradeCardSemesters(gradeCardSems);
+          saveToCache('gradeCardSemesters-' + enroll, gradeCardSems, 48);
+          
           const activeGradeSem = gradeCardSems[0];
+          setSelectedGradeCardSem(activeGradeSem);
+          
           const gradeCardObj = await wp.get_grade_card(activeGradeSem);
           const rawGrades = gradeCardObj.gradecard || [];
           
@@ -365,13 +463,31 @@ export default function StudentDashboard({ currentUser, onClose }) {
             t1: Number(g.t1 || 12),
             t2: Number(g.t2 || 13),
             t3: Number(g.t3 || 30),
-            internal: Number(g.internal || 32)
+            internal: Number(g.internal || 32),
+            coursecreditpoint: Number(g.coursecreditpoint || 0)
           }));
           setGradesList(parsedGrades);
           saveGradesToCache(parsedGrades, enroll, activeGradeSem);
         }
       } catch (gradeErr) {
         console.warn('Grade card fetch failure bypassed:', gradeErr);
+      }
+
+      // 5.5. Fetch Marks Semesters
+      try {
+        const marksSems = await wp.get_semesters_for_marks();
+        if (marksSems && marksSems.length > 0) {
+          setMarksSemesters(marksSems);
+          saveToCache('marksSemesters-' + enroll, marksSems, 48);
+          
+          const currentYear = new Date().getFullYear().toString();
+          const currentYearSemester = marksSems.find(sem =>
+            sem.registration_code && sem.registration_code.includes(currentYear)
+          );
+          setSelectedMarksSem(currentYearSemester || marksSems[0]);
+        }
+      } catch (marksSemErr) {
+        console.warn('Marks semesters fetch failure bypassed:', marksSemErr);
       }
 
       // 6. Fetch Timetable Events
@@ -490,6 +606,439 @@ export default function StudentDashboard({ currentUser, onClose }) {
     }
   };
 
+  // --- GPA Progression Neon Line Chart ---
+  const GpaLineChart = ({ semesterList }) => {
+    const sortedList = useMemo(() => {
+      return [...(semesterList || [])]
+        .filter(item => item.stynumber && (item.sgpa || item.cgpa))
+        .sort((a, b) => Number(a.stynumber) - Number(b.stynumber));
+    }, [semesterList]);
+
+    if (sortedList.length === 0) {
+      return (
+        <div className="h-44 flex flex-col items-center justify-center text-slate-500 text-xs">
+          <TrendingUp size={24} className="mb-1.5 text-slate-600 animate-pulse" />
+          <span>No GPA progression records available yet.</span>
+        </div>
+      );
+    }
+
+    // Dimensions
+    const width = 500;
+    const height = 180;
+    const paddingLeft = 32;
+    const paddingRight = 16;
+    const paddingTop = 22;
+    const paddingBottom = 28;
+
+    const minSem = 1;
+    const maxSem = Math.max(...sortedList.map(item => Number(item.stynumber)), 1);
+    const semRange = Math.max(maxSem - minSem, 1);
+
+    const yMin = 4.0;
+    const yMax = 10.0;
+    const yRange = yMax - yMin;
+
+    const getX = (stynumber) => {
+      const num = Number(stynumber);
+      return paddingLeft + ((num - minSem) / semRange) * (width - paddingLeft - paddingRight);
+    };
+
+    const getY = (gpa) => {
+      const val = Math.max(Math.min(Number(gpa || 0), 10), yMin);
+      return paddingTop + ((yMax - val) / yRange) * (height - paddingTop - paddingBottom);
+    };
+
+    // Build the lines path
+    let sgpaPath = "";
+    let cgpaPath = "";
+    let sgpaAreaPath = "";
+    let cgpaAreaPath = "";
+
+    sortedList.forEach((item, idx) => {
+      const x = getX(item.stynumber);
+      const ySgpa = getY(item.sgpa);
+      const yCgpa = getY(item.cgpa);
+
+      if (idx === 0) {
+        sgpaPath = `M ${x} ${ySgpa}`;
+        cgpaPath = `M ${x} ${yCgpa}`;
+        
+        sgpaAreaPath = `M ${x} ${height - paddingBottom} L ${x} ${ySgpa}`;
+        cgpaAreaPath = `M ${x} ${height - paddingBottom} L ${x} ${yCgpa}`;
+      } else {
+        sgpaPath += ` L ${x} ${ySgpa}`;
+        cgpaPath += ` L ${x} ${yCgpa}`;
+      }
+
+      if (idx === sortedList.length - 1) {
+        sgpaAreaPath += ` L ${x} ${ySgpa} L ${x} ${height - paddingBottom} Z`;
+        cgpaAreaPath += ` L ${x} ${yCgpa} L ${x} ${height - paddingBottom} Z`;
+      } else {
+        sgpaAreaPath += ` L ${x} ${ySgpa}`;
+        cgpaAreaPath += ` L ${x} ${yCgpa}`;
+      }
+    });
+
+    return (
+      <div className="w-full relative animate-fadeIn overflow-hidden">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto select-none overflow-visible">
+          <defs>
+            <linearGradient id="sgpaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+            </linearGradient>
+            <linearGradient id="cgpaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+            </linearGradient>
+            
+            <filter id="glowSgpa" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3.5" floodColor="#10b981" floodOpacity="0.32" />
+            </filter>
+            <filter id="glowCgpa" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3.5" floodColor="#6366f1" floodOpacity="0.32" />
+            </filter>
+          </defs>
+
+          {/* Grid lines */}
+          {[4, 6, 8, 10].map((val) => {
+            const y = getY(val);
+            return (
+              <g key={val} className="opacity-40">
+                <line 
+                  x1={paddingLeft} 
+                  y1={y} 
+                  x2={width - paddingRight} 
+                  y2={y} 
+                  stroke="rgba(255,255,255,0.06)" 
+                  strokeWidth="1" 
+                  strokeDasharray="4 4"
+                />
+                <text 
+                  x={paddingLeft - 8} 
+                  y={y + 3} 
+                  fill="rgba(255,255,255,0.35)" 
+                  fontSize="8" 
+                  fontWeight="bold" 
+                  fontFamily="monospace"
+                  textAnchor="end"
+                >
+                  {val.toFixed(1)}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Connected Line Paths with Glow and Area Gradients */}
+          {sgpaAreaPath && (
+            <path d={sgpaAreaPath} fill="url(#sgpaGrad)" />
+          )}
+          {cgpaAreaPath && (
+            <path d={cgpaAreaPath} fill="url(#cgpaGrad)" />
+          )}
+
+          {sgpaPath && (
+            <path 
+              d={sgpaPath} 
+              fill="none" 
+              stroke="#10b981" 
+              strokeWidth="3" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              filter="url(#glowSgpa)"
+            />
+          )}
+          {cgpaPath && (
+            <path 
+              d={cgpaPath} 
+              fill="none" 
+              stroke="#6366f1" 
+              strokeWidth="3" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              filter="url(#glowCgpa)"
+            />
+          )}
+
+          {/* X-Axis labels & Values */}
+          {sortedList.map((item, idx) => {
+            const x = getX(item.stynumber);
+            const ySgpa = getY(item.sgpa);
+            const yCgpa = getY(item.cgpa);
+
+            return (
+              <g key={item.stynumber}>
+                <line 
+                  x1={x} 
+                  y1={paddingTop} 
+                  x2={x} 
+                  y2={height - paddingBottom} 
+                  stroke="rgba(255,255,255,0.04)" 
+                  strokeWidth="1" 
+                />
+                
+                <text 
+                  x={x} 
+                  y={height - paddingBottom + 14} 
+                  fill="rgba(255,255,255,0.4)" 
+                  fontSize="8.5" 
+                  fontWeight="black" 
+                  fontFamily="monospace"
+                  textAnchor="middle"
+                >
+                  SEM {item.stynumber}
+                </text>
+
+                <text 
+                  x={x} 
+                  y={ySgpa - 7} 
+                  fill="#34d399" 
+                  fontSize="7" 
+                  fontWeight="bold" 
+                  fontFamily="monospace"
+                  textAnchor="middle"
+                >
+                  {Number(item.sgpa).toFixed(2)}
+                </text>
+
+                <circle 
+                  cx={x} 
+                  cy={ySgpa} 
+                  r="3" 
+                  fill="#0b0c10" 
+                  stroke="#10b981" 
+                  strokeWidth="2" 
+                />
+
+                <text 
+                  x={x} 
+                  y={yCgpa + 12} 
+                  fill="#818cf8" 
+                  fontSize="7" 
+                  fontWeight="bold" 
+                  fontFamily="monospace"
+                  textAnchor="middle"
+                >
+                  {Number(item.cgpa).toFixed(2)}
+                </text>
+
+                <circle 
+                  cx={x} 
+                  cy={yCgpa} 
+                  r="3" 
+                  fill="#0b0c10" 
+                  stroke="#6366f1" 
+                  strokeWidth="2" 
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Mini Legend */}
+        <div className="flex items-center justify-center gap-5 mt-2 select-none">
+          <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></span>
+            <span>SGPA</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-indigo-400">
+            <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]"></span>
+            <span>CGPA</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- Component Marks Fetch & Lazy Parser ---
+  const fetchComponentMarks = async (semester) => {
+    if (!semester) return;
+    const enroll = getUsername(currentUser?.email);
+    if (!enroll) return;
+    
+    setMarksLoading(true);
+    setMarksError(null);
+    setSyncPhase('fetching_marks_pdf');
+    
+    const regId = semester.registrationid || semester.registration_id;
+    const regCode = semester.registrationcode || semester.registration_code;
+    const cacheKey = `marks-${regCode}-${enroll}`;
+    
+    // Check cache first
+    const cached = await getFromCache(cacheKey);
+    const dataList = cached?.data || cached;
+    if (dataList && dataList.courses) {
+      setMarksSemesterData(dataList);
+      setIsMarksFromCache(true);
+      setMarksCacheTimestamp(cached.timestamp || null);
+      setMarksLoading(false);
+      
+      // Silently refresh in background if cache > 10m
+      if (Date.now() - (cached.timestamp || 0) > 10 * 60 * 1000) {
+        fetchFreshMarks(semester, cacheKey, false);
+      }
+      return;
+    }
+    
+    await fetchFreshMarks(semester, cacheKey, true);
+  };
+
+  const fetchFreshMarks = async (semester, cacheKey, isManual = true) => {
+    const regId = semester.registrationid || semester.registration_id;
+    const regCode = semester.registrationcode || semester.registration_code;
+    const enroll = getUsername(currentUser?.email);
+    
+    try {
+      setSyncPhase('booting_pyodide');
+      const { getPyodideWithPackages } = await import('../utils/pyodide');
+      
+      setSyncPhase('downloading_pdf');
+      const ENDPOINT = `/studentsexamview/printstudent-exammarks/${wp.session.instituteid}/${regId}/${regCode}`;
+      const headers = await wp.session.get_headers();
+      const fetchUrl = `${API_BASE}/api/webportal/proxy${ENDPOINT}`;
+      
+      const fetchRes = await fetch(fetchUrl, { method: "GET", headers });
+      if (!fetchRes.ok) throw new Error("Failed to download marks PDF");
+      
+      setSyncPhase('parsing_pdf');
+      const arrayBuffer = await fetchRes.arrayBuffer();
+      const uint8 = new Uint8Array(arrayBuffer);
+      
+      const pyodide = await getPyodideWithPackages();
+      pyodide.globals.set("data", pyodide.toPy(uint8));
+      
+      const res = await pyodide.runPythonAsync(`
+        import pymupdf
+        from jiit_marks import parse_report
+        doc = pymupdf.Document(stream=bytes(data))
+        marks = parse_report(doc)
+        marks
+      `);
+      
+      try { pyodide.globals.delete("data"); } catch (e) {}
+      
+      const result = res.toJs({
+        dict_converter: Object.fromEntries,
+        create_pyproxies: false,
+      });
+      
+      // Inject sem ID to protect tab switches
+      result.semesterId = regId;
+      
+      setMarksSemesterData(result);
+      await saveToCache(cacheKey, result, 240); // cache for 10 days
+      setMarksCacheTimestamp(Date.now());
+      setIsMarksFromCache(false);
+    } catch (err) {
+      console.error("Failed to parse component marks PDF:", err);
+      const rawMessage = String(err?.message || "Could not load marks data");
+      const normalized = rawMessage.toLowerCase();
+      let userMessage = rawMessage;
+
+      if (normalized.includes("table not on page") || normalized.includes("indexerror") || normalized.includes("no table")) {
+        userMessage = "No marks table was found in the downloaded PDF for this semester.";
+      } else if (normalized.includes("failed to fetch marks pdf")) {
+        userMessage = "Could not download the marks PDF for this semester.";
+      }
+      
+      setMarksError(userMessage);
+      setMarksSemesterData({ courses: [], semesterId: regId });
+    } finally {
+      setMarksLoading(false);
+      setSyncPhase('completed');
+    }
+  };
+
+  // Grade card semester dropdown handler
+  const handleGradeCardSemChange = async (value) => {
+    setGradeCardLoading(true);
+    setGradeCardError(null);
+    const enroll = getUsername(currentUser?.email);
+    
+    try {
+      const semester = gradeCardSemesters.find((sem) => (sem.registrationid || sem.registration_id) === value);
+      setSelectedGradeCardSem(semester);
+      
+      const cached = await getGradesFromCache(enroll, semester);
+      const list = cached?.data || cached;
+      if (list) {
+        setGradesList(list);
+        setGradeCardLoading(false);
+        return;
+      }
+      
+      const gradeCardObj = await wp.get_grade_card(semester);
+      const rawGrades = gradeCardObj.gradecard || [];
+      const parsedGrades = rawGrades.map(g => ({
+        name: g.subjectcode || 'Course Code',
+        desc: g.subjectdesc || 'Course Description',
+        total: Number(g.totalmarks || 90),
+        grade: g.grade || 'A',
+        t1: Number(g.t1 || 12),
+        t2: Number(g.t2 || 13),
+        t3: Number(g.t3 || 30),
+        internal: Number(g.internal || 32),
+        coursecreditpoint: Number(g.coursecreditpoint || 0)
+      }));
+      
+      setGradesList(parsedGrades);
+      saveGradesToCache(parsedGrades, enroll, semester);
+    } catch (err) {
+      console.error("Failed to load grade card for semester:", err);
+      setGradeCardError("Failed to fetch grade card details.");
+    } finally {
+      setGradeCardLoading(false);
+    }
+  };
+
+  // Marks semester dropdown handler
+  const handleMarksSemChange = (value) => {
+    const semester = marksSemesters.find((sem) => (sem.registrationid || sem.registration_id) === value);
+    setSelectedMarksSem(semester);
+    setMarksSemesterData(null); // Clear previous to trigger refresh effect
+  };
+
+  // Effect to trigger marks PDF parsing lazily
+  useEffect(() => {
+    if (activeTab === 'grades' && gradesSubTab === 'marks' && selectedMarksSem) {
+      const regId = selectedMarksSem.registrationid || selectedMarksSem.registration_id;
+      
+      if (!marksSemesterData || marksSemesterData.semesterId !== regId) {
+        fetchComponentMarks(selectedMarksSem);
+      }
+    }
+  }, [activeTab, gradesSubTab, selectedMarksSem]);
+
+  // PDF marks downloader
+  const [isDownloading, setIsDownloading] = useState(false);
+  const handleDownloadMarksPdf = async (semester) => {
+    if (!semester) return;
+    setIsDownloading(true);
+    try {
+      const ENDPOINT = `/studentsexamview/printstudent-exammarks/${wp.session.instituteid}/${semester.registrationid || semester.registration_id}/${semester.registrationcode || semester.registration_code}`;
+      const headers = await wp.session.get_headers();
+      const fetchUrl = `${API_BASE}/api/webportal/proxy${ENDPOINT}`;
+      
+      const fetchRes = await fetch(fetchUrl, { method: "GET", headers });
+      if (!fetchRes.ok) throw new Error("Failed to download marks PDF");
+      
+      const blob = await fetchRes.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Marks_${semester.registrationcode || semester.registration_code}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      console.error("Failed to download marks PDF:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   // --- Disconnect Registry Credentials ---
   const [showConfirmDisconnect, setShowConfirmDisconnect] = useState(false);
   const handleDisconnect = () => {
@@ -501,6 +1050,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
     setTimetableEvents([]);
     setFeeInvoices([]);
     setExamScheduleList([]);
+    setGpaData(null);
+    setGradeCardSemesters([]);
+    setSelectedGradeCardSem(null);
+    setMarksSemesters([]);
+    setSelectedMarksSem(null);
+    setMarksSemesterData(null);
     setSyncPhase('idle');
   };
 
@@ -890,71 +1445,459 @@ export default function StudentDashboard({ currentUser, onClose }) {
             {activeTab === 'grades' && (
               <div className="flex flex-col gap-4">
                 
-                {/* GPA summary tracker */}
-                <div className={`${obsidianCardClass} flex items-center justify-between p-5`}>
-                  <div className="text-left">
-                    <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-mono">Academic Trend</span>
-                    <h4 className="text-sm font-bold text-white font-sans mt-0.5">Cumulative Index</h4>
-                  </div>
-                  <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-xl text-xs font-mono font-bold">
-                    <TrendingUp size={14} /> Stable GPA
+                {/* ─── Premium Glassy Segmented Switcher (Frosted Glass and Breathtaking) ─── */}
+                <div className="flex justify-center mb-1">
+                  <div className="flex bg-white/[0.04] border border-white/[0.08] backdrop-blur-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] rounded-2xl p-1 select-none w-full">
+                    {[
+                      { id: 'overview', icon: <TrendingUp size={14} />, label: 'Overview' },
+                      { id: 'marks', icon: <Archive size={14} />, label: 'Marks' },
+                      { id: 'semester', icon: <Award size={14} />, label: 'Semester' }
+                    ].map((sub) => (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => setGradesSubTab(sub.id)}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-300 active:scale-95 cursor-pointer ${
+                          gradesSubTab === sub.id
+                            ? 'bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                            : 'text-slate-400 hover:text-white border border-transparent'
+                        }`}
+                      >
+                        {sub.icon}
+                        <span>{sub.label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Grade cards */}
-                {!Array.isArray(gradesList) || gradesList.length === 0 ? (
-                  <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
-                    <Award className="text-slate-500" size={24} />
-                    <span className="text-xs text-slate-400 font-semibold">No grade card entries available.</span>
-                  </div>
-                ) : (
-                  gradesList.map((item, idx) => {
-                    const isExpanded = expandedSubject === idx;
-                    return (
-                      <div 
-                        key={idx}
-                        className={`${obsidianCardClass} p-0 overflow-hidden`}
-                      >
-                        <div 
-                          onClick={() => setExpandedSubject(isExpanded ? null : idx)}
-                          className="p-5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02]"
-                        >
-                          <div className="text-left flex-1 min-w-0 pr-3">
-                            <h4 className="text-sm font-bold text-white font-sans truncate">{item.desc}</h4>
-                            <span className="text-[9px] font-bold text-slate-400 font-mono tracking-wider block mt-1 uppercase">{item.name}</span>
-                          </div>
-
-                          <div className="flex items-center gap-3 shrink-0">
-                            <div className="w-8 h-8 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center font-mono font-extrabold text-xs text-indigo-400 shadow-inner">
-                              {item.grade}
-                            </div>
-                            {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
-                          </div>
-                        </div>
-
-                        {isExpanded && (
-                          <div className="px-5 pb-5 pt-2 border-t border-white/5 bg-white/[0.01] grid grid-cols-4 gap-2 text-left font-sans animate-fadeIn">
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T1 (15)</span>
-                              <span className="text-xs font-mono font-bold text-slate-200">{item.t1}</span>
-                            </div>
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T2 (15)</span>
-                              <span className="text-xs font-mono font-bold text-slate-200">{item.t2}</span>
-                            </div>
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T3 (35)</span>
-                              <span className="text-xs font-mono font-bold text-slate-200">{item.t3}</span>
-                            </div>
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Internal (35)</span>
-                              <span className="text-xs font-mono font-bold text-slate-200">{item.internal}</span>
-                            </div>
-                          </div>
-                        )}
+                {/* ─── Sub-Tab 1: OVERVIEW (Glassy & List-based) ─── */}
+                {gradesSubTab === 'overview' && (
+                  <div className="flex flex-col gap-4 animate-fadeIn">
+                    
+                    {/* Overall CGPA display card (signature glassmorphism) */}
+                    <div className={`${obsidianCardClass} flex items-center justify-between p-5`}>
+                      <div className="text-left">
+                        <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-mono">Academic Trend</span>
+                        <h4 className="text-sm font-bold text-white font-sans mt-0.5 uppercase tracking-wide">Cumulative Index (CGPA)</h4>
                       </div>
-                    );
-                  })
+                      <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-xl text-xs font-mono font-bold shadow-sm">
+                        <TrendingUp size={14} />
+                        <span>
+                          {gpaData?.cgpa ?? (Array.isArray(gpaData?.semesterList) && gpaData.semesterList.length > 0 
+                            ? Number(gpaData.semesterList[gpaData.semesterList.length - 1].cgpa || 0).toFixed(2) 
+                            : '—')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Vector progress graph (signature glassmorphism) */}
+                    <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-center`}>
+                      <span className="text-[8px] font-black text-slate-400 tracking-widest uppercase font-mono text-left block border-b border-white/5 pb-2">
+                        Grade Progression Vector
+                      </span>
+                      <GpaLineChart semesterList={gpaData?.semesterList || []} />
+                    </div>
+
+                    {/* Per-Semester SGPA Cards list (Single Column full width LIST) */}
+                    {!Array.isArray(gpaData?.semesterList) || gpaData.semesterList.length === 0 ? (
+                      <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
+                        <Award className="text-slate-500" size={24} />
+                        <span className="text-xs text-slate-400 font-semibold">No semester blocks loaded.</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        {gpaData.semesterList.map((sem, sidx) => (
+                          <div key={sidx} className={`${obsidianCardClass} !p-4 flex flex-col gap-2.5 text-left`}>
+                            <div className="flex justify-between items-center w-full">
+                              <span className="text-[9px] font-black text-slate-400 tracking-wider font-mono uppercase">Semester {sem.stynumber}</span>
+                              <span className="text-[8px] font-bold text-slate-500 font-mono tracking-tighter">
+                                GP: {Number(sem.earnedgradepoints || 0).toFixed(1)}/{Number(sem.totalcoursecredit || 0) * 10}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 justify-between mt-1 pt-2 border-t border-white/5">
+                              <div className="flex flex-col">
+                                <span className="text-[7px] font-black text-slate-500 tracking-widest font-mono uppercase leading-none">SGPA</span>
+                                <span className="text-base font-black font-mono text-emerald-400 leading-none mt-1">{Number(sem.sgpa || 0).toFixed(2)}</span>
+                              </div>
+                              <div className="flex flex-col items-end">
+                                <span className="text-[7px] font-black text-slate-500 tracking-widest font-mono uppercase leading-none">CGPA</span>
+                                <span className="text-base font-black font-mono text-indigo-400 leading-none mt-1">{Number(sem.cgpa || 0).toFixed(2)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ─── Sub-Tab 2: MARKS (Glassy & List-based) ─── */}
+                {gradesSubTab === 'marks' && (
+                  <div className="flex flex-col gap-4 animate-fadeIn">
+                    
+                    {/* Glassy Selector & Statement Button Row */}
+                    <div className="flex items-center gap-2.5 w-full">
+                      <div className={`${obsidianCardClass} !pt-2.5 !pb-3 !px-4 flex flex-col gap-0.5 text-left flex-1 min-w-0`}>
+                        <span className="text-[8px] font-black text-slate-400/90 uppercase tracking-widest font-mono">Select Term</span>
+                        <select
+                          value={selectedMarksSem ? (selectedMarksSem.registrationid || selectedMarksSem.registration_id) : ''}
+                          onChange={(e) => handleMarksSemChange(e.target.value)}
+                          className="bg-transparent text-slate-200 text-xs font-black w-full outline-none cursor-pointer font-sans border-none p-0 focus:ring-0 truncate"
+                        >
+                          {marksSemesters.map((sem, sidx) => (
+                            <option key={sidx} value={sem.registrationid || sem.registration_id} className="bg-[#121620] text-slate-200 font-sans">
+                              {sem.registrationcode || sem.registration_code}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadMarksPdf(selectedMarksSem)}
+                        disabled={isDownloading || !selectedMarksSem}
+                        className="h-[45px] px-4 rounded-2xl flex items-center justify-center gap-2 border border-indigo-500/25 bg-indigo-500/[0.03] hover:border-indigo-500/50 hover:bg-indigo-500/10 text-indigo-300 shadow-sm transition-all duration-300 cursor-pointer disabled:opacity-50 text-[10px] font-black uppercase tracking-wider shrink-0 active:scale-95 leading-none"
+                      >
+                        {isDownloading ? <RefreshCw className="animate-spin" size={12} /> : <Download size={12} />}
+                        <span>Statement</span>
+                      </button>
+                    </div>
+
+                    {/* Cache Status Details */}
+                    {isMarksFromCache && marksCacheTimestamp && (
+                      <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 font-semibold select-none leading-none mt-[-6px]">
+                        <Archive size={12} className="text-slate-500" />
+                        <span>Cached: {new Date(marksCacheTimestamp).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                        <button 
+                          onClick={() => selectedMarksSem && fetchFreshMarks(selectedMarksSem, `marks-${selectedMarksSem.registrationcode || selectedMarksSem.registration_code}-${enrollmentNo}`, true)} 
+                          className="text-slate-400 hover:text-white transition ml-0.5 focus:outline-none"
+                          type="button"
+                          title="Force Refresh Live Marks"
+                        >
+                          <RefreshCw size={11} className={marksLoading ? "animate-spin" : ""} />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Loader/Errors */}
+                    {marksLoading ? (
+                      <div className="py-16 flex flex-col items-center justify-center gap-3.5 text-center">
+                        <RefreshCw className="animate-spin text-indigo-400" size={24} />
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider animate-pulse">
+                          {syncPhase === 'booting_pyodide' && 'Initializing Parser Engine...'}
+                          {syncPhase === 'downloading_pdf' && 'Retrieving Registry PDF...'}
+                          {syncPhase === 'parsing_pdf' && 'Extracting Marks Sheet...'}
+                          {syncPhase === 'completed' && 'Rendering Dashboard...'}
+                          {syncPhase !== 'booting_pyodide' && syncPhase !== 'downloading_pdf' && syncPhase !== 'parsing_pdf' && syncPhase !== 'completed' && 'Compiling Detailed Marks...'}
+                        </span>
+                      </div>
+                    ) : marksError ? (
+                      <div className={`${obsidianCardClass} p-6 flex flex-col items-center gap-2.5 text-center`}>
+                        <AlertTriangle className="text-rose-400 animate-bounce" size={24} />
+                        <span className="text-xs text-rose-300 font-bold leading-normal">{marksError}</span>
+                        <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-1">Please try another term or download statement manually.</span>
+                      </div>
+                    ) : !marksSemesterData?.courses || marksSemesterData.courses.length === 0 ? (
+                      <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
+                        <Archive className="text-slate-500" size={24} />
+                        <span className="text-xs text-slate-400 font-semibold">No registry marks returned for this term.</span>
+                      </div>
+                    ) : (
+                      
+                      /* List of glassy subject cards taking full horizontal space */
+                      <div className="flex flex-col gap-4">
+                        {marksSemesterData.courses.map((course, idx) => {
+                          const courseTotal = Object.values(course.exams || {}).reduce(
+                            (acc, exam) => ({
+                              obtained: acc.obtained + Number(exam.OM || 0),
+                              full: acc.full + Number(exam.FM || 0),
+                            }),
+                            { obtained: 0, full: 0 }
+                          );
+
+                          return (
+                            <div 
+                              key={idx} 
+                              className={`${obsidianCardClass} flex flex-col gap-4 text-left`}
+                            >
+                              
+                              {/* Subject header */}
+                              <div className="flex justify-between items-start w-full gap-3">
+                                <div className="text-left flex-1 min-w-0 pr-2">
+                                  <span className="text-[8px] font-black text-indigo-400 tracking-wider font-mono block uppercase leading-none">
+                                    {course.code}
+                                  </span>
+                                  <h4 className="text-sm font-bold text-white font-sans mt-1.5 break-words leading-snug">
+                                    {course.name}
+                                  </h4>
+                                </div>
+                              </div>
+
+                              {/* Purple score outline pill (aligned to start) */}
+                              <div className="border border-indigo-500/25 bg-indigo-500/[0.02] rounded-full py-1.5 px-4 flex items-center shadow-inner self-start select-none">
+                                <span className="text-[10px] font-black text-[#818cf8] font-sans tracking-wide">
+                                  Score: {courseTotal.obtained}/{courseTotal.full}
+                                </span>
+                              </div>
+
+                              {/* Assessment column headings */}
+                              <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest text-slate-500 px-0.5 select-none leading-none mt-1">
+                                <span>Assessment</span>
+                                <span>Weightage</span>
+                              </div>
+
+                              {/* Exams component details with full width progress bars */}
+                              <div className="flex flex-col gap-4">
+                                {Object.entries(course.exams || {}).map(([examName, marks], eidx) => {
+                                  const om = Number(marks.OM || 0);
+                                  const fm = Number(marks.FM || 0);
+                                  const percentage = fm > 0 ? (om / fm) * 100 : 0;
+                                  
+                                  const barColor = percentage >= 75
+                                    ? 'from-emerald-400 to-teal-500 shadow-emerald-500/25'
+                                    : percentage >= 50
+                                      ? 'from-amber-400 to-orange-500 shadow-amber-500/25'
+                                      : 'from-rose-400 to-red-500 shadow-rose-500/25';
+
+                                  return (
+                                    <div key={eidx} className="flex flex-col gap-1.5 text-left font-sans">
+                                      <div className="flex justify-between items-center w-full text-[11px] leading-none">
+                                        <span className="font-bold text-slate-300 uppercase tracking-wide text-[10px]">{examName}</span>
+                                        <span className="font-black text-slate-200 font-mono text-[11px]">
+                                          {om} <span className="text-slate-500 text-[10px] font-semibold">/ {fm}</span>
+                                        </span>
+                                      </div>
+                                      
+                                      {/* Flat progress bar container */}
+                                      <div className="w-full h-1.5 rounded-full bg-white/[0.03] border border-white/5 overflow-hidden relative shadow-inner">
+                                        <div 
+                                          className={`h-full rounded-full bg-gradient-to-r ${barColor} shadow-[0_0_10px] transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]`}
+                                          style={{ width: `${Math.max(percentage, 2)}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ─── Sub-Tab 3: SEMESTER (Glassy & List-based) ─── */}
+                {gradesSubTab === 'semester' && (
+                  <div className="flex flex-col gap-4 animate-fadeIn">
+                    
+                    {/* Glassy Toolbar controls */}
+                    <div className="flex items-center gap-2.5 w-full">
+                      <div className={`${obsidianCardClass} !pt-2.5 !pb-3 !px-4 flex flex-col gap-0.5 text-left flex-1 min-w-0`}>
+                        <span className="text-[8px] font-black text-slate-400/90 uppercase tracking-widest font-mono">Select Term</span>
+                        <select
+                          value={selectedGradeCardSem ? (selectedGradeCardSem.registrationid || selectedGradeCardSem.registration_id) : ''}
+                          onChange={(e) => handleGradeCardSemChange(e.target.value)}
+                          className="bg-transparent text-slate-200 text-xs font-black w-full outline-none cursor-pointer font-sans border-none p-0 focus:ring-0 truncate"
+                        >
+                          {gradeCardSemesters.map((sem, sidx) => (
+                            <option key={sidx} value={sem.registrationid || sem.registration_id} className="bg-[#121620] text-slate-200 font-sans">
+                              {sem.registrationcode || sem.registration_code}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCreditSort('default');
+                            setGradeSort(prev => prev === 'default' ? 'asc' : prev === 'asc' ? 'desc' : 'default');
+                          }}
+                          className={`h-[45px] px-3.5 rounded-2xl flex items-center justify-center gap-1.5 border transition-all duration-300 text-[10px] font-black uppercase tracking-wider cursor-pointer ${
+                            gradeSort !== 'default'
+                              ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                              : 'bg-white/[0.03] border-white/5 hover:border-white/10 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <span>Grade</span>
+                          {gradeSort === 'asc' ? <SortAsc size={12} /> : gradeSort === 'desc' ? <SortDesc size={12} /> : <ListFilter size={12} />}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setGradeSort('default');
+                            setCreditSort(prev => prev === 'default' ? 'asc' : prev === 'asc' ? 'desc' : 'default');
+                          }}
+                          className={`h-[45px] px-3.5 rounded-2xl flex items-center justify-center gap-1.5 border transition-all duration-300 text-[10px] font-black uppercase tracking-wider cursor-pointer ${
+                            creditSort !== 'default'
+                              ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                              : 'bg-white/[0.03] border-white/5 hover:border-white/10 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <span>Credit</span>
+                          {creditSort === 'asc' ? <SortAsc size={12} /> : creditSort === 'desc' ? <SortDesc size={12} /> : <ListFilter size={12} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Collapsible Grade details cards list (frosted glass) */}
+                    {gradeCardLoading ? (
+                      <div className="py-12 flex flex-col items-center justify-center gap-3.5 text-center">
+                        <RefreshCw className="animate-spin text-indigo-400" size={24} />
+                        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider animate-pulse">Compiling Grade Card...</span>
+                      </div>
+                    ) : (() => {
+                      const sortedGrades = (() => {
+                        if (!Array.isArray(gradesList)) return [];
+                        const list = [...gradesList];
+                        if (gradeSort !== 'default') {
+                          return list.sort((a, b) => {
+                            const ptA = gradePointMap[a.grade] !== undefined ? gradePointMap[a.grade] : -1;
+                            const ptB = gradePointMap[b.grade] !== undefined ? gradePointMap[b.grade] : -1;
+                            return gradeSort === 'asc' ? ptA - ptB : ptB - ptA;
+                          });
+                        }
+                        if (creditSort !== 'default') {
+                          return list.sort((a, b) => {
+                            const crA = Number(a.coursecreditpoint || 0);
+                            const crB = Number(b.coursecreditpoint || 0);
+                            return creditSort === 'asc' ? crA - crB : crB - crA;
+                          });
+                        }
+                        return list;
+                      })();
+
+                      if (sortedGrades.length === 0) {
+                        return (
+                          <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
+                            <Award className="text-slate-500" size={24} />
+                            <span className="text-xs text-slate-400 font-semibold">No grade entries found for this semester.</span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="flex flex-col gap-3">
+                          {sortedGrades.map((item, idx) => {
+                            const isExpanded = expandedSubject === idx;
+                            
+                            const matchingMarksCourse = cachedSemMarks?.courses?.find(
+                              c => c.code.toLowerCase().trim() === item.name.toLowerCase().trim()
+                            );
+                            const hasRealtimeMarks = !!matchingMarksCourse;
+
+                            const getExamScore = (type) => {
+                              if (!matchingMarksCourse?.exams) return '—';
+                              const matchKey = Object.keys(matchingMarksCourse.exams).find(k => {
+                                const nk = k.toLowerCase().replace(/[\s-_]/g, '');
+                                if (type === 't1') return nk.includes('t1') || nk.includes('test1');
+                                if (type === 't2') return nk.includes('t2') || nk.includes('test2');
+                                if (type === 't3') return nk.includes('t3') || nk.includes('test3') || nk.includes('endsem') || nk.includes('ese');
+                                if (type === 'internal') return nk.includes('internal') || nk.includes('ta') || nk.includes('teacherassessment') || nk.includes('quiz') || nk.includes('project') || nk.includes('attendance');
+                                return false;
+                              });
+                              if (matchKey && matchingMarksCourse.exams[matchKey]) {
+                                const exam = matchingMarksCourse.exams[matchKey];
+                                return `${exam.OM} / ${exam.FM}`;
+                              }
+                              return '—';
+                            };
+
+                            return (
+                              <div 
+                                key={idx}
+                                className={`${obsidianCardClass} !p-0 overflow-hidden transition-all duration-300 ${isExpanded ? 'border-indigo-500/35 bg-indigo-500/[0.04]' : ''}`}
+                              >
+                                <div 
+                                  onClick={() => setExpandedSubject(isExpanded ? null : idx)}
+                                  className="p-5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.01] transition-colors"
+                                >
+                                  <div className="text-left flex-1 min-w-0 pr-3 flex flex-col gap-1">
+                                    <span className="text-[8px] font-black text-slate-400 tracking-wider font-mono uppercase block">
+                                      {item.name} • {item.coursecreditpoint || 0} Credit{item.coursecreditpoint !== 1 ? 's' : ''}
+                                    </span>
+                                    <h4 className="text-sm font-bold text-white font-sans truncate leading-snug">{item.desc}</h4>
+                                  </div>
+
+                                  <div className="flex items-center gap-3 shrink-0">
+                                    <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-mono font-black text-xs shadow-inner transition-colors ${
+                                      item.grade === 'A+' || item.grade === 'A'
+                                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-emerald-500/5'
+                                        : item.grade === 'B+' || item.grade === 'B'
+                                          ? 'bg-indigo-500/10 border-indigo-500/25 text-indigo-400 shadow-indigo-500/5'
+                                          : item.grade === 'C+' || item.grade === 'C'
+                                            ? 'bg-amber-500/10 border-amber-500/25 text-amber-400 shadow-amber-500/5'
+                                            : 'bg-rose-500/10 border-rose-500/25 text-rose-400 shadow-rose-500/5'
+                                    }`}>
+                                      {item.grade}
+                                    </div>
+                                    {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                                  </div>
+                                </div>
+
+                                {isExpanded && (
+                                  <div className="px-5 pb-5 pt-3.5 border-t border-white/5 bg-white/[0.01] flex flex-col gap-3 font-sans animate-fadeIn">
+                                    {!hasRealtimeMarks ? (
+                                      <div className="w-full flex flex-col items-center justify-center p-4 bg-white/[0.02] border border-white/5 rounded-2xl gap-2 text-center select-none shadow-inner">
+                                        <AlertTriangle size={14} className="text-amber-400 animate-pulse" />
+                                        <span className="text-[10px] text-slate-400 font-semibold">Component Marks not linked for this term.</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const matchingSem = marksSemesters.find(
+                                              sem => (sem.registrationcode || sem.registration_code) === (selectedGradeCardSem.registrationcode || selectedGradeCardSem.registration_code)
+                                            );
+                                            if (matchingSem) {
+                                              setSelectedMarksSem(matchingSem);
+                                            }
+                                            setGradesSubTab('marks');
+                                          }}
+                                          className="px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/25 hover:bg-indigo-500/20 active:scale-95 text-indigo-300 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm flex items-center gap-1 leading-none mt-1"
+                                        >
+                                          <span>⚡ Sync Marks Registry</span>
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="w-full flex flex-col gap-3">
+                                        <div className="grid grid-cols-4 gap-2 text-left">
+                                          <div className="flex flex-col gap-0.5">
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T1</span>
+                                            <span className="text-xs font-mono font-black text-emerald-400">{getExamScore('t1')}</span>
+                                          </div>
+                                          <div className="flex flex-col gap-0.5">
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T2</span>
+                                            <span className="text-xs font-mono font-black text-[#6366f1]">{getExamScore('t2')}</span>
+                                          </div>
+                                          <div className="flex flex-col gap-0.5">
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T3</span>
+                                            <span className="text-xs font-mono font-black text-emerald-400">{getExamScore('t3')}</span>
+                                          </div>
+                                          <div className="flex flex-col gap-0.5">
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Internal</span>
+                                            <span className="text-xs font-mono font-black text-indigo-400">{getExamScore('internal')}</span>
+                                          </div>
+                                        </div>
+                                        <div className="w-full flex items-center justify-between border-t border-white/5 pt-2.5 select-none leading-none">
+                                          <span className="text-[8.5px] font-black text-emerald-400/90 flex items-center gap-1.5 uppercase tracking-wider">
+                                            <CheckCircle2 size={11} /> Registry Synced
+                                          </span>
+                                          <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-widest font-mono">Real-time Verified</span>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
                 )}
 
               </div>
