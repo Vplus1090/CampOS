@@ -12,34 +12,43 @@ router.all('/proxy*', async (req, res, next) => {
   try {
     const subpath = getWebportalSubpath(req);
     const targetUrl = `https://webportal.jiit.ac.in:6011/StudentPortalAPI${subpath}`;
+    console.log(`[webportal] ${req.method} ${subpath} | body type=${typeof req.body} | isBuffer=${Buffer.isBuffer(req.body)} | len=${req.body?.length ?? 0}`);
 
-    const headers = {};
-    // Forward relevant incoming headers
+    const SKIP_HEADERS = new Set([
+      'host', 'origin', 'referer', 'content-length',
+      'connection', 'accept-encoding', 'transfer-encoding',
+      // Strip Render/Vercel proxy headers that confuse JIIT
+      'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto',
+      'x-real-ip', 'x-vercel-forwarded-for', 'x-vercel-id',
+      'cdn-loop', 'cf-connecting-ip', 'cf-ray',
+    ]);
+
+    const headers = {
+      'host': 'webportal.jiit.ac.in:6011',
+      'origin': 'https://webportal.jiit.ac.in:6011',
+      'referer': 'https://webportal.jiit.ac.in:6011/',
+      'accept': 'application/json, text/plain, */*',
+    };
+
+    // Forward only safe, JIIT-relevant headers from the client
     for (const [key, value] of Object.entries(req.headers)) {
       const lowerKey = key.toLowerCase();
-      if (
-        lowerKey !== 'host' &&
-        lowerKey !== 'origin' &&
-        lowerKey !== 'referer' &&
-        lowerKey !== 'content-length' &&
-        lowerKey !== 'connection' &&
-        lowerKey !== 'accept-encoding'
-      ) {
-        headers[key] = value;
+      if (!SKIP_HEADERS.has(lowerKey) && !lowerKey.startsWith('x-')) {
+        headers[lowerKey] = value;
       }
     }
 
-    // Set destination headers to bypass server firewalls
-    headers['host'] = 'webportal.jiit.ac.in:6011';
-    headers['origin'] = 'https://webportal.jiit.ac.in:6011';
-    headers['referer'] = 'https://webportal.jiit.ac.in:6011/';
+    const proxyBody = getWebportalProxyBody(req);
 
     const fetchOptions = {
       method: req.method,
-      headers: headers,
+      headers: {
+        ...headers,
+        // Set accurate content-length from the actual body we're sending
+        ...(proxyBody ? { 'content-length': String(proxyBody.length) } : {}),
+      },
     };
 
-    const proxyBody = getWebportalProxyBody(req);
     if (req.method !== 'GET' && req.method !== 'HEAD' && proxyBody) {
       fetchOptions.body = proxyBody;
     }
