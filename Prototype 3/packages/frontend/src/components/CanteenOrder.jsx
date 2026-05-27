@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee, Ticket, ArrowRight, Trash2, Search } from 'lucide-react';
+import { Coffee, Ticket, Trash2, Search } from 'lucide-react';
 import { API_BASE } from '../config/api';
 
 export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, triggerPayment, cart = [], setCart, isCartCheckout = false }) {

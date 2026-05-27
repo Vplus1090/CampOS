@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Megaphone, Coffee, Utensils, BookOpen, LogOut, 
-  QrCode, Ticket, Clock, ArrowRight, Calendar,
+  QrCode, Ticket, Clock, Calendar,
   GraduationCap
 } from 'lucide-react';
 
