@@ -242,7 +242,7 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
       {/* Document Listing Grid - dynamically fills space, scrolls independently */}
       <div 
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto scrollbar-none pr-1 space-y-4 animate-fadeIn pb-4"
+        className="flex-1 overflow-y-auto scrollbar-none pr-1 space-y-4 animate-fadeIn pt-5 pb-4"
       >
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((course) => {

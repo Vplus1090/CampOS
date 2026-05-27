@@ -533,17 +533,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
             <ArrowLeft size={18} />
           </button>
           <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-            Student Portal
+            Student Dashboard
           </h2>
         </div>
-        {isAuthenticated && (
-          <button
-            onClick={handleDisconnect}
-            className="px-3.5 py-2 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 text-rose-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition duration-300 active:scale-95 cursor-pointer flex items-center gap-1.5 leading-none shadow-sm shadow-rose-950/20"
-          >
-            Disconnect
-          </button>
-        )}
       </header>
 
       {/* ─── Immersive Portal Login Form (When Unauthenticated) ─── */}
@@ -749,7 +741,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
           {/* ─── Scroll-locked Content Workspace ─── */}
           <div 
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto scrollbar-none min-h-0 animate-fadeIn pr-1 pb-24"
+            className="flex-1 overflow-y-auto scrollbar-none min-h-0 animate-fadeIn pr-1 pt-5 pb-24"
           >
             
             {/* 📊 TABS 1: ATTENDANCE BLOCK */}

@@ -186,7 +186,7 @@ export default function AcademicCalendar({ setActiveTab }) {
             </div>
           );
         })}
-      </div>
+        </div>
     </div>
   );
 }
