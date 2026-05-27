@@ -219,33 +219,21 @@ export default function Timetable({ currentUser, setActiveTab }) {
         className={`transition-all duration-500 ease-in-out overflow-hidden flex flex-col shrink-0 ${
           isHeaderMinimized 
             ? 'max-h-0 opacity-0 scale-95 pointer-events-none mb-0 mt-0 pb-0 pt-0' 
-            : 'max-h-[160px] opacity-100 scale-100 mb-1 mt-4 border-b border-white/10 pb-3'
+            : 'max-h-[160px] opacity-100 scale-100 mb-1 mt-6 border-b border-white/10 pb-3'
         }`}
       >
         <header className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-4 text-left">
+          <div className="flex items-center gap-3.5 text-left">
             <button
               onClick={() => setActiveTab('home')}
-              className="w-11 h-11 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-md cursor-pointer shrink-0"
+              className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
               type="button"
             >
-              <ArrowLeft size={16} />
+              <span className="text-xl font-bold">&larr;</span>
             </button>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-2xl font-extrabold text-white leading-none tracking-tight">
-                  {selectedDay}
-                </h2>
-                {getBatchName() && (
-                  <span className="bg-white/[0.08] border border-white/[0.12] text-slate-300 text-[10px] font-mono font-black uppercase px-2.5 py-1 rounded-full select-none leading-none mt-[-1px]">
-                    {getBatchName()}
-                  </span>
-                )}
-              </div>
-              <span className="text-[10px] font-mono font-black uppercase text-indigo-400 tracking-wider mt-1.5 leading-none">
-                JAYPEE SCHEDULER
-              </span>
-            </div>
+            <h2 className="text-[22px] italic font-normal text-white leading-none flex items-center gap-2 translate-y-[2px] tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Timetable
+            </h2>
           </div>
 
           <div className="flex items-center shrink-0">
@@ -399,6 +387,12 @@ export default function Timetable({ currentUser, setActiveTab }) {
             
             {/* Timeline Lectures Column (Standardized Flex Spacing to prevent clipping) */}
             <div className="flex-1 w-full flex flex-col gap-5 mt-1">
+              
+              {!showFilters && (
+                <span className="text-[10px] font-mono font-black text-indigo-400 uppercase tracking-widest text-left select-none pb-1.5 block animate-fadeIn leading-none pl-1">
+                  Schedule for {selectedDay} • {getBatchName() || 'All Batches'}
+                </span>
+              )}
               
               {displayEvents.length === 0 ? (
                 <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2.5 text-center select-none animate-fadeIn`}>
