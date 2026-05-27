@@ -212,14 +212,14 @@ export default function Timetable({ currentUser, setActiveTab }) {
   };
 
   return (
-    <div className="relative flex flex-col h-full max-h-full gap-4 px-4 pt-4 pb-8 overflow-hidden font-sans text-white select-none timetable-dashboard bg-transparent">
+    <div className="relative flex flex-col h-full max-h-full gap-4 pb-8 overflow-hidden font-sans text-white select-none timetable-dashboard bg-transparent">
       
       {/* ─── Collapsible Header (Fixed Spacing & Padding) ─── */}
       <div 
         className={`transition-all duration-500 ease-in-out overflow-hidden flex flex-col shrink-0 ${
           isHeaderMinimized 
             ? 'max-h-0 opacity-0 scale-95 pointer-events-none mb-0 mt-0 pb-0 pt-0' 
-            : 'max-h-[160px] opacity-100 scale-100 mb-1 mt-6 border-b border-white/10 pb-3'
+            : 'max-h-[160px] opacity-100 scale-100 mb-1 mt-2 border-b border-white/10 pb-3'
         }`}
       >
         <header className="flex justify-between items-center w-full">
@@ -383,128 +383,124 @@ export default function Timetable({ currentUser, setActiveTab }) {
           className="flex-1 pb-16 overflow-y-auto scrollbar-none flex flex-col gap-6"
         >
           
-          <div className="flex flex-col lg:flex-row gap-5 items-start">
+          {/* Timeline Lectures Column (Standardized Flex Spacing to prevent clipping) */}
+          <div className="w-full flex flex-col gap-5 mt-1">
             
-            {/* Timeline Lectures Column (Standardized Flex Spacing to prevent clipping) */}
-            <div className="flex-1 w-full flex flex-col gap-5 mt-1">
-              
-              {!showFilters && (
-                <span className="text-[10px] font-mono font-black text-indigo-400 uppercase tracking-widest text-left select-none pb-1.5 block animate-fadeIn leading-none pl-1">
-                  Schedule for {selectedDay} • {getBatchName() || 'All Batches'}
-                </span>
-              )}
-              
-              {displayEvents.length === 0 ? (
-                <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2.5 text-center select-none animate-fadeIn`}>
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shadow-md">
-                    <Sparkles size={20} className="animate-pulse" />
-                  </div>
-                  <h4 className="text-xs text-slate-200 font-extrabold uppercase tracking-widest">Free Day!</h4>
-                  <span className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-[220px]">
-                    No classes scheduled for today. Explore other days or batches!
-                  </span>
+            {!showFilters && (
+              <span className="text-[10px] font-mono font-black text-indigo-400 uppercase tracking-widest text-left select-none pb-1.5 block animate-fadeIn leading-none pl-1">
+                Schedule for {selectedDay} • {getBatchName() || 'All Batches'}
+              </span>
+            )}
+            
+            {displayEvents.length === 0 ? (
+              <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2.5 text-center select-none animate-fadeIn`}>
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shadow-md">
+                  <Sparkles size={20} className="animate-pulse" />
                 </div>
-              ) : (
-                displayEvents.map((item, idx) => {
-                  return (
-                    <div key={idx} className="flex gap-4 items-stretch w-full animate-fadeIn text-left">
-                      
-                      {/* 1. Time Stamps Column */}
-                      <div className="w-[62px] shrink-0 flex flex-col justify-between py-1.5 text-right font-mono text-[9px] font-black text-slate-400 select-none">
-                        <span>{item.start}</span>
-                        <span>{item.end}</span>
-                      </div>
-
-                      {/* 2. Timeline Axis Line Column */}
-                      <div className="w-3 shrink-0 flex flex-col items-center relative py-1">
-                        {/* Top Dot node */}
-                        <div className="w-2.5 h-2.5 rounded-full border bg-[#050608] border-white/60 z-20 shrink-0" />
-                        {/* Continuous connecting thin line */}
-                        <div className="flex-1 w-[1px] bg-white/[0.08] my-0.5" />
-                        {/* Bottom Dot node */}
-                        <div className="w-2.5 h-2.5 rounded-full border bg-[#050608] border-white/60 z-20 shrink-0" />
-                      </div>
-
-                      {/* 3. Lecture detailed frosted card Column */}
-                      <div className="flex-1 min-w-0 pb-1">
-                        <div className={`${obsidianCardClass} ${obsidianCardHoverClass} p-5 flex flex-col gap-3.5`}>
-                          
-                          {/* Time duration header block */}
-                          <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-mono font-bold tracking-wider leading-none select-none">
-                            <Clock size={11} className="text-slate-400" />
-                            <span>{item.time}</span>
-                          </div>
-
-                          {/* Title of course */}
-                          <h4 className="text-sm font-extrabold text-white truncate leading-snug tracking-wide select-text">
-                            {item.subject}
-                          </h4>
-
-                          {/* Sub-badges row */}
-                          <div className="flex flex-wrap gap-2 items-center w-full pt-1">
-                            {/* Type Pill */}
-                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border flex items-center gap-1 leading-none shadow-sm capitalize ${
-                              item.type === 'lab' 
-                                ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300' 
-                                : item.type === 'tutorial'
-                                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
-                                  : 'bg-blue-500/10 border-blue-500/20 text-blue-300'
-                            }`}>
-                              <FileText size={9} />
-                              {item.typeLabel}
-                            </span>
-
-                            {/* Instructor Pill */}
-                            <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm truncate max-w-[120px]">
-                              <User size={9} className="text-slate-400" />
-                              {item.instructor}
-                            </span>
-
-                            {/* Batch Pill */}
-                            {item.batches && (
-                              <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm uppercase font-mono">
-                                <Users size={9} className="text-slate-400" />
-                                {item.batches}
-                              </span>
-                            )}
-
-                            {/* Venue room Pill */}
-                            <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm uppercase font-mono">
-                              <MapPin size={9} className="text-indigo-400 shrink-0" />
-                              {item.room}
-                            </span>
-                          </div>
-
-                        </div>
-                      </div>
-
+                <h4 className="text-xs text-slate-200 font-extrabold uppercase tracking-widest">Free Day!</h4>
+                <span className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-[220px]">
+                  No classes scheduled for today. Explore other days or batches!
+                </span>
+              </div>
+            ) : (
+              displayEvents.map((item, idx) => {
+                return (
+                  <div key={idx} className="flex gap-4 items-stretch w-full animate-fadeIn text-left">
+                    
+                    {/* 1. Time Stamps Column */}
+                    <div className="w-[62px] shrink-0 flex flex-col justify-between py-1.5 text-right font-mono text-[9px] font-black text-slate-400 select-none">
+                      <span>{item.start}</span>
+                      <span>{item.end}</span>
                     </div>
-                  );
-                })
-              )}
-            </div>
 
-            {/* Breaks in the Day Column */}
-            {breaks.length > 0 && (
-              <div className="w-full lg:w-[280px] shrink-0 animate-fadeIn mt-2 lg:mt-0">
-                <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left border-dashed border-white/20 bg-white/[0.01]`}>
-                  <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-300 border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
-                    <Sparkles size={12} className="text-slate-400" /> Breaks in the Day
-                  </h4>
+                    {/* 2. Timeline Axis Line Column */}
+                    <div className="w-3 shrink-0 flex flex-col items-center relative py-1">
+                      {/* Top Dot node */}
+                      <div className="w-2.5 h-2.5 rounded-full border bg-[#050608] border-white/60 z-20 shrink-0" />
+                      {/* Continuous connecting thin line */}
+                      <div className="flex-1 w-[1px] bg-white/[0.08] my-0.5" />
+                      {/* Bottom Dot node */}
+                      <div className="w-2.5 h-2.5 rounded-full border bg-[#050608] border-white/60 z-20 shrink-0" />
+                    </div>
 
-                  <div className="flex flex-col gap-3">
-                    {breaks.map((brk, bIdx) => (
-                      <div key={bIdx} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm text-left">
-                        <span className="text-[10px] font-mono font-bold text-slate-300 leading-none">{brk.timeRange}</span>
-                        <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest font-mono mt-0.5 leading-none">{brk.duration}</span>
+                    {/* 3. Lecture detailed frosted card Column */}
+                    <div className="flex-1 min-w-0 pb-1">
+                      <div className={`${obsidianCardClass} ${obsidianCardHoverClass} p-5 flex flex-col gap-3.5`}>
+                        
+                        {/* Time duration header block */}
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-mono font-bold tracking-wider leading-none select-none">
+                          <Clock size={11} className="text-slate-400" />
+                          <span>{item.time}</span>
+                        </div>
+
+                        {/* Title of course */}
+                        <h4 className="text-sm font-extrabold text-white truncate leading-snug tracking-wide select-text">
+                          {item.subject}
+                        </h4>
+
+                        {/* Sub-badges row */}
+                        <div className="flex flex-wrap gap-2 items-center w-full pt-1">
+                          {/* Type Pill */}
+                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border flex items-center gap-1 leading-none shadow-sm capitalize ${
+                            item.type === 'lab' 
+                              ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300' 
+                              : item.type === 'tutorial'
+                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                                : 'bg-blue-500/10 border-blue-500/20 text-blue-300'
+                          }`}>
+                            <FileText size={9} />
+                            {item.typeLabel}
+                          </span>
+
+                          {/* Instructor Pill */}
+                          <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm truncate max-w-[120px]">
+                            <User size={9} className="text-slate-400" />
+                            {item.instructor}
+                          </span>
+
+                          {/* Batch Pill */}
+                          {item.batches && (
+                            <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm uppercase font-mono">
+                              <Users size={9} className="text-slate-400" />
+                              {item.batches}
+                            </span>
+                          )}
+
+                          {/* Venue room Pill */}
+                          <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm uppercase font-mono">
+                            <MapPin size={9} className="text-indigo-400 shrink-0" />
+                            {item.room}
+                          </span>
+                        </div>
+
                       </div>
-                    ))}
+                    </div>
+
                   </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Breaks in the Day section rendered cleanly below the lectures list */}
+          {breaks.length > 0 && (
+            <div className="w-full animate-fadeIn mt-2">
+              <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left border-dashed border-white/20 bg-white/[0.01]`}>
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-300 border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
+                  <Sparkles size={12} className="text-slate-400" /> Breaks in the Day
+                </h4>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {breaks.map((brk, bIdx) => (
+                    <div key={bIdx} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm text-left">
+                      <span className="text-[10px] font-mono font-bold text-slate-300 leading-none">{brk.timeRange}</span>
+                      <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest font-mono mt-0.5 leading-none">{brk.duration}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
-
-          </div>
+            </div>
+          )}
 
         </div>
       )}
