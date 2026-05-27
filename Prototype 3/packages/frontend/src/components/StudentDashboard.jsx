@@ -738,7 +738,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
             
             {/* 📊 TABS 1: ATTENDANCE BLOCK */}
             {activeTab === 'attendance' && (
-              <div className="flex flex-col gap-4 pb-8">
+              <div className="flex flex-col gap-4 pb-28">
                 
                 {/* Selectors and Settings Grid */}
                 <div className="grid grid-cols-2 gap-3">
@@ -880,7 +880,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 📝 TABS 2: GRADES TAB */}
             {activeTab === 'grades' && (
-              <div className="flex flex-col gap-4 pb-8">
+              <div className="flex flex-col gap-4 pb-28">
                 
                 {/* GPA summary tracker */}
                 <div className={`${obsidianCardClass} flex items-center justify-between p-5`}>
@@ -954,7 +954,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 📅 TABS 3: TIMETABLE TAB */}
             {activeTab === 'timetable' && (
-              <div className="flex flex-col gap-3.5 pb-8 relative pl-6 border-l border-white/10 ml-3 pt-3">
+              <div className="flex flex-col gap-3.5 pb-28 relative pl-6 border-l border-white/10 ml-3 pt-3">
                 
                 {!Array.isArray(timetableEvents) || timetableEvents.length === 0 ? (
                   <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center ml-[-24px]`}>
@@ -998,7 +998,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 💳 TABS 4: FEES TAB */}
             {activeTab === 'fees' && (
-              <div className="flex flex-col gap-4 pb-8">
+              <div className="flex flex-col gap-4 pb-28">
                 
                 {!Array.isArray(feeInvoices) || feeInvoices.length === 0 ? (
                   <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
@@ -1042,7 +1042,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 📅 TABS 5: EXAMS TAB */}
             {activeTab === 'exams' && (
-              <div className="flex flex-col gap-4 pb-8">
+              <div className="flex flex-col gap-4 pb-28">
                 
                 {!Array.isArray(examScheduleList) || examScheduleList.length === 0 ? (
                   <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
@@ -1084,7 +1084,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 👤 TABS 6: PROFILE TAB */}
             {activeTab === 'profile' && studentProfile && (
-              <div className="flex flex-col gap-4 pb-8">
+              <div className="flex flex-col gap-4 pb-28">
                 
                 <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left animate-fadeIn`}>
                   <h4 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
