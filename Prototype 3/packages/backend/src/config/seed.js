@@ -53,7 +53,7 @@ const seedAdmin = async () => {
       console.log('🍔 Canteen Counter Admin account already exists. Skipping seed.');
     }
 
-    // Seed default student account
+    // Seed default demo student account (generic test account, no real college credentials)
     const studentExists = await User.findOne({ email: 'student@campos.local' });
     if (!studentExists) {
       await User.create({
@@ -65,7 +65,7 @@ const seedAdmin = async () => {
         mustChangePassword: false,
         isEmailVerified: true,
         studentProfile: {
-          enrollmentId: 'ST-2026-99',
+          enrollmentId: 'DEMO-0001',
           grade: '1st Year',
           branch: 'Computer Science',
           section: 'A',
@@ -75,14 +75,53 @@ const seedAdmin = async () => {
       });
 
       console.log('\n' + '═'.repeat(60));
-      console.log('🔐 DEFAULT STUDENT ACCOUNT CREATED');
+      console.log('🔐 DEFAULT DEMO STUDENT ACCOUNT CREATED');
       console.log('═'.repeat(60));
       console.log(`   Email:    student@campos.local`);
       console.log(`   Password: Student@123`);
-      console.log(`   Role:     student`);
+      console.log(`   Role:     student (demo — no JPortal link)`);
       console.log('═'.repeat(60) + '\n');
     } else {
-      console.log('🎓 Student test account already exists. Skipping seed.');
+      console.log('🎓 Demo student account already exists. Skipping seed.');
+    }
+
+    // Seed Vardaan's student account (linked to real JIIT enrollment)
+    const vardaanExists = await User.findOne({ $or: [{ email: 'vardaan@campos.local' }, { email: '2501200031@campos.local' }] });
+    if (!vardaanExists) {
+      await User.create({
+        email: '2501200031@campos.local',
+        password: 'kyamujheKrishsepyaarhai?',
+        role: 'student',
+        firstName: 'Vardaan',
+        lastName: 'Gahlot',
+        mustChangePassword: false,
+        isEmailVerified: true,
+        studentProfile: {
+          enrollmentId: '2501200031',
+          grade: '1st Year',
+          branch: 'Computer Science & Engineering',
+          section: 'A',
+          hostel: 'Hostel Block D',
+          roomNumber: '404',
+        }
+      });
+
+      console.log('\n' + '═'.repeat(60));
+      console.log('🔐 VARDAAN STUDENT ACCOUNT CREATED');
+      console.log('═'.repeat(60));
+      console.log(`   Email:    2501200031@campos.local`);
+      console.log(`   Password: kyamujheKrishsepyaarhai?`);
+      console.log(`   Role:     student`);
+      console.log(`   Enroll:   2501200031`);
+      console.log('═'.repeat(60) + '\n');
+    } else {
+      if (vardaanExists.email === 'vardaan@campos.local') {
+        vardaanExists.email = '2501200031@campos.local';
+        await vardaanExists.save();
+        console.log('🔄 Updated Vardaan student account email to 2501200031@campos.local');
+      } else {
+        console.log('🎓 Vardaan student account already exists. Skipping seed.');
+      }
     }
   } catch (err) {
     console.error('❌ Failed to seed admin/student accounts:', err.message);

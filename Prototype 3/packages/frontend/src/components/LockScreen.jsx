@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Utensils, Shield, User, ArrowRight, Download, Calendar, BookOpen, Clock, X, KeyRound, Coffee, Sun, Moon, ChevronDown, GraduationCap, QrCode, SmartphoneNfc, CreditCard } from 'lucide-react';
+import { Utensils, Shield, User, ArrowRight, Download, Calendar, BookOpen, Clock, X, KeyRound, Coffee, Sun, Moon, ChevronDown, GraduationCap, QrCode, SmartphoneNfc, CreditCard, Eye, EyeOff } from 'lucide-react';
 import MessMenu from './MessMenu';
 import StudyMaterials from './StudyMaterials';
 import AcademicCalendar from './AcademicCalendar';
@@ -11,6 +11,7 @@ const API_BASE = import.meta.env.VITE_API_BASE !== undefined
 export default function LockScreen({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loginError, setLoginError] = useState(null);
 
@@ -566,13 +567,22 @@ export default function LockScreen({ onLoginSuccess }) {
             <span className="text-[10px] font-sans font-black uppercase tracking-widest text-slate-400 pl-1 select-none pointer-events-none">
               password
             </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full bg-white/[0.05] border border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] focus:border-white/40 focus:ring-2 focus:ring-white/10 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
-            />
+            <div className="relative w-full">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full bg-white/[0.05] border border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] focus:border-white/40 focus:ring-2 focus:ring-white/10 rounded-xl px-4 py-3 pr-12 text-sm font-semibold text-white tracking-wide transition-all duration-300 ease-out outline-none focus:scale-[1.015] focus:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
           {loginError && (
@@ -711,7 +721,7 @@ export default function LockScreen({ onLoginSuccess }) {
 
             <div className="flex flex-col gap-4">
               {[
-                { label: 'Student', icon: <User size={16} />, user: 'student', pass: 'Student@123', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/20' },
+                { label: 'Student (Demo)', icon: <User size={16} />, user: 'student', pass: 'Student@123', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/20' },
                 { label: 'Canteen Admin', icon: <Utensils size={16} />, user: 'canteen', pass: 'Canteen@123', color: 'bg-amber-500/20 text-amber-300 border-amber-500/20' },
                 { label: 'Super Admin', icon: <Shield size={16} />, user: 'admin', pass: 'CampOS@Admin123', color: 'bg-red-500/20 text-red-300 border-red-500/20' },
               ].map((profile) => (

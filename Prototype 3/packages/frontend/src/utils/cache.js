@@ -268,16 +268,26 @@ export const getProfileDataFromCache = async () => {
   return await getFromCache('profileData');
 };
 
-export const setUsername = (username) => { try { localStorage.setItem('username', username); } catch (e) { } };
-export const getUsername = () => { try { return localStorage.getItem('username'); } catch (e) { return null; } };
-export const removeUsername = () => { try { localStorage.removeItem('username'); } catch (e) { } };
+export const getUsernameKey = (email) => {
+  const prefix = email ? email.split('@')[0] : 'default';
+  return `username-${prefix}`;
+};
 
-export const setPassword = (password) => { try { localStorage.setItem('password', password); } catch (e) { } };
-export const getPassword = () => { try { return localStorage.getItem('password'); } catch (e) { return null; } };
-export const removePassword = () => { try { localStorage.removeItem('password'); } catch (e) { } };
+export const getPasswordKey = (email) => {
+  const prefix = email ? email.split('@')[0] : 'default';
+  return `password-${prefix}`;
+};
 
-export const setCredentials = (username, password) => { setUsername(username); setPassword(password); };
-export const clearCredentials = () => { removeUsername(); removePassword(); };
+export const setUsername = (username, email) => { try { localStorage.setItem(getUsernameKey(email), username); } catch (e) { } };
+export const getUsername = (email) => { try { return localStorage.getItem(getUsernameKey(email)); } catch (e) { return null; } };
+export const removeUsername = (email) => { try { localStorage.removeItem(getUsernameKey(email)); } catch (e) { } };
+
+export const setPassword = (password, email) => { try { localStorage.setItem(getPasswordKey(email), password); } catch (e) { } };
+export const getPassword = (email) => { try { return localStorage.getItem(getPasswordKey(email)); } catch (e) { return null; } };
+export const removePassword = (email) => { try { localStorage.removeItem(getPasswordKey(email)); } catch (e) { } };
+
+export const setCredentials = (username, password, email) => { setUsername(username, email); setPassword(password, email); };
+export const clearCredentials = (email) => { removeUsername(email); removePassword(email); };
 
 export const getDefaultTab = () => { try { return localStorage.getItem('defaultTab') || '/attendance'; } catch (e) { return '/attendance'; } };
 export const setDefaultTab = (tab) => { try { localStorage.setItem('defaultTab', tab); } catch (e) { } };

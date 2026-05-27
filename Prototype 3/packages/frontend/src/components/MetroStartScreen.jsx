@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Megaphone, Coffee, Utensils, BookOpen, LogOut, 
   QrCode, Ticket, Clock, ArrowRight, Calendar,
@@ -65,6 +65,26 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   const isSuperAdmin = currentUser?.role === 'admin';
   const isCanteenAdmin = currentUser?.role === 'canteen_admin';
 
+  const displayName = useMemo(() => {
+    try {
+      const cached = localStorage.getItem('profileData');
+      if (cached) {
+        const profile = JSON.parse(cached);
+        const fullName = profile?.name || profile?.generalinformation?.name;
+        if (fullName) {
+          const first = fullName.trim().split(/\s+/)[0];
+          return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to extract name from JPortal profile:", e);
+    }
+    if (currentUser?.firstName) {
+      return currentUser.firstName;
+    }
+    return 'Guest';
+  }, [currentUser]);
+
   return (
     <div className="metro-start-container flex flex-col p-6 text-white font-sans min-h-screen justify-between pb-10 bg-transparent relative z-10 select-none">
       <div className="w-full flex flex-col gap-6">
@@ -76,7 +96,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               Hello,
             </span>
             <span className="italic font-normal text-[32px] text-white leading-none mt-0.5 tracking-tight">
-              Vardaan
+              {displayName}
             </span>
           </div>
 
