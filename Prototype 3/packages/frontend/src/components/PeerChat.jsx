@@ -3,10 +3,7 @@ import {
   Phone, Video, MoreVertical, Smile, Paperclip, 
   Mic, Send, CheckCheck, Search, X 
 } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE !== undefined
-  ? import.meta.env.VITE_API_BASE
-  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
+import { API_BASE } from '../config/api';
 
 export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   // Available student peers list

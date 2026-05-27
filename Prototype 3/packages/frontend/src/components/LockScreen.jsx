@@ -3,10 +3,7 @@ import { Utensils, Shield, User, ArrowRight, Download, Calendar, BookOpen, Clock
 import MessMenu from './MessMenu';
 import StudyMaterials from './StudyMaterials';
 import AcademicCalendar from './AcademicCalendar';
-
-const API_BASE = import.meta.env.VITE_API_BASE !== undefined
-  ? import.meta.env.VITE_API_BASE
-  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
+import { API_BASE } from '../config/api';
 
 export default function LockScreen({ onLoginSuccess }) {
   const [email, setEmail] = useState('');

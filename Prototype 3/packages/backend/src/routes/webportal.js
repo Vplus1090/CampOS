@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import { getWebportalProxyBody, getWebportalSubpath } from '../utils/webportalRequest.js';
 
 const router = Router();
 
@@ -9,7 +10,7 @@ router.use('/proxy*', express.raw({ type: '*/*', limit: '10mb' }));
 
 router.all('/proxy*', async (req, res, next) => {
   try {
-    const subpath = req.path.replace(/^\/proxy/, '');
+    const subpath = getWebportalSubpath(req);
     const targetUrl = `https://webportal.jiit.ac.in:6011/StudentPortalAPI${subpath}`;
 
     const headers = {};
@@ -38,8 +39,9 @@ router.all('/proxy*', async (req, res, next) => {
       headers: headers,
     };
 
-    if (req.method !== 'GET' && req.method !== 'HEAD' && req.body && req.body.length > 0) {
-      fetchOptions.body = req.body;
+    const proxyBody = getWebportalProxyBody(req);
+    if (req.method !== 'GET' && req.method !== 'HEAD' && proxyBody) {
+      fetchOptions.body = proxyBody;
     }
 
     const response = await fetch(targetUrl, fetchOptions);

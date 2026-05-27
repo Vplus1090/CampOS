@@ -25,6 +25,7 @@ import seedCanteen from '../packages/backend/src/config/seedCanteen.js';
 import routes from '../packages/backend/src/routes/index.js';
 import notFound from '../packages/backend/src/middleware/notFound.js';
 import errorHandler from '../packages/backend/src/middleware/errorHandler.js';
+import { isWebportalProxyRequest } from '../packages/backend/src/utils/webportalRequest.js';
 
 // ─── App ────────────────────────────────────────────────────────────────────────
 
@@ -50,14 +51,14 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/webportal/proxy')) {
+  if (isWebportalProxyRequest(req)) {
     return next();
   }
   express.json({ limit: '10mb' })(req, res, next);
 });
 
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/webportal/proxy')) {
+  if (isWebportalProxyRequest(req)) {
     return next();
   }
   express.urlencoded({ extended: true })(req, res, next);

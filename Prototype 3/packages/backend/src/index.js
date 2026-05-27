@@ -16,6 +16,7 @@ import seedCanteen from './config/seedCanteen.js';
 import routes from './routes/index.js';
 import notFound from './middleware/notFound.js';
 import errorHandler from './middleware/errorHandler.js';
+import { isWebportalProxyRequest } from './utils/webportalRequest.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,14 +46,14 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/webportal/proxy')) {
+  if (isWebportalProxyRequest(req)) {
     return next();
   }
   express.json({ limit: '10mb' })(req, res, next);
 });
 
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/webportal/proxy')) {
+  if (isWebportalProxyRequest(req)) {
     return next();
   }
   express.urlencoded({ extended: true })(req, res, next);

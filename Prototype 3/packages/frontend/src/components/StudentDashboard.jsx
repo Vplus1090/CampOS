@@ -21,14 +21,11 @@ import {
 import { 
   calculateClassesNeeded, calculateClassesCanMiss
 } from '../utils/math';
+import { API_BASE } from '../config/api';
 
 // Premium HSL double-border and glow classes
 const obsidianCardClass = "border-2 border-indigo-500/25 bg-indigo-500/[0.02] shadow-[0_0_25px_rgba(99,102,241,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-3xl rounded-[28px] p-5 relative overflow-hidden transition-all duration-300";
 const obsidianCardHoverClass = "hover:border-indigo-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.08)]";
-
-const API_BASE = import.meta.env.VITE_API_BASE !== undefined
-  ? import.meta.env.VITE_API_BASE
-  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
 
 const parseJPortalAttendance = (rawList) => {
   const parsed = [];

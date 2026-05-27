@@ -2,9 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
-const API_BASE = import.meta.env.VITE_API_BASE !== undefined
-  ? import.meta.env.VITE_API_BASE
-  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
+import { API_BASE } from './config/api';
 
 // Catch global uncaught errors and display them on the screen!
 window.addEventListener('error', (event) => {

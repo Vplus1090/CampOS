@@ -10,11 +10,8 @@ import MetroStartScreen from './components/MetroStartScreen';
 import LockScreen from './components/LockScreen';
 import PeerChat from './components/PeerChat';
 import StudentDashboard from './components/StudentDashboard';
+import { API_BASE } from './config/api';
 import './App.css';
-
-const API_BASE = import.meta.env.VITE_API_BASE !== undefined
-  ? import.meta.env.VITE_API_BASE
-  : (import.meta.env.DEV ? "" : "https://campos-fmjh.onrender.com");
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);

@@ -11,4 +11,11 @@
 
 import app from './app.js';
 
+// Let Express read the raw JIIT proxy body (encrypted JSON strings).
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default app;
