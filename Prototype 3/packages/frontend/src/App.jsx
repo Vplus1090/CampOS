@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Clock, QrCode, Check, X, Smartphone, SmartphoneNfc, CreditCard, ArrowLeft, Ticket, Home, Coffee, Utensils, BookOpen, ShoppingCart } from 'lucide-react';
 import NoticesFeed from './components/NoticesFeed';
 import SkillSwapGrid from './components/SkillSwapGrid';

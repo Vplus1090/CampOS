@@ -520,7 +520,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-white font-sans h-full w-full select-none pb-28 relative min-h-screen bg-transparent">
+    <div className="flex flex-col gap-4 text-white font-sans h-full w-full select-none relative min-h-0 bg-transparent">
       
       {/* ─── Compact Glass Page Header ─── */}
       <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between animate-fadeIn z-10">
@@ -749,12 +749,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
           {/* ─── Scroll-locked Content Workspace ─── */}
           <div 
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto scrollbar-none min-h-0 animate-fadeIn pr-1"
+            className="flex-1 overflow-y-auto scrollbar-none min-h-0 animate-fadeIn pr-1 pb-24"
           >
             
             {/* 📊 TABS 1: ATTENDANCE BLOCK */}
             {activeTab === 'attendance' && (
-              <div className="flex flex-col gap-4 pb-28">
+              <div className="flex flex-col gap-4">
                 
                 {/* Selectors and Settings Grid */}
                 <div className="grid grid-cols-2 gap-3">
@@ -896,7 +896,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 📝 TABS 2: GRADES TAB */}
             {activeTab === 'grades' && (
-              <div className="flex flex-col gap-4 pb-28">
+              <div className="flex flex-col gap-4">
                 
                 {/* GPA summary tracker */}
                 <div className={`${obsidianCardClass} flex items-center justify-between p-5`}>
@@ -970,7 +970,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 📅 TABS 3: TIMETABLE TAB */}
             {activeTab === 'timetable' && (
-              <div className="flex flex-col gap-3.5 pb-28 relative pl-6 border-l border-white/10 ml-3 pt-3">
+              <div className="flex flex-col gap-3.5 relative pl-6 border-l border-white/10 ml-3 pt-3">
                 
                 {!Array.isArray(timetableEvents) || timetableEvents.length === 0 ? (
                   <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center ml-[-24px]`}>
@@ -1014,7 +1014,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 💳 TABS 4: FEES TAB */}
             {activeTab === 'fees' && (
-              <div className="flex flex-col gap-4 pb-28">
+              <div className="flex flex-col gap-4">
                 
                 {!Array.isArray(feeInvoices) || feeInvoices.length === 0 ? (
                   <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
@@ -1058,7 +1058,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 📅 TABS 5: EXAMS TAB */}
             {activeTab === 'exams' && (
-              <div className="flex flex-col gap-4 pb-28">
+              <div className="flex flex-col gap-4">
                 
                 {!Array.isArray(examScheduleList) || examScheduleList.length === 0 ? (
                   <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2 text-center`}>
@@ -1100,7 +1100,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 👤 TABS 6: PROFILE TAB */}
             {activeTab === 'profile' && studentProfile && (
-              <div className="flex flex-col gap-4 pb-28">
+              <div className="flex flex-col gap-4">
                 
                 <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left animate-fadeIn`}>
                   <h4 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
@@ -1153,79 +1153,30 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
           </div>
 
-          {/* ─── Premium Floating Center Navigation Pill Bar ─── */}
-          <nav className="absolute bottom-5 left-4 right-4 bg-slate-950/80 border-2 border-indigo-500/20 shadow-[0_10px_35px_rgba(0,0,0,0.5)] shadow-indigo-500/5 backdrop-blur-3xl rounded-[28px] py-3.5 px-5 flex justify-between items-center z-[100] animate-fadeIn select-none">
-            {/* 📊 Attendance */}
-            <button
-              onClick={() => setActiveTab('attendance')}
-              className={`flex flex-col items-center justify-center gap-1 shrink-0 cursor-pointer transition ${activeTab === 'attendance' ? 'text-indigo-400 scale-105' : 'text-slate-500 hover:text-slate-300'}`}
-              type="button"
-              title="Attendance"
-            >
-              <Percent size={18} className="stroke-[2.5px]" />
-              <span className="text-[7.5px] font-black uppercase tracking-wider">Attendance</span>
-              {activeTab === 'attendance' && <span className="w-1 h-1 rounded-full bg-indigo-400 mt-0.5 animate-ping"></span>}
-            </button>
-
-            {/* 📝 Grades */}
-            <button
-              onClick={() => setActiveTab('grades')}
-              className={`flex flex-col items-center justify-center gap-1 shrink-0 cursor-pointer transition ${activeTab === 'grades' ? 'text-indigo-400 scale-105' : 'text-slate-500 hover:text-slate-300'}`}
-              type="button"
-              title="Grades"
-            >
-              <Award size={18} className="stroke-[2.5px]" />
-              <span className="text-[7.5px] font-black uppercase tracking-wider">Grades</span>
-              {activeTab === 'grades' && <span className="w-1 h-1 rounded-full bg-indigo-400 mt-0.5 animate-ping"></span>}
-            </button>
-
-            {/* 📅 Timetable */}
-            <button
-              onClick={() => setActiveTab('timetable')}
-              className={`flex flex-col items-center justify-center gap-1 shrink-0 cursor-pointer transition ${activeTab === 'timetable' ? 'text-indigo-400 scale-105' : 'text-slate-500 hover:text-slate-300'}`}
-              type="button"
-              title="Timetable"
-            >
-              <Clock size={18} className="stroke-[2.5px]" />
-              <span className="text-[7.5px] font-black uppercase tracking-wider">Schedule</span>
-              {activeTab === 'timetable' && <span className="w-1 h-1 rounded-full bg-indigo-400 mt-0.5 animate-ping"></span>}
-            </button>
-
-            {/* 💳 Fees */}
-            <button
-              onClick={() => setActiveTab('fees')}
-              className={`flex flex-col items-center justify-center gap-1 shrink-0 cursor-pointer transition ${activeTab === 'fees' ? 'text-indigo-400 scale-105' : 'text-slate-500 hover:text-slate-300'}`}
-              type="button"
-              title="Fees"
-            >
-              <DollarSign size={18} className="stroke-[2.5px]" />
-              <span className="text-[7.5px] font-black uppercase tracking-wider">Ledger</span>
-              {activeTab === 'fees' && <span className="w-1 h-1 rounded-full bg-indigo-400 mt-0.5 animate-ping"></span>}
-            </button>
-
-            {/* 📝 Exams */}
-            <button
-              onClick={() => setActiveTab('exams')}
-              className={`flex flex-col items-center justify-center gap-1 shrink-0 cursor-pointer transition ${activeTab === 'exams' ? 'text-indigo-400 scale-105' : 'text-slate-500 hover:text-slate-300'}`}
-              type="button"
-              title="Exams"
-            >
-              <Calendar size={18} className="stroke-[2.5px]" />
-              <span className="text-[7.5px] font-black uppercase tracking-wider">Exams</span>
-              {activeTab === 'exams' && <span className="w-1 h-1 rounded-full bg-indigo-400 mt-0.5 animate-ping"></span>}
-            </button>
-
-            {/* 👤 Profile */}
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`flex flex-col items-center justify-center gap-1 shrink-0 cursor-pointer transition ${activeTab === 'profile' ? 'text-indigo-400 scale-105' : 'text-slate-500 hover:text-slate-300'}`}
-              type="button"
-              title="Profile"
-            >
-              <User size={18} className="stroke-[2.5px]" />
-              <span className="text-[7.5px] font-black uppercase tracking-wider">Profile</span>
-              {activeTab === 'profile' && <span className="w-1 h-1 rounded-full bg-indigo-400 mt-0.5 animate-ping"></span>}
-            </button>
+          {/* ─── Glass Pill Navigation (icons only) ─── */}
+          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-white/[0.06] border border-white/[0.12] backdrop-blur-2xl shadow-[0_18px_40px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.1)] z-[100] animate-fadeIn select-none">
+            {[
+              { id: 'attendance', icon: <Percent size={19} className="stroke-[2.5px]" />, label: 'Attendance' },
+              { id: 'grades',     icon: <Award    size={19} className="stroke-[2.5px]" />, label: 'Grades' },
+              { id: 'timetable',  icon: <Clock    size={19} className="stroke-[2.5px]" />, label: 'Schedule' },
+              { id: 'fees',       icon: <DollarSign size={19} className="stroke-[2.5px]" />, label: 'Ledger' },
+              { id: 'exams',      icon: <Calendar size={19} className="stroke-[2.5px]" />, label: 'Exams' },
+              { id: 'profile',    icon: <User     size={19} className="stroke-[2.5px]" />, label: 'Profile' },
+            ].map(({ id, icon, label }) => (
+              <button
+                key={id}
+                type="button"
+                title={label}
+                onClick={() => setActiveTab(id)}
+                className={`w-[42px] h-[42px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${
+                  activeTab === id
+                    ? 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 shadow-[0_6px_18px_rgba(99,102,241,0.18)]'
+                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.05] border border-transparent'
+                }`}
+              >
+                {icon}
+              </button>
+            ))}
           </nav>
 
         </div>
