@@ -176,107 +176,123 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
         {/* Primary Dashboard Blocks */}
         <div className="flex flex-col gap-4">
 
-
-            {/* Student Kiosk Portal & Timetable — Top Priority side-by-side */}
-            {isStudent && (
-              <div className="grid grid-cols-2 gap-4 w-full">
-                <div
-                  onClick={() => onTileClick('student_dashboard')}
-                  className="cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border-2 border-amber-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
-                >
-                  <span className="text-white font-extrabold text-sm tracking-wide text-left">Dashboard</span>
-                  <GraduationCap className="text-amber-400 group-hover:text-amber-300 transition-colors duration-300 shrink-0" size={22} />
-                </div>
-                <div
-                  onClick={() => onTileClick('timetable')}
-                  className="cursor-pointer bg-indigo-500/[0.03] backdrop-blur-3xl border-2 border-indigo-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
-                >
-                  <span className="text-white font-extrabold text-sm tracking-wide text-left">Timetable</span>
-                  <Clock className="text-indigo-400 group-hover:text-indigo-300 transition-colors duration-300 shrink-0" size={22} />
-                </div>
-              </div>
-            )}
-
-
-          {/* Card 2: Canteen (Glassy Orange) */}
-          {(isStudent || isCanteenAdmin) && (
-            <div
-              onClick={() => onTileClick('canteen')}
-              className="cursor-pointer bg-orange-500/[0.03] backdrop-blur-3xl rounded-[28px] p-5 text-white h-[185px] border-2 border-orange-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_30px_rgba(249,115,22,0.08)] flex flex-col justify-between relative overflow-hidden group transition-all duration-300 active:scale-[0.99]"
-            >
-
-              <div className="flex justify-between items-start w-full z-10 text-left">
-                <div className="flex flex-col">
-                  <h3 className="text-2xl font-black tracking-wide leading-none">Canteen</h3>
-                  <p className="text-orange-200/80 text-sm mt-2 font-semibold">Fresh campus specialties</p>
-                </div>
-                <Coffee size={24} className="text-orange-400 mt-1" />
+          {isStudent ? (
+            /* Student Asymmetrical Metro Grid (Forms a perfect 3x4 solid rectangle altogether) */
+            <div className="grid grid-cols-3 auto-rows-[105px] gap-4 w-full animate-fadeIn select-none">
+              
+              {/* 1. Dashboard (Col-span 2, Row-span 2 - Largest Box) */}
+              <div
+                onClick={() => onTileClick('student_dashboard')}
+                className="col-span-2 row-span-2 cursor-pointer bg-amber-500/[0.03] backdrop-blur-3xl border border-amber-500/30 rounded-[28px] p-5 h-full flex flex-col justify-between items-start transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:border-amber-500/50 hover:bg-amber-500/[0.06] active:scale-[0.97] group"
+              >
+                <GraduationCap className="text-amber-400 group-hover:text-amber-300 group-hover:scale-110 transition-all duration-300 shrink-0" size={32} />
+                <h3 className="text-xl sm:text-[22px] font-extrabold tracking-wide text-white leading-none text-left">Dashboard</h3>
               </div>
 
-              {/* Order Now button at bottom */}
-              <div className="flex justify-end items-center w-full z-10 mt-4">
-                {!isCanteenAdmin && (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); onTileClick('canteen'); }}
-                    className="bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/35 text-orange-400 font-black rounded-lg px-2.5 py-1 text-[9px] uppercase tracking-wider transition-all duration-300 active:scale-95 flex items-center gap-1 cursor-pointer z-20 backdrop-blur-md shadow-inner whitespace-nowrap"
-                  >
-                    Order Now <ArrowRight size={11} className="stroke-[3px] text-orange-400 shrink-0" />
-                  </button>
-                )}
+              {/* 2. Timetable (Col-span 1, Row-span 2 - Vertical Font Style) */}
+              <div
+                onClick={() => onTileClick('timetable')}
+                className="col-span-1 row-span-2 cursor-pointer bg-indigo-500/[0.03] backdrop-blur-3xl border border-indigo-500/30 rounded-[28px] p-4 sm:p-5 h-full flex flex-col justify-between items-center transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:border-indigo-500/50 hover:bg-indigo-500/[0.06] active:scale-[0.97] group"
+              >
+                <Clock className="text-indigo-400 group-hover:scale-110 transition-transform duration-300 shrink-0" size={20} />
+                <div className="flex-1 flex items-center justify-center w-full relative overflow-hidden select-none">
+                  <span className="text-sm sm:text-base font-extrabold text-white whitespace-nowrap rotate-90 origin-center absolute">
+                    Timetable
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Row of side-by-side cards: Mess & Skill Swap */}
-          <div className="grid grid-cols-2 gap-4 w-full">
-            {/* Card 3: Mess Hall (Glassy Emerald) */}
-            {(isStudent || isSuperAdmin) && (
+              {/* 3. Canteen (Col-span 2, Row-span 1 - Wide Horizontal Box) */}
+              <div
+                onClick={() => onTileClick('canteen')}
+                className="col-span-2 row-span-1 cursor-pointer bg-orange-500/[0.03] backdrop-blur-3xl rounded-[28px] p-4.5 sm:p-5 text-white h-full border border-orange-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] hover:border-orange-500/55 hover:bg-orange-500/[0.06] flex items-center gap-3 transition-all duration-300 active:scale-[0.99] group"
+              >
+                <Coffee className="text-orange-400 shrink-0 group-hover:scale-110 transition-transform duration-300" size={20} />
+                <h3 className="text-sm sm:text-base font-extrabold text-white leading-none text-left">Canteen</h3>
+              </div>
+
+              {/* 4. Mess Hall (Col-span 1, Row-span 1) */}
               <div
                 onClick={() => onTileClick('mess')}
-                className="cursor-pointer bg-emerald-500/[0.03] backdrop-blur-3xl rounded-[28px] p-5 text-white h-[135px] border-2 border-emerald-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_30px_rgba(16,185,129,0.08)] flex flex-col justify-center relative overflow-hidden group transition-all duration-300 active:scale-[0.99]"
+                className="col-span-1 row-span-1 cursor-pointer bg-emerald-500/[0.03] backdrop-blur-3xl rounded-[28px] p-4 sm:p-5 text-white h-full border border-emerald-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] hover:border-emerald-500/55 hover:bg-emerald-500/[0.06] flex flex-col justify-between items-start transition-all duration-300 active:scale-[0.99] group"
               >
-                <div className="flex justify-between items-center w-full z-10 text-left">
-                  <h3 className="text-lg font-black tracking-wide leading-none">Mess Hall</h3>
-                  <Utensils size={20} className="text-emerald-400" />
-                </div>
+                <Utensils className="text-emerald-400 group-hover:scale-110 transition-transform duration-300 shrink-0" size={18} />
+                <h3 className="text-[11px] sm:text-xs font-extrabold tracking-wide leading-tight text-white text-left">Mess Hall</h3>
               </div>
-            )}
 
-            {/* Card 4: Skill Swap (Glassy Violet) */}
-            {(isStudent || isSuperAdmin) && (
+              {/* 5. Skill Swap (Col-span 1, Row-span 1) */}
               <div
                 onClick={() => onTileClick('skillgigs')}
-                className="cursor-pointer bg-violet-500/[0.03] backdrop-blur-3xl rounded-[28px] p-5 text-white h-[135px] border-2 border-violet-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_30px_rgba(139,92,246,0.08)] flex flex-col justify-center relative overflow-hidden group transition-all duration-300 active:scale-[0.99]"
+                className="col-span-1 row-span-1 cursor-pointer bg-violet-500/[0.03] backdrop-blur-3xl rounded-[28px] p-4 sm:p-5 text-white h-full border border-violet-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] hover:border-violet-500/55 hover:bg-violet-500/[0.06] flex flex-col justify-between items-start transition-all duration-300 active:scale-[0.99] group"
               >
-                <div className="flex justify-between items-center w-full z-10 text-left">
-                  <h3 className="text-lg font-black tracking-wide leading-none">Skill Swap</h3>
-                  <BookOpen size={20} className="text-violet-400" />
-                </div>
-              </div>
-            )}
-          </div>
-          {/* Row of side-by-side cards: Shelf & Calendar */}
-          {isStudent && (
-            <div className="grid grid-cols-2 gap-4 w-full">
-              {/* Study Materials */}
-              <div
-                onClick={() => onTileClick('materials')}
-                className="cursor-pointer bg-cyan-500/[0.03] backdrop-blur-3xl border-2 border-cyan-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
-              >
-                <span className="text-white font-extrabold text-sm tracking-wide">Shelf</span>
-                <BookOpen className="text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300" size={22} />
+                <BookOpen className="text-violet-400 group-hover:scale-110 transition-transform duration-300 shrink-0" size={18} />
+                <h3 className="text-[11px] sm:text-xs font-extrabold tracking-wide leading-tight text-white text-left">Skill Swap</h3>
               </div>
 
-              {/* Academic Calendar */}
+              {/* 6. Shelf (Col-span 1, Row-span 1) */}
+              <div
+                onClick={() => onTileClick('materials')}
+                className="col-span-1 row-span-1 cursor-pointer bg-cyan-500/[0.03] backdrop-blur-3xl border border-cyan-500/25 rounded-[28px] p-4 sm:p-5 h-full flex flex-col justify-between items-start transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:border-cyan-500/50 hover:bg-cyan-500/[0.06] active:scale-[0.97] group"
+              >
+                <BookOpen className="text-cyan-400 group-hover:scale-110 transition-transform duration-300 shrink-0" size={18} />
+                <h3 className="text-[11px] sm:text-xs font-extrabold tracking-wide leading-tight text-white text-left">Shelf</h3>
+              </div>
+
+              {/* 7. Calendar (Col-span 1, Row-span 1) */}
               <div
                 onClick={() => onTileClick('calendar')}
-                className="cursor-pointer bg-rose-500/[0.03] backdrop-blur-3xl border-2 border-rose-500/25 rounded-[28px] p-5 h-[85px] flex items-center justify-between transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] active:scale-[0.97] group"
+                className="col-span-1 row-span-1 cursor-pointer bg-rose-500/[0.03] backdrop-blur-3xl border border-rose-500/25 rounded-[28px] p-4 sm:p-5 h-full flex flex-col justify-between items-start transition-all duration-300 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] hover:border-rose-500/50 hover:bg-rose-500/[0.06] active:scale-[0.97] group"
               >
-                <span className="text-white font-extrabold text-sm tracking-wide">Calendar</span>
-                <Calendar className="text-rose-400 group-hover:text-rose-300 transition-colors duration-300" size={22} />
+                <Calendar className="text-rose-400 group-hover:scale-110 transition-transform duration-300 shrink-0" size={18} />
+                <h3 className="text-[9.5px] sm:text-[11px] font-extrabold tracking-wide leading-tight text-white text-left">Calendar</h3>
               </div>
+
+            </div>
+          ) : (
+            /* Fallback Grid layout for Admin / Canteen Admin */
+            <div className="flex flex-col gap-4">
+              {/* Canteen (Glassy Orange) */}
+              {isCanteenAdmin && (
+                <div
+                  onClick={() => onTileClick('canteen')}
+                  className="cursor-pointer bg-orange-500/[0.03] backdrop-blur-3xl rounded-[28px] p-5 text-white h-[185px] border border-orange-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] flex flex-col justify-between transition-all duration-300 active:scale-[0.99]"
+                >
+                  <div className="flex justify-between items-start w-full text-left">
+                    <div className="flex flex-col">
+                      <h3 className="text-2xl font-black tracking-wide leading-none">Canteen Admin</h3>
+                      <p className="text-orange-200/80 text-sm mt-2 font-semibold">Manage campus orders and menu</p>
+                    </div>
+                    <Coffee size={24} className="text-orange-400 mt-1" />
+                  </div>
+                </div>
+              )}
+
+              {/* Super Admin fallbacks */}
+              {isSuperAdmin && (
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div
+                    onClick={() => onTileClick('mess')}
+                    className="cursor-pointer bg-emerald-500/[0.03] backdrop-blur-3xl rounded-[28px] p-5 text-white h-[135px] border border-emerald-500/35 shadow-xl flex flex-col justify-center relative transition duration-300 active:scale-[0.99]"
+                  >
+                    <div className="flex justify-between items-center w-full text-left">
+                      <h3 className="text-lg font-black tracking-wide leading-none">Mess Admin</h3>
+                      <Utensils size={20} className="text-emerald-400" />
+                    </div>
+                  </div>
+                  <div
+                    onClick={() => onTileClick('skillgigs')}
+                    className="cursor-pointer bg-violet-500/[0.03] backdrop-blur-3xl rounded-[28px] p-5 text-white h-[135px] border border-violet-500/35 shadow-xl flex flex-col justify-center relative transition duration-300 active:scale-[0.99]"
+                  >
+                    <div className="flex justify-between items-center w-full text-left">
+                      <h3 className="text-lg font-black tracking-wide leading-none">Skill Swap Admin</h3>
+                      <BookOpen size={20} className="text-violet-400" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
         </div>
       </div>
     </div>
