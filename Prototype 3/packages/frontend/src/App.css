@@ -14,15 +14,27 @@
   --input-bg: rgba(244, 243, 236, 0.7);
   --text-primary: #1e1e24;
   --text-secondary: #5c5c68;
+  
+  /* Fallback and Light Mode support for undefined variables */
+  --accent: #6750a4;
+  --accent-bg: rgba(103, 80, 164, 0.12);
+  --accent-border: rgba(103, 80, 164, 0.2);
+  --text-h: #1e1e24;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --card-bg: rgba(22, 23, 29, 0.75);
-    --card-border: rgba(46, 48, 58, 0.5);
-    --input-bg: rgba(31, 32, 40, 0.7);
+    --card-bg: rgba(33, 26, 48, 0.75); /* Lavender container bg */
+    --card-border: rgba(72, 60, 94, 0.4); /* Lavender outline border */
+    --input-bg: rgba(28, 21, 41, 0.7); /* Lavender input bg */
     --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
+    --text-secondary: #cac4d0;
+    
+    /* Dark Mode Lavender settings */
+    --accent: #d0bcff;
+    --accent-bg: rgba(208, 188, 255, 0.12);
+    --accent-border: rgba(208, 188, 255, 0.2);
+    --text-h: #e6e1e5;
   }
 }
 
@@ -37,6 +49,18 @@
   background: radial-gradient(circle at 10% 20%, var(--accent-bg) 0%, transparent 40%),
               radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
   box-sizing: border-box;
+}
+
+/* Home: full-bleed — no inset padding or gradient “card” behind the grid */
+.campos-dashboard--home {
+  padding: 0;
+  background: #120d1c;
+}
+
+/* Mess, Shelf, Calendar, etc. — edge-to-edge like lockscreen guest overlays */
+.campos-dashboard--immersive {
+  padding: 0;
+  background: #181125;
 }
 
 /* ─── Dashboard Glowing Header & Stats ─────────────────────────────────────────── */

@@ -6,6 +6,12 @@ import {
 export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) {
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = (e) => {
+    const currentScrollTop = e.target.scrollTop;
+    setIsScrolled(currentScrollTop > 10);
+  };
 
   // Toggle Daily vs Weekly view
   const [viewMode, setViewMode] = useState('daily'); // 'daily', 'weekly'
@@ -91,31 +97,161 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
   ];
 
   return (
-    <div className="mess-menu-dashboard flex flex-col gap-6 text-white font-sans min-h-screen pb-24 relative select-none">
+    <div className="relative flex flex-col h-full max-h-full overflow-hidden font-sans text-[#e6e1e5] select-none mess-menu-dashboard bg-[#181125]">
       
-      {/* Segmented Controls Header */}
-      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
-        <button
-          onClick={() => setActiveTab && setActiveTab('home')}
-          className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-          type="button"
-        >
-          <span className="text-xl font-bold">&larr;</span>
-        </button>
-        <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-          Mess Menu
-        </h2>
+      {/* M3 Large Top App Bar */}
+      <header className={`absolute top-0 left-0 right-0 z-20 flex flex-col px-6 transition-all duration-300 ease-in-out overflow-hidden ${
+        isScrolled 
+          ? 'h-[96px] pt-[26px] bg-[#292035] shadow-md justify-start' 
+          : 'h-[180px] bg-transparent justify-start pt-[26px]'
+      }`}>
+        {/* Top Row: Navigation (No Action Icons) */}
+        <div className="flex items-center justify-start w-full h-11 shrink-0">
+          <button
+            onClick={() => setActiveTab && setActiveTab('home')}
+            className="w-11 h-11 bg-[#292035] hover:bg-[#352a48] border border-white/10 text-[#d0bcff] rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-sm cursor-pointer shrink-0"
+            type="button"
+          >
+            <span className="text-xl font-bold">&larr;</span>
+          </button>
+          
+          {/* Small Header Title (Scrolled state) */}
+          <span className={`text-[20px] pl-3.5 font-medium text-[#e6e1e5] leading-none tracking-tight font-sans transition-all duration-300 ${
+            isScrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'
+          }`}>
+            Mess Menu
+          </span>
+        </div>
+
+        {/* Bottom Area: Large Headline & Subtitle (At-rest state) */}
+        <div className={`mt-3 pl-3.5 text-left transition-all duration-200 ${
+          isScrolled ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'
+        }`}>
+          <h1 className="text-[28px] font-normal leading-tight text-[#e6e1e5] tracking-tight font-sans">
+            Mess Menu
+          </h1>
+          <p className="text-[12px] text-[#cac4d0] mt-1 font-medium tracking-wide font-sans">
+            Daily & Weekly Meals
+          </p>
+        </div>
       </header>
 
-      {/* Segmented Tab Switcher shifted below the heading */}
-      <div className="flex justify-center w-full py-1 shrink-0 select-none">
-        <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner backdrop-blur-md">
+      {/* Scrollable Content Wrapper */}
+      <div
+        onScroll={handleScroll}
+        className="flex-1 pb-24 px-5 flex flex-col gap-5 overflow-y-auto scrollbar-none pt-[188px]"
+      >
+        {/* Guest pass / buy — flat like lockscreen (no nested outline card) */}
+        {(isStudent || !currentUser) && (
+          activePass ? (
+            <button
+              type="button"
+              onClick={() => setActiveTab && setActiveTab('MESS_QR_FULL')}
+              className="w-full shrink-0 rounded-[28px] bg-[#292035]/55 px-4 py-4 flex items-center justify-between gap-3 text-left transition-all active:scale-[0.99] cursor-pointer"
+            >
+              <div className="flex flex-col gap-1 min-w-0">
+                <span className="text-sm font-bold text-[#e6e1e5]">Mess Access</span>
+                <span className="text-xs font-semibold text-[#eaddff] flex items-center gap-2">
+                  Pass active • {remainingMinutes} min left
+                </span>
+                <span className="text-[11px] text-[#cac4d0] font-medium flex items-center gap-1.5 mt-0.5">
+                  <WifiOff size={12} /> Tap for QR
+                </span>
+              </div>
+              <div className="w-11 h-11 bg-[#4f378b]/45 rounded-2xl flex items-center justify-center text-[#d0bcff] shrink-0">
+                <QrCode size={22} />
+              </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleBuyPass}
+              className="w-full shrink-0 h-[52px] bg-[#d1c4e9] text-[#0f0f12] hover:bg-[#ddd0f0] font-bold rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.22)] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] text-[clamp(15px,2.5vh,18px)] cursor-pointer"
+            >
+              Buy Guest Meal Pass • ₹60
+            </button>
+          )
+        )}
+
+        {/* Render selected layout */}
+        {viewMode === 'daily' ? (
+          <div className="flex flex-col gap-4 shrink-0">
+            {dailyMenu.map((meal) => {
+              return (
+                <div
+                  key={meal.id}
+                  className="rounded-[28px] p-4 transition-colors bg-[#292035]/35 hover:bg-[#292035]/50 flex flex-col gap-4 text-left shrink-0"
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 bg-[#4f378b]/40 rounded-2xl flex items-center justify-center text-[#d0bcff] shrink-0">
+                        {meal.icon}
+                      </div>
+                      <h4 className="text-[18px] font-semibold text-[#e6e1e5] font-sans tracking-wide leading-none">
+                        {meal.title}
+                      </h4>
+                    </div>
+                    
+                    {/* M3 Highlighted Pill style */}
+                    <span className="bg-[#4f378b]/35 border border-[#d0bcff]/20 text-[#d0bcff] font-semibold font-sans text-[12px] px-3.5 py-1 rounded-full tracking-wide shadow-sm shrink-0">
+                      {meal.time}
+                    </span>
+                  </div>
+
+                  {/* M3 Suggestion Chips style */}
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {meal.items.map((item) => (
+                      <span
+                        key={item}
+                        className="bg-[#211a30]/80 text-[#e6e1e5] font-medium px-3.5 py-1.5 rounded-full text-[12px] tracking-wide cursor-default select-none flex items-center justify-center"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* M3 Outlined Container Card */
+          <div className="rounded-[28px] bg-[#292035]/35 p-4 shrink-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-[#cac4d0] text-sm">
+                <thead>
+                  <tr className="border-b border-[#483c5e] text-[#cac4d0] font-bold text-xs uppercase tracking-wider">
+                    <th className="py-3 px-2">Day</th>
+                    <th className="py-3 px-2">Breakfast</th>
+                    <th className="py-3 px-2">Lunch</th>
+                    <th className="py-3 px-2">Dinner</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#483c5e]/30 font-medium text-xs text-[#e6e1e5]">
+                  {weeklyMenu.map((m) => (
+                    <tr key={m.day} className="hover:bg-white/[0.01] transition-colors">
+                      <td className="py-4 px-2 font-bold text-[#d0bcff]">{m.day.substring(0, 3)}</td>
+                      <td className="py-4 px-2 text-[#e6e1e5]">{m.breakfast.split(' & ')[0]}</td>
+                      <td className="py-4 px-2 text-[#e6e1e5]">{m.lunch.split(', ')[0]}</td>
+                      <td className="py-4 px-2 text-[#e6e1e5]">{m.dinner.split(', ')[0]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* Floating Segmented Switcher */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 select-none">
+        <div className="flex bg-[#211a30]/90 backdrop-blur-md p-1 rounded-full border border-[#483c5e] shadow-lg">
           <button
             onClick={() => setViewMode('daily')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
+            className={`py-2.5 px-6 text-xs font-bold rounded-full transition-all duration-300 cursor-pointer ${
               viewMode === 'daily'
-                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'bg-[#4f378b] text-[#eaddff] shadow-sm'
+                : 'text-[#cac4d0] hover:text-[#eaddff] bg-transparent'
             }`}
             type="button"
           >
@@ -123,10 +259,10 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
           </button>
           <button
             onClick={() => setViewMode('weekly')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
+            className={`py-2.5 px-6 text-xs font-bold rounded-full transition-all duration-300 cursor-pointer ${
               viewMode === 'weekly'
-                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'bg-[#4f378b] text-[#eaddff] shadow-sm'
+                : 'text-[#cac4d0] hover:text-[#eaddff] bg-transparent'
             }`}
             type="button"
           >
@@ -134,112 +270,6 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
           </button>
         </div>
       </div>
-
-      <div 
-        onClick={() => activePass && setActiveTab && setActiveTab('MESS_QR_FULL')}
-        className={`bg-white/[0.03] backdrop-blur-3xl border-2 border-white/15 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] relative overflow-hidden group transition-all duration-300 ${activePass ? 'cursor-pointer hover:scale-[1.01]' : ''}`}
-      >
-        
-        <div className="flex justify-between items-start w-full z-10 text-left">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-2xl font-black tracking-wide leading-none font-sans">Mess Access</h3>
-            <span className="text-slate-400 text-xs font-semibold flex items-center gap-1.5 mt-2">
-              <WifiOff size={14} className="text-slate-400" /> Offline Mode Ready
-            </span>
-          </div>
-
-          <div className="w-12 h-12 bg-white/[0.08] border border-white/10 rounded-2xl flex items-center justify-center shadow-lg">
-            <QrCode size={24} className="text-white" />
-          </div>
-        </div>
-
-        {/* Dynamic Pass Validity Pill */}
-        <div className="w-full mt-2 z-10">
-          {activePass ? (
-            <div className="bg-white/[0.06] border border-white/10 text-white rounded-2xl p-4 flex items-center justify-center gap-2 select-none shadow-md">
-              <span className="font-extrabold tracking-wide text-sm font-sans flex items-center gap-2">
-                🟢 Pass Active • {remainingMinutes} Mins Left
-              </span>
-            </div>
-          ) : (
-            (isStudent || !currentUser) && (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleBuyPass(); }}
-                className="w-full bg-white text-[#141a27] hover:bg-slate-50 font-black rounded-xl py-3.5 shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] text-xs uppercase tracking-wider cursor-pointer"
-              >
-                Buy Guest Meal Pass • ₹60
-              </button>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Render selected layout */}
-      {viewMode === 'daily' ? (
-        <div className="flex flex-col gap-4">
-          {dailyMenu.map((meal) => {
-            const colorStyle = 'border-white/15 bg-white/[0.02]';
-
-            return (
-              <div
-                key={meal.id}
-                className={`rounded-[28px] p-6 transition-all duration-300 relative border-2 ${colorStyle} backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] flex flex-col gap-4 text-left hover:scale-[1.01]`}
-              >
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-white/[0.06] border border-white/10 rounded-2xl flex items-center justify-center">
-                      {meal.icon}
-                    </div>
-                    <h4 className="text-base font-extrabold text-white font-sans tracking-wide leading-none">
-                      {meal.title}
-                    </h4>
-                  </div>
-                  
-                  <span className="bg-white/[0.05] border border-white/10 text-slate-300 font-bold font-mono text-[9px] px-3 py-1.5 rounded-full uppercase tracking-wider">
-                    {meal.time}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {meal.items.map((item) => (
-                    <span
-                      key={item}
-                      className="bg-white/[0.04] border border-white/10 text-slate-200 font-bold px-3.5 py-1.5 rounded-xl text-[10px] tracking-wide"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[32px] p-6 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-slate-300 text-sm">
-              <thead>
-                <tr className="border-b border-white/5 text-slate-400 font-bold text-xs uppercase tracking-wider">
-                  <th className="py-3 px-2">Day</th>
-                  <th className="py-3 px-2">Breakfast</th>
-                  <th className="py-3 px-2">Lunch</th>
-                  <th className="py-3 px-2">Dinner</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 font-semibold text-xs text-slate-200">
-                {weeklyMenu.map((m) => (
-                  <tr key={m.day} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-4 px-2 font-black font-mono text-white/70">{m.day.substring(0, 3)}</td>
-                    <td className="py-4 px-2 text-white">{m.breakfast.split(' & ')[0]}</td>
-                    <td className="py-4 px-2 text-white">{m.lunch.split(', ')[0]}</td>
-                    <td className="py-4 px-2 text-white">{m.dinner.split(', ')[0]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
     </div>
   );
