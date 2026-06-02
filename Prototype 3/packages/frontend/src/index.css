@@ -306,4 +306,34 @@ code {
   animation: glassShimmer 5s infinite ease-in-out;
 }
 
+@keyframes movingGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.moving-gradient-bg {
+  background: linear-gradient(-45deg, #050b18, #0a1128, #101f42, #0d1b3e);
+  background-size: 400% 400%;
+  animation: movingGradient 15s ease infinite !important;
+}
+
+/* Force-hide native select dropdown arrows across all browsers */
+select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+select::-ms-expand {
+  display: none !important;
+}
+
+
+
 

@@ -277,21 +277,21 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <div className="w-8 h-8 rounded-full border border-transparent border-t-white border-r-white animate-spin" />
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest animate-pulse">Loading checkout...</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Loading checkout...</p>
           </div>
         ) : error ? (
           <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-8 flex flex-col items-center justify-center gap-4 text-center">
-            <p className="text-sm font-semibold text-red-300">⚠️ {error}</p>
+            <p className="text-sm font-semibold text-white/60">⚠️ {error}</p>
             <button className="bg-white text-[#141a27] font-black text-xs uppercase tracking-wider rounded-xl px-6 py-3 cursor-pointer transition-all active:scale-95 shadow-md" onClick={fetchMenuAndOrders}>Retry</button>
           </div>
         ) : (
-          <div className="flex flex-col gap-6 w-full mt-2 text-left animate-fadeIn">
+          <div className="flex flex-col gap-6 w-full mt-2 text-left">
             {/* Selected Items Card */}
             <div className="rounded-[32px] p-6 border-2 border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-xl flex flex-col gap-4 text-left">
               <div className="flex justify-between items-center w-full border-b border-white/5 pb-3">
                 <h3 className="text-base font-black uppercase tracking-wider text-white">🛒 Selected Items</h3>
                 {cart.length > 0 && (
-                  <span className="bg-orange-500 text-[#141a27] text-[10px] font-black font-mono w-5 h-5 rounded-full flex items-center justify-center select-none shadow-md">{cart.reduce((sum, ci) => sum + ci.quantity, 0)}</span>
+                  <span className="bg-white/20 text-white text-[10px] font-black font-mono w-5 h-5 rounded-full flex items-center justify-center select-none shadow-md">{cart.reduce((sum, ci) => sum + ci.quantity, 0)}</span>
                 )}
               </div>
 
@@ -317,7 +317,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                         <div
                           key={cartItem._id}
                           className={`flex flex-col gap-2 p-5 bg-white/[0.03] border ${
-                            isCurrentlyUnavailable ? 'border-red-500/25 bg-red-500/[0.01]' : 'border-white/10'
+                            isCurrentlyUnavailable ? 'border-white/10 bg-white/[0.01]' : 'border-white/10'
                           } rounded-2xl relative`}
                         >
                           <div className="flex justify-between items-start w-full">
@@ -326,7 +326,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                               <span className="text-[10px] font-semibold text-slate-400 mt-1">₹{cartItem.Price} each</span>
                             </div>
                             <button
-                              className="text-slate-400 hover:text-red-400 transition cursor-pointer select-none"
+                              className="text-slate-400 hover:text-white/60 transition cursor-pointer select-none"
                               onClick={() => removeFromCart(cartItem._id)}
                               title="Remove Item"
                             >
@@ -335,7 +335,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                           </div>
                           
                           {isCurrentlyUnavailable && (
-                            <span className="text-[9px] font-black uppercase tracking-wider text-red-300">
+                            <span className="text-[9px] font-black uppercase tracking-wider text-white/60">
                               🛑 SOLD OUT! Remove to checkout.
                             </span>
                           )}
@@ -427,8 +427,8 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                           <span className="text-[10px] font-mono font-bold text-slate-400">#{String(order._id).substring(18)}</span>
                           <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
                             order.OrderStatus.toLowerCase() === 'placed'
-                              ? 'bg-amber-500/10 text-amber-300 border-amber-500/20'
-                              : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                              ? 'bg-white/10 text-white/60 border-white/15'
+                              : 'bg-white/10 text-white/60 border-white/15'
                           }`}>
                             {order.OrderStatus}
                           </span>
@@ -487,11 +487,11 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
           <div className="w-8 h-8 rounded-full border border-transparent border-t-white border-r-white animate-spin" />
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest animate-pulse">Loading canteen menu...</p>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Loading canteen menu...</p>
         </div>
       ) : error ? (
         <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-8 flex flex-col items-center justify-center gap-4 text-center">
-          <p className="text-sm font-semibold text-red-300">⚠️ {error}</p>
+          <p className="text-sm font-semibold text-white/60">⚠️ {error}</p>
           <button className="bg-white text-[#141a27] font-black text-xs uppercase tracking-wider rounded-xl px-6 py-3 cursor-pointer transition-all active:scale-95 shadow-md" onClick={fetchMenuAndOrders}>Retry</button>
         </div>
       ) : (
@@ -507,7 +507,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search canteen menu..."
-              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-400 outline-none focus:border-orange-500/50 transition-all duration-300 shadow-inner backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-400 outline-none focus:border-white/30 transition-all duration-300 shadow-inner backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
             />
           </div>
 
@@ -524,15 +524,15 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                       className={`rounded-[28px] p-6 transition-all duration-300 relative border-2 ${
                         isSoldOut 
                           ? 'border-white/10 bg-white/[0.01] opacity-60' 
-                          : 'border-orange-500/25 bg-orange-500/[0.02] shadow-[0_0_25px_rgba(249,115,22,0.04)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
+                          : 'border-white/15 bg-white/[0.02] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
                       } backdrop-blur-3xl flex flex-col gap-3.5 text-left`}
                     >
                       <div className="flex justify-between items-center w-full">
                         <span className="text-[9px] font-sans font-black uppercase tracking-wider text-slate-400">{item.Category}</span>
                         <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
                           isSoldOut 
-                            ? 'bg-red-500/10 text-red-300 border-red-500/20' 
-                            : 'bg-orange-500/10 text-orange-300 border-orange-500/20'
+                            ? 'bg-white/5 text-white/40 border-white/10' 
+                            : 'bg-white/10 text-white/70 border-white/15'
                         }`}>
                           {isSoldOut ? 'Sold Out' : 'Available'}
                         </span>
@@ -551,7 +551,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                             onChange={(e) => setEditPrice(e.target.value)}
                           />
                           <button 
-                            className="w-7 h-7 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg flex items-center justify-center text-xs font-mono font-bold transition active:scale-90"
+                            className="w-7 h-7 bg-white/20 hover:bg-white/30 text-white rounded-lg flex items-center justify-center text-xs font-mono font-bold transition active:scale-90"
                             onClick={() => handleUpdatePrice(item._id)}
                             disabled={savingPrice}
                           >
@@ -585,7 +585,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                         {isCanteenAdmin ? (
                           <div className="flex justify-between items-center border-t border-white/5 pt-3.5">
                             <button
-                              className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-400 hover:text-rose-300 transition"
+                              className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-white/40 hover:text-white/60 transition"
                               onClick={() => handleDeleteItem(item._id)}
                               title="Delete Item"
                             >
@@ -593,7 +593,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                             </button>
 
                             <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleAvailability(item._id)}>
-                              <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-300 ${item.IsAvailable ? 'bg-emerald-500' : 'bg-slate-700'}`}>
+                              <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-300 ${item.IsAvailable ? 'bg-white/40' : 'bg-slate-700'}`}>
                                 <div className={`w-3 h-3 rounded-full bg-white transition-transform duration-300 ${item.IsAvailable ? 'translate-x-4' : 'translate-x-0'}`} />
                               </div>
                               <span className="text-[9px] font-sans font-black uppercase tracking-wider text-slate-400">In Stock</span>
@@ -606,8 +606,8 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                               isSoldOut 
                                 ? 'bg-white/[0.02] border border-white/5 text-slate-500 cursor-not-allowed' 
                                 : addedItemIds[item._id]
-                                  ? 'bg-emerald-500/[0.08] border border-emerald-500/35 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.08)]'
-                                  : 'bg-orange-500/[0.08] hover:bg-orange-500/[0.15] border border-orange-500/35 text-orange-300 shadow-md active:scale-[0.98]'
+                                  ? 'bg-white/[0.08] border border-white/20 text-white/70'
+                                  : 'bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 text-white/70 shadow-md active:scale-[0.98]'
                             }`}
                             disabled={isSoldOut}
                             onClick={() => handleAddToCartClick(item)}
@@ -631,7 +631,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
 
       {/* Canteen Admin: Add Item Modal */}
       {showAddModal && isCanteenAdmin && (
-        <div className="absolute inset-0 bg-[#0f131a]/80 backdrop-blur-xl z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setShowAddModal(false)}>
+        <div className="absolute inset-0 bg-[#0f131a]/80 backdrop-blur-xl z-[99999] flex items-center justify-center p-6" onClick={() => setShowAddModal(false)}>
           <div className="bg-slate-900/90 border border-white/10 rounded-[32px] p-6 shadow-2xl w-full max-w-sm flex flex-col gap-5" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header flex items-center justify-between border-b border-white/5 pb-3">
               <h3 className="text-base font-black text-white uppercase tracking-wider">Add Menu Item</h3>
@@ -720,7 +720,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
 
       {/* Checkout Success Modal Dialog */}
       {orderSuccess && (
-        <div className="absolute inset-0 bg-[#0f131a]/85 backdrop-blur-xl z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setOrderSuccess(null)}>
+        <div className="absolute inset-0 bg-[#0f131a]/85 backdrop-blur-xl z-[99999] flex items-center justify-center p-6" onClick={() => setOrderSuccess(null)}>
           <div className="bg-slate-900/90 border border-white/10 rounded-[32px] p-6 shadow-2xl w-full max-w-sm flex flex-col gap-5 text-center" onClick={(e) => e.stopPropagation()}>
             <div className="text-4xl">🎉</div>
             <h3 className="text-base font-black uppercase tracking-wider text-white">Order Placed!</h3>

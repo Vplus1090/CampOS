@@ -139,10 +139,10 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
 
       {/* Ticker / Pulse Bar for High Priority Announcements */}
       {latestHighPriority && (
-        <div className="w-full flex items-center bg-rose-500/[0.06] border border-rose-500/25 rounded-2xl p-2.5 mb-5 shadow-lg overflow-hidden select-none animate-fadeIn backdrop-blur-md">
-          <div className="bg-rose-500 text-[#141a27] text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md shrink-0 shadow-sm leading-none mr-3">CRITICAL</div>
+        <div className="w-full flex items-center bg-white/[0.06] border border-white/15 rounded-2xl p-2.5 mb-5 shadow-lg overflow-hidden select-none backdrop-blur-md">
+          <div className="bg-white/20 text-white text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md shrink-0 shadow-sm leading-none mr-3">CRITICAL</div>
           <div className="flex-1 overflow-hidden relative flex items-center">
-            <div className="animate-pulse text-[11px] font-bold text-rose-300 text-left truncate">
+            <div className="text-[11px] font-bold text-white/60 text-left truncate">
               💥 {latestHighPriority.Title}: {latestHighPriority.Content}
             </div>
           </div>
@@ -174,11 +174,11 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
           <div className="w-8 h-8 rounded-full border border-transparent border-t-white border-r-white animate-spin" />
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest animate-pulse">Syncing notice feed...</p>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Syncing notice feed...</p>
         </div>
       ) : error ? (
         <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-8 flex flex-col items-center justify-center gap-4 text-center">
-          <p className="text-sm font-semibold text-red-300">⚠️ {error}</p>
+          <p className="text-sm font-semibold text-white/60">⚠️ {error}</p>
           <button className="bg-white text-[#141a27] font-black text-xs uppercase tracking-wider rounded-xl px-6 py-3 cursor-pointer transition-all active:scale-95 shadow-md" onClick={fetchNotices}>Retry</button>
         </div>
       ) : notices.length === 0 ? (
@@ -192,17 +192,17 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
             
             const colorStyle = 
               priority === 'high' 
-                ? 'border-rose-500/40 bg-rose-500/[0.02] shadow-[0_0_25px_rgba(244,63,94,0.05)]' 
+                ? 'border-white/20 bg-white/[0.03]' 
                 : priority === 'medium'
-                ? 'border-amber-500/40 bg-amber-500/[0.02] shadow-[0_0_25px_rgba(245,158,11,0.05)]'
-                : 'border-emerald-500/40 bg-emerald-500/[0.02] shadow-[0_0_25px_rgba(16,185,129,0.05)]';
+                ? 'border-white/15 bg-white/[0.02]'
+                : 'border-white/10 bg-white/[0.02]';
             
             const badgeStyle = 
               priority === 'high' 
-                ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' 
+                ? 'bg-white/10 text-white/70 border-white/15' 
                 : priority === 'medium'
-                ? 'bg-amber-500/10 text-amber-300 border-amber-500/20'
-                : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
+                ? 'bg-white/[0.06] text-white/60 border-white/10'
+                : 'bg-white/[0.04] text-white/50 border-white/10';
 
             return (
               <div 
@@ -233,7 +233,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                   {/* Only Super Admin can delete announcements */}
                   {isSuperAdmin && (
                     <button 
-                      className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/10 hover:bg-red-500/15 hover:border-red-500/35 hover:text-red-400 flex items-center justify-center text-xs font-black transition-all active:scale-90 select-none cursor-pointer"
+                      className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white/70 flex items-center justify-center text-xs font-black transition-all active:scale-90 select-none cursor-pointer"
                       onClick={() => handleDelete(notice.id || notice._id)}
                       title="Remove Announcement"
                       type="button"
@@ -250,7 +250,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
 
       {/* Creation Modal */}
       {showModal && (
-        <div className="absolute inset-0 bg-[#0f131a]/80 backdrop-blur-xl z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setShowModal(false)}>
+        <div className="absolute inset-0 bg-[#0f131a]/80 backdrop-blur-xl z-[99999] flex items-center justify-center p-6" onClick={() => setShowModal(false)}>
           <div className="bg-slate-900/90 border border-white/10 rounded-[32px] p-6 shadow-2xl w-full max-w-sm flex flex-col gap-5" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header flex items-center justify-between border-b border-white/5 pb-3">
               <h3 className="text-base font-black text-white uppercase tracking-wider">Create Notice</h3>

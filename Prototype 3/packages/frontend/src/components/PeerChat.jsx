@@ -21,10 +21,10 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   // Helper to color circles dynamically
   const getAvatarBg = (name) => {
     const letter = name.charAt(0).toUpperCase();
-    if (letter === 'V' || letter === 'S') return 'bg-pink-500';
-    if (letter === 'K' || letter === 'R') return 'bg-violet-500';
-    if (letter === 'D' || letter === 'A') return 'bg-sky-500';
-    return 'bg-emerald-500';
+    if (letter === 'V' || letter === 'S') return 'bg-white/30';
+    if (letter === 'K' || letter === 'R') return 'bg-white/25';
+    if (letter === 'D' || letter === 'A') return 'bg-white/20';
+    return 'bg-white/15';
   };
 
   const fetchChatHistory = async (peerName) => {
@@ -152,7 +152,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   return (
     <div className="flex flex-col gap-4 text-white font-sans h-full w-full select-none pb-24 relative min-h-screen">
       {/* ─── Compact Dividerless Unified Page Header ─── */}
-      <header className="flex items-center w-full mt-6 pb-2 shrink-0 justify-between animate-fadeIn select-none">
+      <header className="flex items-center w-full mt-6 pb-2 shrink-0 justify-between select-none">
         <div className="flex items-center">
           <button
             onClick={onClose}
@@ -169,7 +169,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
 
       {/* ─── Frosted Glassmorphic WhatsApp Web Panel ─── */}
       <div 
-        className="peer-chat-container flex flex-col h-[460px] w-full text-white font-sans overflow-hidden select-none bg-white/[0.02] border border-white/10 rounded-[32px] p-0 relative z-[999] shadow-2xl backdrop-blur-md animate-fadeIn"
+        className="peer-chat-container flex flex-col h-[460px] w-full text-white font-sans overflow-hidden select-none bg-white/[0.02] border border-white/10 rounded-[32px] p-0 relative z-[999] shadow-2xl backdrop-blur-md"
       >
         {/* Main chat log window */}
         <div className="peer-chat-window flex-1 bg-transparent flex flex-col justify-between overflow-hidden relative h-full min-h-0 p-0">
@@ -226,14 +226,14 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
                 Syncing messages...
               </div>
             ) : messages.length === 0 ? (
-              <div className="chat-empty flex flex-col items-center justify-center gap-2 h-full select-none opacity-80 py-8 text-center animate-fadeIn">
-                <span className="text-4xl filter drop-shadow-md animate-bounce">🤝</span>
+              <div className="chat-empty flex flex-col items-center justify-center gap-2 h-full select-none opacity-80 py-8 text-center">
+                <span className="text-4xl filter drop-shadow-md">🤝</span>
                 <h4 className="text-sm font-extrabold text-[#e9edef] font-sans mt-2">Start a conversation with {activePeer}!</h4>
                 <p className="text-[11px] font-semibold text-slate-400 font-sans max-w-xs px-4">Say hello to begin sharing peer skills on CampOS.</p>
               </div>
             ) : (
               <div className="messages-scroller flex flex-col gap-1.5">
-                <div className="flex justify-center my-2.5 animate-fadeIn">
+                <div className="flex justify-center my-2.5">
                   <span className="bg-white/[0.05] border border-white/10 text-slate-300 text-[10px] px-3 py-1 rounded-lg uppercase tracking-wide font-sans shadow-sm select-none">
                     TODAY
                   </span>
@@ -247,11 +247,11 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
                       className={`flex w-full ${isSentByMe ? 'justify-end' : 'justify-start'} my-0.5`}
                     >
                       {isSentByMe ? (
-                        <div className="max-w-[75%] bg-emerald-500/10 border border-emerald-500/30 text-[#e9edef] rounded-2xl rounded-tr-none px-3.5 py-2 text-left flex flex-col shadow-md backdrop-blur-md relative font-sans">
+                        <div className="max-w-[75%] bg-white/10 border border-white/20 text-[#e9edef] rounded-2xl rounded-tr-none px-3.5 py-2 text-left flex flex-col shadow-md backdrop-blur-md relative font-sans">
                           <p className="text-xs leading-relaxed break-words font-sans font-normal pr-12">{msg.Content}</p>
                           <div className="flex items-center justify-end gap-1 text-[9px] text-[#e9edef]/60 select-none self-end absolute bottom-1 right-2">
                             <span>{formatTime(msg.Timestamp || msg.createdAt)}</span>
-                            <CheckCheck size={13} className="text-cyan-400" />
+                            <CheckCheck size={13} className="text-white/60" />
                           </div>
                         </div>
                       ) : (
@@ -281,7 +281,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
             
             <input
               type="text"
-              className="flex-1 bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 focus:outline-none rounded-xl px-4 py-2 text-xs font-normal transition-all shadow-inner"
+              className="flex-1 bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:ring-1 focus:ring-white/20 focus:border-white/30 focus:outline-none rounded-xl px-4 py-2 text-xs font-normal transition-all shadow-inner"
               placeholder="Type a message..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
@@ -290,7 +290,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
             
             <button 
               type="submit" 
-              className="w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0 shadow-purple-500/10"
+              className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0"
             >
               {inputText.trim() ? (
                 <Send size={16} className="translate-x-[1px] text-white" />

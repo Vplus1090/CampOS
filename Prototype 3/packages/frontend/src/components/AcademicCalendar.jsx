@@ -84,29 +84,29 @@ export default function AcademicCalendar({ setActiveTab }) {
 
   const themeStyles = {
     teal: {
-      border: 'border-teal-500/40 bg-teal-950/[0.04]',
-      badge: 'bg-teal-500/10 text-teal-300 border-teal-500/20',
-      iconColor: 'text-[#0d9488]'
+      border: 'border-white/15 bg-white/[0.02]',
+      badge: 'bg-white/[0.06] text-white/60 border-white/10',
+      iconColor: 'text-white/50'
     },
     rose: {
-      border: 'border-rose-500/40 bg-rose-950/[0.04]',
-      badge: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
-      iconColor: 'text-[#e11d48]'
+      border: 'border-white/15 bg-white/[0.02]',
+      badge: 'bg-white/[0.06] text-white/60 border-white/10',
+      iconColor: 'text-white/50'
     },
     amber: {
-      border: 'border-amber-500/40 bg-amber-950/[0.04]',
-      badge: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-      iconColor: 'text-[#d97706]'
+      border: 'border-white/15 bg-white/[0.02]',
+      badge: 'bg-white/[0.06] text-white/60 border-white/10',
+      iconColor: 'text-white/50'
     },
     magenta: {
-      border: 'border-pink-500/40 bg-pink-950/[0.04]',
-      badge: 'bg-pink-500/10 text-pink-300 border-pink-500/20',
-      iconColor: 'text-[#db2777]'
+      border: 'border-white/15 bg-white/[0.02]',
+      badge: 'bg-white/[0.06] text-white/60 border-white/10',
+      iconColor: 'text-white/50'
     },
     purple: {
-      border: 'border-purple-500/40 bg-purple-950/[0.04]',
-      badge: 'bg-purple-500/10 text-purple-300 border-purple-500/20',
-      iconColor: 'text-[#9333ea]'
+      border: 'border-white/15 bg-white/[0.02]',
+      badge: 'bg-white/[0.06] text-white/60 border-white/10',
+      iconColor: 'text-white/50'
     }
   };
 
@@ -141,7 +141,7 @@ export default function AcademicCalendar({ setActiveTab }) {
       {/* Timeline Event Cards */}
       <div 
         onScroll={handleScroll}
-        className="flex-1 pb-8 pr-1 space-y-5 overflow-y-auto animate-fadeIn scrollbar-none"
+        className="flex-1 pb-8 pr-1 space-y-5 overflow-y-auto scrollbar-none"
       >
         {calendarEvents.map((event, idx) => {
           const style = themeStyles[event.theme] || themeStyles.teal;
@@ -177,7 +177,7 @@ export default function AcademicCalendar({ setActiveTab }) {
               {/* Date stamp pill aligned nicely */}
               <div className="flex justify-end mt-1">
                 <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-xl px-3.5 py-1.5 shadow-md">
-                  <Calendar size={12} className="text-slate-400 animate-pulse" />
+                  <Calendar size={12} className="text-slate-400" />
                   <span className="text-[10px] font-mono font-bold tracking-wide text-slate-200">
                     {event.date}
                   </span>

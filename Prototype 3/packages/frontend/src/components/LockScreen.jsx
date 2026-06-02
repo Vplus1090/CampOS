@@ -772,7 +772,7 @@ export default function LockScreen({ onLoginSuccess }) {
                 <select
                   value={setupBranch}
                   onChange={(e) => setSetupBranch(e.target.value)}
-                  className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white font-semibold outline-none focus:border-[#7085c3] cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                  className="w-full bg-white/10 hover:bg-white/[0.15] border border-white/15 hover:border-white/25 rounded-2xl px-4 py-3 text-sm text-white font-semibold outline-none focus:border-white/35 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl"
                 >
                   <option className="bg-[#141a27]" value="Computer Science">Computer Science</option>
                   <option className="bg-[#141a27]" value="Electronics & Communication">Electronics & Communication</option>
@@ -792,7 +792,7 @@ export default function LockScreen({ onLoginSuccess }) {
                 <select
                   value={setupSemester}
                   onChange={(e) => setSetupSemester(e.target.value)}
-                  className="w-full bg-black/25 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white font-semibold outline-none focus:border-[#7085c3] cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                  className="w-full bg-white/10 hover:bg-white/[0.15] border border-white/15 hover:border-white/25 rounded-2xl px-4 py-3 text-sm text-white font-semibold outline-none focus:border-white/35 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl"
                 >
                   {Array.from({ length: 8 }).map((_, i) => (
                     <option className="bg-[#141a27]" key={i} value={`Semester ${i + 1}`}>Semester {i + 1}</option>

@@ -177,10 +177,10 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
   // Helper to color circles dynamically
   const getAvatarBg = (name) => {
     const letter = name.charAt(0).toUpperCase();
-    if (letter === 'V' || letter === 'S') return 'bg-pink-500';
-    if (letter === 'K' || letter === 'R') return 'bg-violet-500';
-    if (letter === 'D' || letter === 'A') return 'bg-sky-500';
-    return 'bg-emerald-500';
+    if (letter === 'V' || letter === 'S') return 'bg-white/30';
+    if (letter === 'K' || letter === 'R') return 'bg-white/25';
+    if (letter === 'D' || letter === 'A') return 'bg-white/20';
+    return 'bg-white/15';
   };
 
   const ongoingGigs = gigs.filter(gig => gig.StudentName.toLowerCase() === 'kunal' || startedChats.includes(gig.StudentName));
@@ -190,7 +190,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
   return (
     <div className="skillgigs-module flex flex-col gap-4 text-white font-sans min-h-screen pb-24 relative select-none">
       {/* Header title */}
-      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between animate-fadeIn">
+      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between">
         <div className="flex items-center">
           <button
             onClick={() => setActiveTab && setActiveTab('home')}
@@ -211,7 +211,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
       </header>
 
       {/* Segmented Tab Switcher */}
-      <div className="flex justify-center w-full py-1 shrink-0 select-none animate-fadeIn">
+      <div className="flex justify-center w-full py-1 shrink-0 select-none">
         <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner backdrop-blur-md">
           <button
             onClick={() => setViewTab('listings')}
@@ -240,10 +240,10 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
 
       {/* ─── Top Dark Card: Offer a Skill ─── */}
       {viewTab === 'listings' && isStudent && (
-        <div className="bg-purple-500/[0.03] backdrop-blur-3xl border-2 border-purple-500/35 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_35px_rgba(168,85,247,0.08)] relative overflow-hidden group">
+        <div className="bg-white/[0.02] backdrop-blur-3xl border-2 border-white/15 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] relative overflow-hidden group">
           
           <div className="flex items-center gap-2 border-b border-white/5 pb-3 z-10">
-            <UserPlus size={18} className="text-purple-400" />
+            <UserPlus size={18} className="text-white/60" />
             <h3 className="font-extrabold text-base tracking-wide font-sans">Offer a Skill</h3>
           </div>
 
@@ -255,7 +255,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
               value={skillOffered}
               onChange={(e) => setSkillOffered(e.target.value)}
               required
-              className="w-full bg-white/[0.04] text-white placeholder-slate-500 border border-white/10 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 rounded-2xl p-4 text-sm font-semibold transition-all placeholder:text-xs placeholder:font-normal"
+              className="w-full bg-white/[0.04] text-white placeholder-slate-500 border border-white/10 focus:ring-1 focus:ring-white/20 focus:border-white/30 rounded-2xl p-4 text-sm font-semibold transition-all placeholder:text-xs placeholder:font-normal"
             />
 
             {/* Row combining Input 2 and Purple paper plane send button */}
@@ -266,12 +266,12 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                 value={skillWanted}
                 onChange={(e) => setSkillWanted(e.target.value)}
                 required
-                className="flex-1 bg-white/[0.04] text-white placeholder-slate-500 border border-white/10 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 rounded-2xl p-4 text-sm font-semibold transition-all placeholder:text-xs placeholder:font-normal"
+                className="flex-1 bg-white/[0.04] text-white placeholder-slate-500 border border-white/10 focus:ring-1 focus:ring-white/20 focus:border-white/30 rounded-2xl p-4 text-sm font-semibold transition-all placeholder:text-xs placeholder:font-normal"
               />
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-12 h-12 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 transform shrink-0 disabled:opacity-50 cursor-pointer"
+                className="w-12 h-12 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 transform shrink-0 disabled:opacity-50 cursor-pointer"
               >
                 <Send size={16} className="text-white" />
               </button>
@@ -289,7 +289,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
             </span>
             <input
               type="text"
-              className="w-full bg-white/[0.04] border border-white/10 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 text-white placeholder-slate-400 pl-11 pr-10 py-3.5 rounded-2xl text-xs font-semibold backdrop-blur-md text-left placeholder:text-left"
+              className="w-full bg-white/[0.04] border border-white/10 focus:ring-1 focus:ring-white/20 focus:border-white/30 text-white placeholder-slate-400 pl-11 pr-10 py-3.5 rounded-2xl text-xs font-semibold backdrop-blur-md text-left placeholder:text-left"
               placeholder="Search for skills, listings, or students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -309,7 +309,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
       {/* Content Listings Feed */}
       {loading ? (
         <div className="loading-state py-8 text-center">
-          <div className="spinner mx-auto border-t-purple-500"></div>
+          <div className="spinner mx-auto border-t-white"></div>
           <p className="text-xs font-mono text-slate-400 mt-4">Loading board...</p>
         </div>
       ) : error ? (
@@ -318,13 +318,13 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
           <button className="bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white rounded-xl px-4 py-2 text-xs font-semibold mt-2 cursor-pointer" onClick={() => fetchGigs(searchQuery)}>Retry</button>
         </div>
       ) : displayedGigs.length === 0 ? (
-        <div className="empty-state text-center py-12 bg-white/[0.02] rounded-[32px] border border-white/5 animate-fadeIn">
+        <div className="empty-state text-center py-12 bg-white/[0.02] rounded-[32px] border border-white/5">
           <p className="text-sm font-bold text-slate-400">
             {viewTab === 'listings' ? 'No active listings found.' : 'No ongoing matches found.'}
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4 animate-fadeIn">
+        <div className="flex flex-col gap-4">
           {displayedGigs.map((gig) => {
             const isOwnListing = gig.StudentName === currentUser?.firstName;
             
@@ -332,8 +332,8 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
             const isAccepted = gig.StudentName.toLowerCase() === 'kunal' || startedChats.includes(gig.StudentName);
 
             const cardBorder = isOwnListing 
-              ? 'border-purple-500/40 bg-purple-500/[0.02] shadow-[0_0_25px_rgba(168,85,247,0.06)]'
-              : 'border-white/10 bg-white/[0.03] shadow-[0_0_20px_rgba(255,255,255,0.01)]';
+              ? 'border-white/20 bg-white/[0.04]'
+              : 'border-white/10 bg-white/[0.03]';
 
             return (
               <div 
@@ -374,7 +374,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                 {/* Looking for Wanted Skill Pill */}
                 <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl w-full flex items-center shadow-inner">
                   <p className="text-xs font-semibold text-slate-300 font-sans text-left">
-                    Looking for: <span className="text-purple-400 font-black ml-1">{gig.SkillWanted}</span>
+                    Looking for: <span className="text-white/80 font-black ml-1">{gig.SkillWanted}</span>
                   </p>
                 </div>
 
@@ -396,21 +396,20 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                       Delete Post
                     </button>
                   ) : isAccepted ? (
-                    /* accepted green box wrapper + green button */
-                    <div className="bg-emerald-500/[0.05] border border-emerald-500/20 rounded-2xl p-4 flex flex-col items-center gap-3 w-full shadow-inner animate-fadeIn">
-                      <span className="text-emerald-400 font-black text-[10px] uppercase tracking-widest block text-center font-mono">
+                    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-3 w-full shadow-inner">
+                      <span className="text-white/60 font-black text-[10px] uppercase tracking-widest block text-center font-mono">
                         {gig.Status === 'Completed' ? '✓ SWAP COMPLETED' : 'REQUEST ACCEPTED!'}
                       </span>
                       
                       {gig.Status === 'Completed' ? (
-                        <div className="w-full py-3.5 bg-emerald-500/10 border border-emerald-500/35 text-emerald-400 font-black rounded-2xl text-xs flex items-center justify-center gap-2 select-none shadow-md">
-                          <CheckCircle2 size={15} className="text-emerald-400" /> Swap Completed!
+                        <div className="w-full py-3.5 bg-white/10 border border-white/20 text-white/75 font-black rounded-2xl text-xs flex items-center justify-center gap-2 select-none shadow-md">
+                          <CheckCircle2 size={15} /> Swap Completed!
                         </div>
                       ) : (
                         <div className="flex flex-col gap-2.5 w-full">
                           <button
                             onClick={() => handleStartChat(gig.StudentName)}
-                            className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-extrabold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
+                            className="w-full py-3.5 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-extrabold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
                           >
                             <MessageCircle size={15} /> Open Chat with {gig.StudentName}
                           </button>
@@ -424,10 +423,9 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                       )}
                     </div>
                   ) : (
-                    /* standard peer listings chat button */
                     <button
                       onClick={() => handleStartChat(gig.StudentName)}
-                      className="w-full py-3.5 bg-purple-500/[0.08] hover:bg-purple-500/[0.15] border border-purple-500/35 active:scale-95 text-purple-300 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all backdrop-blur-md shadow-md cursor-pointer"
+                      className="w-full py-3.5 bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 active:scale-95 text-white/70 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all backdrop-blur-md shadow-md cursor-pointer"
                     >
                       <MessageCircle size={15} /> Chat with {gig.StudentName}
                     </button>

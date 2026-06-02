@@ -61,21 +61,21 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
       id: 'bf',
       title: 'Breakfast',
       time: '< 9:00 AM',
-      icon: <Sunrise size={18} className="text-orange-400" />,
+      icon: <Sunrise size={18} className="text-white/70" />,
       items: ['Chana Masala', 'Puri', 'Halwa'],
     },
     {
       id: 'lh',
       title: 'Lunch',
       time: '12:00 - 14:00',
-      icon: <Sun size={18} className="text-amber-400" />,
+      icon: <Sun size={18} className="text-white/70" />,
       items: ['Matar Paneer', 'Veg Khichdi', 'Dahi', 'Papad'],
     },
     {
       id: 'dn',
       title: 'Dinner',
       time: 'From 19:30',
-      icon: <Moon size={18} className="text-indigo-400" />,
+      icon: <Moon size={18} className="text-white/70" />,
       items: ['Methi Aloo', 'Chana Dal', 'Rice', 'Roti', 'Milk'],
     },
   ];
@@ -137,7 +137,7 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
 
       <div 
         onClick={() => activePass && setActiveTab && setActiveTab('MESS_QR_FULL')}
-        className={`bg-emerald-500/[0.03] backdrop-blur-3xl border-2 border-emerald-500/35 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_35px_rgba(16,185,129,0.08)] relative overflow-hidden group transition-all duration-300 ${activePass ? 'cursor-pointer hover:scale-[1.01]' : ''}`}
+        className={`bg-white/[0.03] backdrop-blur-3xl border-2 border-white/15 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] relative overflow-hidden group transition-all duration-300 ${activePass ? 'cursor-pointer hover:scale-[1.01]' : ''}`}
       >
         
         <div className="flex justify-between items-start w-full z-10 text-left">
@@ -176,14 +176,9 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
 
       {/* Render selected layout */}
       {viewMode === 'daily' ? (
-        <div className="flex flex-col gap-4 animate-fadeIn">
+        <div className="flex flex-col gap-4">
           {dailyMenu.map((meal) => {
-            const colorStyle = 
-              meal.id === 'bf' 
-                ? 'border-orange-500/25 bg-orange-500/[0.02] shadow-[0_0_25px_rgba(249,115,22,0.04)]'
-                : meal.id === 'lh'
-                ? 'border-amber-500/25 bg-amber-500/[0.02] shadow-[0_0_25px_rgba(245,158,11,0.04)]'
-                : 'border-indigo-500/25 bg-indigo-500/[0.02] shadow-[0_0_25px_rgba(99,102,241,0.04)]';
+            const colorStyle = 'border-white/15 bg-white/[0.02]';
 
             return (
               <div
@@ -220,7 +215,7 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
           })}
         </div>
       ) : (
-        <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[32px] p-6 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] animate-fadeIn">
+        <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[32px] p-6 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-slate-300 text-sm">
               <thead>
@@ -234,7 +229,7 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
               <tbody className="divide-y divide-white/5 font-semibold text-xs text-slate-200">
                 {weeklyMenu.map((m) => (
                   <tr key={m.day} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-4 px-2 font-black font-mono text-[#a3b3e6]">{m.day.substring(0, 3)}</td>
+                    <td className="py-4 px-2 font-black font-mono text-white/70">{m.day.substring(0, 3)}</td>
                     <td className="py-4 px-2 text-white">{m.breakfast.split(' & ')[0]}</td>
                     <td className="py-4 px-2 text-white">{m.lunch.split(', ')[0]}</td>
                     <td className="py-4 px-2 text-white">{m.dinner.split(', ')[0]}</td>

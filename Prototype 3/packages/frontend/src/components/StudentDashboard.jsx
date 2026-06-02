@@ -712,7 +712,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
     if (sortedList.length === 0) {
       return (
         <div className="h-44 flex flex-col items-center justify-center text-slate-500 text-xs">
-          <TrendingUp size={24} className="mb-1.5 text-slate-600 animate-pulse" />
+          <TrendingUp size={24} className="mb-1.5 text-slate-600" />
           <span>No GPA progression records available yet.</span>
         </div>
       );
@@ -776,7 +776,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
     });
 
     return (
-      <div className="w-full relative animate-fadeIn overflow-hidden">
+      <div className="w-full relative overflow-hidden">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto select-none overflow-visible">
           <defs>
             <linearGradient id="sgpaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -933,12 +933,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
         {/* Mini Legend */}
         <div className="flex items-center justify-center gap-5 mt-2 select-none">
-          <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></span>
+          <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-white/70">
+            <span className="w-2 h-2 rounded-full bg-white/40 border border-white/20"></span>
             <span>SGPA</span>
           </div>
-          <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-indigo-400">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]"></span>
+          <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-white/50">
+            <span className="w-2 h-2 rounded-full bg-white/20 border border-white/10"></span>
             <span>CGPA</span>
           </div>
         </div>
@@ -1210,7 +1210,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
     <div className="flex flex-col gap-4 text-white font-sans h-full w-full select-none relative min-h-0 bg-transparent">
       
       {/* ─── Compact Glass Page Header ─── */}
-      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between animate-fadeIn z-10">
+      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between z-10">
         <div className="flex items-center">
           <button
             onClick={onClose}
@@ -1228,7 +1228,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
           <button
             onClick={() => handlePortalSync(enrollmentNo, password)}
             disabled={isSyncing}
-            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-indigo-500/30 text-white hover:text-indigo-300 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0 disabled:opacity-50"
+            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-white/20 text-white hover:text-white/80 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0 disabled:opacity-50"
             type="button"
             title="Sync Registry"
           >
@@ -1239,12 +1239,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
       {/* ─── Immersive Portal Login Form (When Unauthenticated) ─── */}
       {!isAuthenticated && (
-        <div className="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto gap-5 px-1 animate-fadeIn select-text pt-4">
-          <div className={`${obsidianCardClass} text-center flex flex-col gap-6 py-8 px-6 border-indigo-500/30`}>
+        <div className="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto gap-5 px-1 select-text pt-4">
+          <div className={`${obsidianCardClass} text-center flex flex-col gap-6 py-8 px-6 border-white/10`}>
             
             {/* Morphing visual lock circle */}
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 mx-auto shadow-lg animate-pulse">
-              <Lock size={26} className="text-indigo-400" />
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/[0.04] border border-white/15 mx-auto shadow-lg">
+              <Lock size={26} className="text-white/60" />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -1257,26 +1257,26 @@ export default function StudentDashboard({ currentUser, onClose }) {
             <div className="flex flex-col gap-4 text-left">
               {/* Enrollment Number */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-black text-indigo-400 tracking-widest uppercase pl-1">Enrollment ID</span>
+                <span className="text-[9px] font-black text-white/55 tracking-widest uppercase pl-1">Enrollment ID</span>
                 <input
                   type="text"
                   placeholder="2501200031"
                   value={enrollmentNo}
                   onChange={(e) => setEnrollmentNo(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-indigo-500/50 rounded-xl px-5 py-3.5 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
+                  className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-white/30 rounded-xl px-5 py-3.5 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
                 />
               </div>
 
               {/* Password */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-black text-indigo-400 tracking-widest uppercase pl-1">Password</span>
+                <span className="text-[9px] font-black text-white/55 tracking-widest uppercase pl-1">Password</span>
                 <div className="relative w-full">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="•••••••••••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-indigo-500/50 rounded-xl px-5 py-3.5 pr-12 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
+                    className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-white/30 rounded-xl px-5 py-3.5 pr-12 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
                   />
                   <button
                     type="button"
@@ -1293,7 +1293,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
             <button
               onClick={() => handlePortalSync(enrollmentNo, password)}
               disabled={isSyncing || !enrollmentNo || !password}
-              className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-indigo-500/10 active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-white/20 hover:bg-white/30 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSyncing ? (
                 <span className="flex items-center justify-center gap-2">
@@ -1304,8 +1304,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* Errors alert container */}
             {error && (
-              <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-xl text-xs font-semibold flex items-center gap-2 text-left leading-normal animate-fadeIn">
-                <AlertTriangle className="shrink-0 text-rose-400" size={16} />
+              <div className="p-3.5 bg-white/[0.04] border border-white/10 text-white/60 rounded-xl text-xs font-semibold flex items-center gap-2 text-left leading-normal">
+                <AlertTriangle className="shrink-0 text-white/60" size={16} />
                 <span>{error}</span>
               </div>
             )}
@@ -1318,7 +1318,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
         const portalTarget = document.querySelector('.mobile-screen-viewport');
         if (!portalTarget) return null;
         return createPortal(
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-2xl z-[99999] flex flex-col items-center justify-center p-6 select-none animate-fadeIn">
+          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-2xl z-[99999] flex flex-col items-center justify-center p-6 select-none">
             {/* Back button */}
             <button
               onClick={onClose}
@@ -1328,9 +1328,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
               <ArrowLeft size={18} />
             </button>
             <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin shadow-[0_0_15px_rgba(99,102,241,0.2)]"></div>
+              <div className="w-14 h-14 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
               <h3 className="mt-6 font-sans text-lg font-black tracking-tight text-white drop-shadow-md">Scraping Registry Database</h3>
-              <p className="mt-2.5 font-mono text-[9px] font-bold tracking-widest uppercase text-indigo-300 drop-shadow-md animate-pulse">
+              <p className="mt-2.5 font-mono text-[9px] font-bold tracking-widest uppercase text-white/60 drop-shadow-md">
                 {syncPhase === 'authenticating' && 'Securing Webkiosk Tunnel...'}
                 {syncPhase === 'fetching_profile' && 'Extracting Student Credentials...'}
                 {syncPhase === 'fetching_meta' && 'Mapping Academic Registry...'}
@@ -1350,20 +1350,20 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
 
           {error && (
-            <div className="mx-1 mb-4 p-4 bg-rose-500/10 border-2 border-rose-500/30 rounded-[24px] shadow-[0_0_20px_rgba(239,68,68,0.06)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-xl flex flex-col gap-3 text-left animate-fadeIn">
+            <div className="mx-1 mb-4 p-4 bg-white/[0.04] border-2 border-white/20 rounded-[24px] backdrop-blur-xl flex flex-col gap-3 text-left">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="text-rose-400 shrink-0 mt-0.5 animate-pulse" size={16} />
+                <AlertTriangle className="text-white/60 shrink-0 mt-0.5" size={16} />
                 <div className="flex flex-col gap-0.5 flex-1">
-                  <span className="text-[9px] font-black text-rose-400 tracking-widest uppercase font-mono">Registry Connection Failed</span>
-                  <p className="text-xs font-semibold text-rose-200/90 leading-relaxed font-sans">{error}</p>
+                  <span className="text-[9px] font-black text-white/70 tracking-widest uppercase font-mono">Registry Connection Failed</span>
+                  <p className="text-xs font-semibold text-white/60 leading-relaxed font-sans">{error}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 pt-2 border-t border-rose-500/10 justify-between">
+              <div className="flex items-center gap-2 pt-2 border-t border-white/10 justify-between">
                 <span className="text-[9px] font-bold text-slate-400 uppercase font-mono">Displaying cached offline data</span>
                 <button
                   onClick={() => handlePortalSync(enrollmentNo, password, true)}
                   disabled={isSyncing}
-                  className="px-3.5 py-1.5 bg-rose-500/15 border border-rose-500/25 hover:bg-rose-500/25 active:scale-95 text-rose-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                  className="px-3.5 py-1.5 bg-white/10 border border-white/20 hover:bg-white/15 active:scale-95 text-white/75 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                   type="button"
                 >
                   {isSyncing ? <RefreshCw className="animate-spin" size={10} /> : <RefreshCw size={10} />} Retry Sync
@@ -1375,7 +1375,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
           {/* ─── Scroll-locked Content Workspace ─── */}
           <div 
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto scrollbar-none min-h-0 animate-fadeIn pr-1 pt-1.5 pb-24"
+            className="flex-1 overflow-y-auto scrollbar-none min-h-0 pr-1 pt-1.5 pb-24"
           >
             
             {/* 📊 TABS 1: ATTENDANCE BLOCK */}
@@ -1418,7 +1418,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           setGoalPercentage(val);
                           setAttendanceGoal(val);
                         }}
-                        className="bg-transparent text-indigo-400 text-sm font-black outline-none w-8 font-mono p-0 border-none focus:ring-0 leading-none"
+                        className="bg-transparent text-white/70 text-sm font-black outline-none w-8 font-mono p-0 border-none focus:ring-0 leading-none"
                       />
                       <span className="text-slate-400 text-xs font-extrabold font-mono select-none">% target</span>
                     </div>
@@ -1436,7 +1436,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   attendanceList.map((item, idx) => {
                     const stat = getBunkStatus(item.attended, item.held);
                     const cardBorder = stat.status === 'danger'
-                      ? 'border-rose-500/30 bg-rose-500/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                      ? 'border-white/20 bg-white/[0.04]'
                       : 'border-white/[0.08] bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)]';
 
                     return (
@@ -1451,7 +1451,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           </div>
                           
                           <div className="flex flex-col items-end shrink-0">
-                            <span className={`text-base font-black font-mono leading-none ${stat.status === 'danger' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                            <span className={`text-base font-black font-mono leading-none ${stat.status === 'danger' ? 'text-white/60' : 'text-white/80'}`}>
                               {item.percentage}%
                             </span>
                             <span className="text-[9px] font-bold text-slate-400 mt-1.5 font-mono uppercase tracking-wide">
@@ -1469,21 +1469,21 @@ export default function StudentDashboard({ currentUser, onClose }) {
                               {item.hasLecture && (
                                 <div className="flex flex-col gap-0.5 text-left pr-2">
                                   <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono tracking-wider">Lecture</span>
-                                  <span className="font-black text-indigo-300 text-xs mt-0.5">{item.lecturePct}%</span>
+                                  <span className="font-black text-white/70 text-xs mt-0.5">{item.lecturePct}%</span>
                                   <span className="text-[9px] font-mono text-slate-400 mt-0.5 font-bold">{item.lectureAttended}/{item.lectureHeld} Classes</span>
                                 </div>
                               )}
                               {item.hasTutorial && (
                                 <div className={`flex flex-col gap-0.5 text-left ${activeCols > 1 ? 'border-l border-white/5 pl-2.5' : ''}`}>
                                   <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono tracking-wider">Tutorial</span>
-                                  <span className="font-black text-indigo-300 text-xs mt-0.5">{item.tutorialPct}%</span>
+                                  <span className="font-black text-white/70 text-xs mt-0.5">{item.tutorialPct}%</span>
                                   <span className="text-[9px] font-mono text-slate-400 mt-0.5 font-bold">{item.tutorialAttended}/{item.tutorialHeld} Classes</span>
                                 </div>
                               )}
                               {item.hasPractical && (
                                 <div className={`flex flex-col gap-0.5 text-left ${activeCols > 1 ? 'border-l border-white/5 pl-2.5' : ''}`}>
                                   <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono tracking-wider">Practical</span>
-                                  <span className="font-black text-indigo-300 text-xs mt-0.5">{item.practicalPct}%</span>
+                                  <span className="font-black text-white/70 text-xs mt-0.5">{item.practicalPct}%</span>
                                   <span className="text-[9px] font-mono text-slate-400 mt-0.5 font-bold">{item.practicalAttended}/{item.practicalHeld} Classes</span>
                                 </div>
                               )}
@@ -1495,9 +1495,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         <div className="w-full pt-3.5 border-t border-white/5 flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {stat.status === 'danger' ? (
-                              <AlertTriangle size={14} className="text-rose-400 animate-bounce" />
+                              <AlertTriangle size={14} className="text-white/50" />
                             ) : (
-                              <CheckCircle2 size={14} className="text-emerald-400" />
+                              <CheckCircle2 size={14} className="text-white/70" />
                             )}
                             <span className="text-[10px] font-semibold text-slate-200 text-left leading-none font-sans">
                               {stat.status === 'danger' 
@@ -1508,7 +1508,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             </span>
                           </div>
                           
-                          <span className={`text-[8px] font-black uppercase tracking-widest font-mono ${stat.status === 'danger' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                          <span className={`text-[8px] font-black uppercase tracking-widest font-mono ${stat.status === 'danger' ? 'text-white/60 font-bold' : 'text-white/70 font-semibold'}`}>
                             {stat.status === 'danger' ? '⚠️ SHORTAGE' : '🟢 SECURE'}
                           </span>
                         </div>
@@ -1538,7 +1538,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         onClick={() => setGradesSubTab(sub.id)}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-300 active:scale-95 cursor-pointer ${
                           gradesSubTab === sub.id
-                            ? 'bg-white/[0.08] border border-white/[0.12] text-indigo-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                            ? 'bg-white/[0.08] border border-white/[0.12] text-white shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.05)]'
                             : 'text-slate-400 hover:text-white hover:bg-white/[0.02] border border-transparent'
                         }`}
                       >
@@ -1551,7 +1551,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
                 {/* ─── Sub-Tab 1: OVERVIEW (Glassy & List-based) ─── */}
                 {gradesSubTab === 'overview' && (
-                  <div className="flex flex-col gap-4 animate-fadeIn">
+                  <div className="flex flex-col gap-4">
                     
                     {/* Overall CGPA display card (signature glassmorphism) */}
                     <div className={`${obsidianCardClass} flex items-center justify-between p-5`}>
@@ -1559,7 +1559,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-mono">Academic Trend</span>
                         <h4 className="text-sm font-bold text-white font-sans mt-0.5 uppercase tracking-wide">Cumulative Index (CGPA)</h4>
                       </div>
-                      <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-xl text-xs font-mono font-bold shadow-sm">
+                      <div className="flex items-center gap-1.5 text-white/80 bg-white/10 border border-white/15 px-3 py-1.5 rounded-xl text-xs font-mono font-bold shadow-sm">
                         <TrendingUp size={14} />
                         <span>
                           {gpaData?.cgpa ?? (Array.isArray(gpaData?.semesterList) && gpaData.semesterList.length > 0 
@@ -1596,11 +1596,11 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             <div className="flex items-center gap-2 justify-between mt-1 pt-2 border-t border-white/5">
                               <div className="flex flex-col">
                                 <span className="text-[7px] font-black text-slate-500 tracking-widest font-mono uppercase leading-none">SGPA</span>
-                                <span className="text-base font-black font-mono text-emerald-400 leading-none mt-1">{Number(sem.sgpa || 0).toFixed(2)}</span>
+                                <span className="text-base font-black font-mono text-white/80 leading-none mt-1">{Number(sem.sgpa || 0).toFixed(2)}</span>
                               </div>
                               <div className="flex flex-col items-end">
                                 <span className="text-[7px] font-black text-slate-500 tracking-widest font-mono uppercase leading-none">CGPA</span>
-                                <span className="text-base font-black font-mono text-indigo-400 leading-none mt-1">{Number(sem.cgpa || 0).toFixed(2)}</span>
+                                <span className="text-base font-black font-mono text-white/60 leading-none mt-1">{Number(sem.cgpa || 0).toFixed(2)}</span>
                               </div>
                             </div>
                           </div>
@@ -1612,7 +1612,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
                 {/* ─── Sub-Tab 2: MARKS (Glassy & List-based) ─── */}
                 {gradesSubTab === 'marks' && (
-                  <div className="flex flex-col gap-4 animate-fadeIn">
+                  <div className="flex flex-col gap-4">
                     
                     {/* Glassy Selector & Statement Button Row */}
                     <div className="flex items-center gap-2.5 w-full">
@@ -1635,7 +1635,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         type="button"
                         onClick={() => handleDownloadMarksPdf(selectedMarksSem)}
                         disabled={isDownloading || !selectedMarksSem}
-                        className="h-[45px] px-4 rounded-2xl flex items-center justify-center gap-2 border border-indigo-500/25 bg-indigo-500/[0.03] hover:border-indigo-500/50 hover:bg-indigo-500/10 text-indigo-300 shadow-sm transition-all duration-300 cursor-pointer disabled:opacity-50 text-[10px] font-black uppercase tracking-wider shrink-0 active:scale-95 leading-none"
+                        className="h-[45px] px-4 rounded-2xl flex items-center justify-center gap-2 border border-white/15 bg-white/[0.04] hover:border-white/25 hover:bg-white/[0.08] text-white/75 shadow-sm transition-all duration-300 cursor-pointer disabled:opacity-50 text-[10px] font-black uppercase tracking-wider shrink-0 active:scale-95 leading-none"
                       >
                         {isDownloading ? <RefreshCw className="animate-spin" size={12} /> : <Download size={12} />}
                         <span>Statement</span>
@@ -1661,8 +1661,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     {/* Loader/Errors */}
                     {marksLoading ? (
                       <div className="py-16 flex flex-col items-center justify-center gap-3.5 text-center">
-                        <RefreshCw className="animate-spin text-indigo-400" size={24} />
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider animate-pulse">
+                        <RefreshCw className="animate-spin text-white/60" size={24} />
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                           {syncPhase === 'booting_pyodide' && 'Initializing Parser Engine...'}
                           {syncPhase === 'downloading_pdf' && 'Retrieving Registry PDF...'}
                           {syncPhase === 'parsing_pdf' && 'Extracting Marks Sheet...'}
@@ -1672,8 +1672,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       </div>
                     ) : marksError ? (
                       <div className={`${obsidianCardClass} p-6 flex flex-col items-center gap-2.5 text-center`}>
-                        <AlertTriangle className="text-rose-400 animate-bounce" size={24} />
-                        <span className="text-xs text-rose-300 font-bold leading-normal">{marksError}</span>
+                        <AlertTriangle className="text-white/60" size={24} />
+                        <span className="text-xs text-white/70 font-bold leading-normal">{marksError}</span>
                         <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-1">Please try another term or download statement manually.</span>
                       </div>
                     ) : !marksSemesterData?.courses || marksSemesterData.courses.length === 0 ? (
@@ -1703,7 +1703,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                               {/* Subject header */}
                               <div className="flex justify-between items-start w-full gap-3">
                                 <div className="text-left flex-1 min-w-0 pr-2">
-                                  <span className="text-[8px] font-black text-indigo-400 tracking-wider font-mono block uppercase leading-none">
+                                  <span className="text-[8px] font-black text-white/50 tracking-wider font-mono block uppercase leading-none">
                                     {course.code}
                                   </span>
                                   <h4 className="text-sm font-bold text-white font-sans mt-1.5 break-words leading-snug">
@@ -1713,8 +1713,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
                               </div>
 
                               {/* Purple score outline pill (aligned to start) */}
-                              <div className="border border-indigo-500/25 bg-indigo-500/[0.02] rounded-full py-1.5 px-4 flex items-center shadow-inner self-start select-none">
-                                <span className="text-[10px] font-black text-[#818cf8] font-sans tracking-wide">
+                              <div className="border border-white/15 bg-white/[0.02] rounded-full py-1.5 px-4 flex items-center shadow-inner self-start select-none">
+                                <span className="text-[10px] font-black text-white/70 font-sans tracking-wide">
                                   Score: {courseTotal.obtained}/{courseTotal.full}
                                 </span>
                               </div>
@@ -1733,10 +1733,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                   const percentage = fm > 0 ? (om / fm) * 100 : 0;
                                   
                                   const barColor = percentage >= 75
-                                    ? 'from-emerald-400 to-teal-500 shadow-emerald-500/25'
+                                    ? 'from-white/60 to-white/30'
                                     : percentage >= 50
-                                      ? 'from-amber-400 to-orange-500 shadow-amber-500/25'
-                                      : 'from-rose-400 to-red-500 shadow-rose-500/25';
+                                      ? 'from-white/40 to-white/20'
+                                      : 'from-white/20 to-white/10';
 
                                   return (
                                     <div key={eidx} className="flex flex-col gap-1.5 text-left font-sans">
@@ -1769,7 +1769,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
                 {/* ─── Sub-Tab 3: SEMESTER (Glassy & List-based) ─── */}
                 {gradesSubTab === 'semester' && (
-                  <div className="flex flex-col gap-4 animate-fadeIn">
+                  <div className="flex flex-col gap-4">
                     
                     {/* Glassy Toolbar controls */}
                     <div className="flex items-center gap-2.5 w-full">
@@ -1797,7 +1797,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           }}
                           className={`h-[45px] px-3.5 rounded-2xl flex items-center justify-center gap-1.5 border transition-all duration-300 text-[10px] font-black uppercase tracking-wider cursor-pointer ${
                             gradeSort !== 'default'
-                              ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                              ? 'bg-white/[0.08] border-white/12 text-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
                               : 'bg-white/[0.03] border-white/5 hover:border-white/10 text-slate-400 hover:text-slate-200'
                           }`}
                         >
@@ -1813,7 +1813,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           }}
                           className={`h-[45px] px-3.5 rounded-2xl flex items-center justify-center gap-1.5 border transition-all duration-300 text-[10px] font-black uppercase tracking-wider cursor-pointer ${
                             creditSort !== 'default'
-                              ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                              ? 'bg-white/[0.08] border-white/12 text-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
                               : 'bg-white/[0.03] border-white/5 hover:border-white/10 text-slate-400 hover:text-slate-200'
                           }`}
                         >
@@ -1826,8 +1826,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     {/* Collapsible Grade details cards list (frosted glass) */}
                     {gradeCardLoading ? (
                       <div className="py-12 flex flex-col items-center justify-center gap-3.5 text-center">
-                        <RefreshCw className="animate-spin text-indigo-400" size={24} />
-                        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider animate-pulse">Compiling Grade Card...</span>
+                        <RefreshCw className="animate-spin text-white/60" size={24} />
+                        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Compiling Grade Card...</span>
                       </div>
                     ) : (() => {
                       const sortedGrades = (() => {
@@ -1889,7 +1889,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             return (
                               <div 
                                 key={idx}
-                                className={`${obsidianCardClass} !p-0 overflow-hidden transition-all duration-300 ${isExpanded ? 'border-indigo-500/35 bg-indigo-500/[0.04]' : ''}`}
+                                className={`${obsidianCardClass} !p-0 overflow-hidden transition-all duration-300 ${isExpanded ? 'border-white/20 bg-white/[0.04]' : ''}`}
                               >
                                 <div 
                                   onClick={() => setExpandedSubject(isExpanded ? null : idx)}
@@ -1905,12 +1905,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                   <div className="flex items-center gap-3 shrink-0">
                                     <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-mono font-black text-xs shadow-inner transition-colors ${
                                       item.grade === 'A+' || item.grade === 'A'
-                                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-emerald-500/5'
+                                        ? 'bg-white/15 border-white/25 text-white shadow-sm'
                                         : item.grade === 'B+' || item.grade === 'B'
-                                          ? 'bg-indigo-500/10 border-indigo-500/25 text-indigo-400 shadow-indigo-500/5'
+                                          ? 'bg-white/10 border-white/20 text-white/80 shadow-sm'
                                           : item.grade === 'C+' || item.grade === 'C'
-                                            ? 'bg-amber-500/10 border-amber-500/25 text-amber-400 shadow-amber-500/5'
-                                            : 'bg-rose-500/10 border-rose-500/25 text-rose-400 shadow-rose-500/5'
+                                            ? 'bg-white/[0.06] border-white/15 text-white/60 shadow-sm'
+                                            : 'bg-white/[0.03] border-white/10 text-white/40 shadow-sm'
                                     }`}>
                                       {item.grade}
                                     </div>
@@ -1919,10 +1919,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                 </div>
 
                                 {isExpanded && (
-                                  <div className="px-5 pb-5 pt-3.5 border-t border-white/5 bg-white/[0.01] flex flex-col gap-3 font-sans animate-fadeIn">
+                                  <div className="px-5 pb-5 pt-3.5 border-t border-white/5 bg-white/[0.01] flex flex-col gap-3 font-sans">
                                     {!hasRealtimeMarks ? (
                                       <div className="w-full flex flex-col items-center justify-center p-4 bg-white/[0.02] border border-white/5 rounded-2xl gap-2 text-center select-none shadow-inner">
-                                        <AlertTriangle size={14} className="text-amber-400 animate-pulse" />
+                                        <AlertTriangle size={14} className="text-amber-400" />
                                         <span className="text-[10px] text-slate-400 font-semibold">Component Marks not linked for this term.</span>
                                         <button
                                           type="button"
@@ -1935,7 +1935,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                             }
                                             setGradesSubTab('marks');
                                           }}
-                                          className="px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/25 hover:bg-indigo-500/20 active:scale-95 text-indigo-300 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm flex items-center gap-1 leading-none mt-1"
+                                          className="px-3 py-1.5 bg-white/10 border border-white/20 hover:bg-white/15 active:scale-95 text-white/75 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm flex items-center gap-1 leading-none mt-1"
                                         >
                                           <span>⚡ Sync Marks Registry</span>
                                         </button>
@@ -1945,23 +1945,23 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                         <div className="grid grid-cols-4 gap-2 text-left bg-white/[0.02] border border-white/5 rounded-2xl p-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T1</span>
-                                            <span className="text-xs font-mono font-black text-emerald-400">{getExamScore('t1')}</span>
+                                            <span className="text-xs font-mono font-black text-white/80">{getExamScore('t1')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T2</span>
-                                            <span className="text-xs font-mono font-black text-[#6366f1]">{getExamScore('t2')}</span>
+                                            <span className="text-xs font-mono font-black text-white/60">{getExamScore('t2')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T3</span>
-                                            <span className="text-xs font-mono font-black text-emerald-400">{getExamScore('t3')}</span>
+                                            <span className="text-xs font-mono font-black text-white/80">{getExamScore('t3')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Internal</span>
-                                            <span className="text-xs font-mono font-black text-indigo-400">{getExamScore('internal')}</span>
+                                            <span className="text-xs font-mono font-black text-white/70">{getExamScore('internal')}</span>
                                           </div>
                                         </div>
                                         <div className="w-full flex items-center justify-between border-t border-white/5 pt-2.5 select-none leading-none">
-                                          <span className="text-[8.5px] font-black text-emerald-400/90 flex items-center gap-1.5 uppercase tracking-wider">
+                                          <span className="text-[8.5px] font-black text-white/70 flex items-center gap-1.5 uppercase tracking-wider">
                                             <CheckCircle2 size={11} /> Registry Synced
                                           </span>
                                           <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-widest font-mono">Real-time Verified</span>
@@ -1986,7 +1986,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             {/* 💳 TABS 4: FEES TAB */}
             {activeTab === 'fees' && (
-              <div className="flex flex-col gap-4 animate-fadeIn">
+              <div className="flex flex-col gap-4">
                 
                 {/* Cache Status Details */}
                 {isFeesFromCache && feesCacheTimestamp && (
@@ -2007,13 +2007,13 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 {/* Loader/Errors */}
                 {feesLoading ? (
                   <div className="py-16 flex flex-col items-center justify-center gap-3.5 text-center">
-                    <RefreshCw className="animate-spin text-indigo-400" size={24} />
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider animate-pulse">Syncing Tuition Ledger...</span>
+                    <RefreshCw className="animate-spin text-white/60" size={24} />
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Syncing Tuition Ledger...</span>
                   </div>
                 ) : feesError ? (
                   <div className={`${obsidianCardClass} p-6 flex flex-col items-center gap-2.5 text-center`}>
-                    <AlertTriangle className="text-rose-400 animate-bounce" size={24} />
-                    <span className="text-xs text-rose-300 font-bold leading-normal">{feesError}</span>
+                    <AlertTriangle className="text-white/60" size={24} />
+                    <span className="text-xs text-white/70 font-bold leading-normal">{feesError}</span>
                     <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-1">Please try again later.</span>
                   </div>
                 ) : !Array.isArray(feeInvoices) || feeInvoices.length === 0 ? (
@@ -2025,7 +2025,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   feeInvoices.map((item, idx) => (
                     <div 
                       key={idx}
-                      className={`${obsidianCardClass} flex flex-col gap-3.5 animate-fadeIn`}
+                      className={`${obsidianCardClass} flex flex-col gap-3.5 `}
                     >
                       <div className="flex justify-between items-start w-full border-b border-white/5 pb-3">
                         <div className="text-left">
@@ -2033,7 +2033,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           <h4 className="text-sm font-bold text-white font-sans mt-0.5">{item.desc}</h4>
                         </div>
 
-                        <span className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-sm flex items-center gap-1 leading-none select-none">
+                        <span className="bg-white/10 border border-white/15 text-white/70 font-mono text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-sm flex items-center gap-1 leading-none select-none">
                           <CheckCircle2 size={11} /> {item.status}
                         </span>
                       </div>
@@ -2046,7 +2046,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
                         <div className="flex flex-col items-end gap-0.5">
                           <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Amount Paid</span>
-                          <span className="text-base font-mono font-black text-indigo-400 leading-none">{item.amount}</span>
+                          <span className="text-base font-mono font-black text-white/75 leading-none">{item.amount}</span>
                         </div>
                       </div>
                     </div>
@@ -2069,14 +2069,14 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   examScheduleList.map((item, idx) => (
                     <div 
                       key={idx}
-                      className={`${obsidianCardClass} flex flex-col gap-3 animate-fadeIn`}
+                      className={`${obsidianCardClass} flex flex-col gap-3 `}
                     >
                       <div className="flex justify-between items-start w-full border-b border-white/5 pb-2.5">
                         <div className="text-left flex-1 min-w-0 pr-3">
                           <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-mono">Exam Schedule</span>
                           <h4 className="text-sm font-bold text-white font-sans mt-0.5 truncate">{item.subject}</h4>
                         </div>
-                        <span className="bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 font-mono text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-wider shrink-0">
+                        <span className="bg-white/10 border border-white/15 text-white/60 font-mono text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-wider shrink-0">
                           {item.room}
                         </span>
                       </div>
@@ -2103,35 +2103,35 @@ export default function StudentDashboard({ currentUser, onClose }) {
               <div className="flex flex-col gap-4">
                 
                 {/* Frosted glass ID Card */}
-                <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 animate-fadeIn`}>
+                <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 `}>
                   <div className="flex justify-between items-start w-full">
                     <div className="flex items-center gap-3.5 text-left">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white font-sans shadow-md border border-white/10 shrink-0 select-none uppercase">
+                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-black text-white font-sans shadow-md border border-white/15 shrink-0 select-none uppercase">
                         {(studentProfile.name || '').split(' ').map(n => n[0]).join('').substring(0, 2)}
                       </div>
                       <div className="flex flex-col gap-2">
                         <h3 className="text-base font-extrabold text-white leading-tight font-sans tracking-wide">{studentProfile.name}</h3>
                         <div className="flex flex-col">
-                          <span className="text-[8px] font-black text-indigo-400 tracking-widest font-mono uppercase leading-normal">Enrollment ID</span>
-                          <span className="text-[11px] font-bold text-indigo-300 font-mono mt-[-0.5px] leading-normal">{studentProfile.enrollment}</span>
+                          <span className="text-[8px] font-black text-white/50 tracking-widest font-mono uppercase leading-normal">Enrollment ID</span>
+                          <span className="text-[11px] font-bold text-white/70 font-mono mt-[-0.5px] leading-normal">{studentProfile.enrollment}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">
                       {error ? (
-                        <span className="bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span> Offline
+                        <span className="bg-white/[0.04] border border-white/10 text-white/50 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span> Offline
                         </span>
                       ) : (
-                        <span className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5 select-none leading-none">
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Live Synced
+                        <span className="bg-white/10 border border-white/15 text-white/70 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/50"></span> Live Synced
                         </span>
                       )}
                       
                       <button
                         onClick={() => handlePortalSync(enrollmentNo, password)}
                         disabled={isSyncing}
-                        className="px-2.5 py-1.5 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-indigo-500/30 text-slate-300 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition duration-300 active:scale-95 cursor-pointer flex items-center gap-1 leading-none shadow-sm disabled:opacity-50"
+                        className="px-2.5 py-1.5 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-slate-300 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition duration-300 active:scale-95 cursor-pointer flex items-center gap-1 leading-none shadow-sm disabled:opacity-50"
                       >
                         <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
                         {isSyncing ? "Syncing..." : "Sync Again"}
@@ -2150,12 +2150,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Residency</span>
-                      <span className="text-[11px] font-bold text-indigo-400 font-mono truncate">{studentProfile.hostel}</span>
+                      <span className="text-[11px] font-bold text-white/60 font-mono truncate">{studentProfile.hostel}</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left animate-fadeIn`}>
+                <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left `}>
                   <h4 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
                     <User size={15} /> Student Registry Details
                   </h4>
@@ -2180,7 +2180,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   </div>
                 </div>
 
-                <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left animate-fadeIn`}>
+                <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left `}>
                   <h4 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
                     <MapPin size={15} /> Campus Residency & Family
                   </h4>
@@ -2207,7 +2207,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
           </div>
 
           {/* ─── Glass Pill Navigation (icons only) ─── */}
-          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] z-[100] animate-fadeIn select-none">
+          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] z-[100] select-none">
             {[
               { id: 'attendance', icon: <Percent size={19} className="stroke-[2.5px]" />, label: 'Attendance' },
               { id: 'grades',     icon: <Award    size={19} className="stroke-[2.5px]" />, label: 'Grades' },
@@ -2222,7 +2222,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 onClick={() => setActiveTab(id)}
                 className={`w-[42px] h-[42px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${
                   activeTab === id
-                    ? 'bg-white/[0.08] border border-white/[0.12] text-indigo-300 shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                    ? 'bg-white/[0.08] border border-white/[0.12] text-white shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.05)]'
                     : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.03] border border-transparent'
                 }`}
               >

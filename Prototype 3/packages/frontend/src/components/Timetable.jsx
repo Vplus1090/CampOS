@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Clock, Calendar, BookOpen, AlertTriangle, 
-  Sparkles, RefreshCw, MapPin, User, Users, FileText, SlidersHorizontal
+  Sparkles, RefreshCw, MapPin, User, Users, FileText, SlidersHorizontal,
+  ChevronDown
 } from 'lucide-react';
 import { getUsername, getFromCache, saveToCache } from '../utils/cache';
 
@@ -256,7 +257,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
 
       {/* ─── Dynamic Filters Panel (Exactly replicating JPoop design) ─── */}
       {showFilters && dbMeta && (
-        <div className="w-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-[24px] p-4 flex flex-col gap-3.5 shrink-0 text-left animate-slideDown select-none">
+        <div className="w-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-[24px] p-4 flex flex-col gap-3.5 shrink-0 text-left select-none">
           
           {/* 1. Day Selector Row */}
           <div className="flex flex-col gap-1.5">
@@ -354,15 +355,20 @@ export default function Timetable({ currentUser, setActiveTab }) {
           {/* 4. Batch Selector Dropdown */}
           <div className="flex flex-col gap-1.5">
             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Batch</span>
-            <select
-              value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-indigo-500/50 transition cursor-pointer"
-            >
-              {(dbMeta.batches[selectedCourse]?.[selectedSemester]?.[selectedPhase] || []).map((b) => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
+            <div className="relative w-full">
+              <select
+                value={selectedBatch}
+                onChange={(e) => setSelectedBatch(e.target.value)}
+                className="w-full pl-4 pr-10 py-2.5 bg-white/10 hover:bg-white/[0.15] border border-white/15 hover:border-white/25 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-white/35 transition cursor-pointer appearance-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl"
+              >
+                {(dbMeta.batches[selectedCourse]?.[selectedSemester]?.[selectedPhase] || []).map((b) => (
+                  <option className="bg-[#141a27] text-white" key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+              <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-4 top-1/2">
+                <ChevronDown size={14} />
+              </div>
+            </div>
           </div>
 
         </div>
@@ -370,9 +376,9 @@ export default function Timetable({ currentUser, setActiveTab }) {
 
       {/* Loader for DB Fetch */}
       {loadingDb && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center animate-fadeIn">
-          <RefreshCw className="animate-spin text-indigo-400" size={24} />
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider animate-pulse">Syncing Planner Database...</span>
+        <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
+          <RefreshCw className="animate-spin text-white/60" size={24} />
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Syncing Planner Database...</span>
         </div>
       )}
 
@@ -387,15 +393,15 @@ export default function Timetable({ currentUser, setActiveTab }) {
           <div className="w-full flex flex-col gap-5 mt-1">
             
             {!showFilters && (
-              <span className="text-[10px] font-mono font-black text-indigo-400 uppercase tracking-widest text-left select-none pb-1.5 block animate-fadeIn leading-none pl-1">
+              <span className="text-[10px] font-mono font-black text-white/60 uppercase tracking-widest text-left select-none pb-1.5 block leading-none pl-1">
                 Schedule for {selectedDay} • {getBatchName() || 'All Batches'}
               </span>
             )}
             
             {displayEvents.length === 0 ? (
-              <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2.5 text-center select-none animate-fadeIn`}>
-                <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shadow-md">
-                  <Sparkles size={20} className="animate-pulse" />
+              <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2.5 text-center select-none `}>
+                <div className="w-12 h-12 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white/70 shadow-md">
+                  <Sparkles size={20} className="" />
                 </div>
                 <h4 className="text-xs text-slate-200 font-extrabold uppercase tracking-widest">Free Day!</h4>
                 <span className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-[220px]">
@@ -405,7 +411,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
             ) : (
               displayEvents.map((item, idx) => {
                 return (
-                  <div key={idx} className="flex gap-4 items-stretch w-full animate-fadeIn text-left">
+                  <div key={idx} className="flex gap-4 items-stretch w-full text-left">
                     
                     {/* 1. Time Stamps Column */}
                     <div className="w-[62px] shrink-0 flex flex-col justify-between py-1.5 text-right font-mono text-[9px] font-black text-slate-400 select-none">
@@ -443,10 +449,10 @@ export default function Timetable({ currentUser, setActiveTab }) {
                           {/* Type Pill */}
                           <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border flex items-center gap-1 leading-none shadow-sm capitalize ${
                             item.type === 'lab' 
-                              ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300' 
+                              ? 'bg-white/[0.08] border-white/20 text-white/70' 
                               : item.type === 'tutorial'
-                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
-                                : 'bg-blue-500/10 border-blue-500/20 text-blue-300'
+                                ? 'bg-white/[0.06] border-white/15 text-white/60'
+                                : 'bg-white/[0.04] border-white/10 text-white/50'
                           }`}>
                             <FileText size={9} />
                             {item.typeLabel}
@@ -468,7 +474,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
 
                           {/* Venue room Pill */}
                           <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm uppercase font-mono">
-                            <MapPin size={9} className="text-indigo-400 shrink-0" />
+                            <MapPin size={9} className="text-white/50 shrink-0" />
                             {item.room}
                           </span>
                         </div>
@@ -484,7 +490,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
 
           {/* Breaks in the Day section rendered cleanly below the lectures list */}
           {breaks.length > 0 && (
-            <div className="w-full animate-fadeIn mt-2">
+            <div className="w-full mt-2">
               <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left border-dashed border-white/20 bg-white/[0.01]`}>
                 <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-300 border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
                   <Sparkles size={12} className="text-slate-400" /> Breaks in the Day
@@ -494,7 +500,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
                   {breaks.map((brk, bIdx) => (
                     <div key={bIdx} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm text-left">
                       <span className="text-[10px] font-mono font-bold text-slate-300 leading-none">{brk.timeRange}</span>
-                      <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest font-mono mt-0.5 leading-none">{brk.duration}</span>
+                      <span className="text-[9px] font-black text-white/60 uppercase tracking-widest font-mono mt-0.5 leading-none">{brk.duration}</span>
                     </div>
                   ))}
                 </div>

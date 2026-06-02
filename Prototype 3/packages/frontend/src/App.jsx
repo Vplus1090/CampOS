@@ -340,8 +340,8 @@ function App() {
                 className="w-full flex items-center justify-between p-5 rounded-2xl border-2 border-slate-100 hover:border-black active:scale-[0.99] transition-all duration-300 bg-white group shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 transition-colors rounded-full bg-slate-100 text-slate-700 group-hover:bg-indigo-50">
-                    <SmartphoneNfc size={20} className="group-hover:text-indigo-600" />
+                  <div className="flex items-center justify-center w-12 h-12 transition-colors rounded-full bg-slate-100 text-slate-700 group-hover:bg-slate-200">
+                    <SmartphoneNfc size={20} className="group-hover:text-slate-900" />
                   </div>
                   <div className="text-left">
                     <h4 className="font-sans text-base font-black text-slate-800 group-hover:text-black">UPI / GPay</h4>
@@ -357,8 +357,8 @@ function App() {
                 className="w-full flex items-center justify-between p-5 rounded-2xl border-2 border-slate-100 hover:border-black active:scale-[0.99] transition-all duration-300 bg-white group shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 transition-colors rounded-full bg-slate-100 text-slate-700 group-hover:bg-indigo-50">
-                    <CreditCard size={20} className="group-hover:text-indigo-600" />
+                  <div className="flex items-center justify-center w-12 h-12 transition-colors rounded-full bg-slate-100 text-slate-700 group-hover:bg-slate-200">
+                    <CreditCard size={20} className="group-hover:text-slate-900" />
                   </div>
                   <div className="text-left">
                     <h4 className="font-sans text-base font-black text-slate-800 group-hover:text-black">Card</h4>
@@ -372,8 +372,8 @@ function App() {
 
           {/* Full-screen semi-transparent loading overlay */}
           {processingPayment && (
-            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-[99999] flex flex-col items-center justify-center p-6 select-none animate-fadeIn">
-              <div className="w-16 h-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-[99999] flex flex-col items-center justify-center p-6 select-none">
+              <div className="w-16 h-16 border-4 border-slate-800 rounded-full border-t-transparent animate-spin"></div>
               <h3 className="mt-6 font-sans text-xl font-black tracking-tight text-slate-900">Processing Payment...</h3>
               <p className="mt-2 font-mono text-xs font-semibold tracking-wide uppercase text-slate-500">Securing connection to banker</p>
             </div>
@@ -396,7 +396,7 @@ function App() {
       }
 
       return (
-        <div className="absolute inset-0 bg-indigo-600 text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans">
+        <div className="absolute inset-0 bg-[#0b0c10] text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans">
           <div className="flex flex-col items-center w-full max-w-md text-center">
             <h2 className="mt-2 text-4xl font-black tracking-tight">Guest Pass</h2>
             
@@ -415,7 +415,7 @@ function App() {
               
               <div className="mt-6 text-center">
                 <p className="font-mono text-xs font-bold tracking-widest uppercase text-slate-400">Pass Verification Code</p>
-                <p className="mt-1 font-mono text-base font-black tracking-wide text-indigo-950">
+                <p className="mt-1 font-mono text-base font-black tracking-wide text-slate-800">
                   {token ? `ID: #${String(token._id || token.id || '').substring(18).toUpperCase()}` : 'ACTIVE PASS'}
                 </p>
               </div>
@@ -442,17 +442,12 @@ function App() {
       const pin = order ? order.PickupPIN : '----';
 
       return (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans select-none">
-          {/* Premium morphing wallpaper gradient blobs (fixed background) */}
-          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
-            <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
-            <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
-          </div>
+        <div className="absolute inset-0 moving-gradient-bg text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans select-none">
+
 
           <div className="z-10 flex flex-col items-center w-full max-w-md text-center">
             {/* Sleek check icon */}
-            <div className="z-10 flex items-center justify-center w-20 h-20 mb-6 transition-transform duration-300 transform border-4 rounded-full shadow-xl bg-emerald-500 shadow-emerald-500/30 border-emerald-400/20 hover:scale-105">
+            <div className="z-10 flex items-center justify-center w-20 h-20 mb-6 transition-transform duration-300 transform border-4 rounded-full shadow-xl bg-white/20 shadow-white/10 border-white/15 hover:scale-105">
               <Check size={36} className="text-white stroke-[3px]" />
             </div>
 
@@ -461,12 +456,12 @@ function App() {
               Your hot meal is preparing. Present this digital slip at the counter.
             </p>
 
-            {/* Sleek Glass Credit Slip with Dotted Border Accents */}
-            <div className="w-full bg-orange-500/[0.03] backdrop-blur-3xl py-6 px-5 rounded-[28px] border-2 border-orange-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_35px_rgba(249,115,22,0.08)] mt-6 flex flex-col items-center relative overflow-hidden max-w-[340px]">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-red-500"></div>
+            {/* Sleek Glass Credit Slip */}
+            <div className="w-full bg-white/[0.03] backdrop-blur-3xl py-6 px-5 rounded-[28px] border-2 border-white/15 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] mt-6 flex flex-col items-center relative overflow-hidden max-w-[340px]">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-white/30 to-white/10"></div>
               
               <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest font-mono">Pickup PIN</span>
-              <div className="my-4 font-mono text-5xl font-black tracking-widest text-orange-400 select-all animate-pulse">
+              <div className="my-4 font-mono text-5xl font-black tracking-widest text-white select-all">
                 {pin}
               </div>
 
@@ -499,14 +494,9 @@ function App() {
 
     // Otherwise show main dashboard
     return (
-      <div className="campos-dashboard flex flex-col justify-between h-full bg-gradient-to-br from-[#050608] via-[#0b0c10] to-[#040507] text-white relative font-sans overflow-hidden">
+      <div className="campos-dashboard flex flex-col justify-between h-full moving-gradient-bg text-white relative font-sans overflow-hidden">
         
-        {/* Premium morphing wallpaper gradient blobs (fixed background) */}
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] right-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-br from-[#6366f1]/20 via-[#a855f7]/12 to-transparent animate-blob1" />
-          <div className="absolute bottom-[-20%] left-[-25%] w-[85%] h-[85%] rounded-full bg-gradient-to-tr from-[#d946ef]/15 via-[#8b5cf6]/10 to-transparent animate-blob2" />
-          <div className="absolute top-[20%] left-[5%] w-[65%] h-[65%] rounded-full bg-gradient-to-br from-[#06b6d4]/15 via-[#10b981]/6 to-transparent animate-blob3" />
-        </div>
+
 
         <main className={`flex-1 min-h-0 scrollbar-none bg-transparent relative z-10 ${
           (activeTab === 'materials' || activeTab === 'calendar' || activeTab === 'peerchat' || activeTab === 'student_dashboard' || activeTab === 'timetable') 
@@ -602,8 +592,8 @@ function App() {
         {activeTab === 'canteen' && canteenCart.length > 0 && (
           <button
             onClick={() => setActiveTab('canteen_cart')}
-            className={`absolute bottom-6 right-6 z-[999] bg-orange-500/25 border-2 border-orange-500/40 backdrop-blur-md text-white rounded-full w-14 h-14 shadow-2xl flex items-center justify-center transition-all duration-300 cursor-pointer shadow-orange-500/10 ${
-              isCartPopping ? 'animate-cartPop' : 'active:scale-90 hover:bg-orange-500/35'
+            className={`absolute bottom-6 right-6 z-[999] bg-white/15 border-2 border-white/25 backdrop-blur-md text-white rounded-full w-14 h-14 shadow-2xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
+              isCartPopping ? '' : 'active:scale-90 hover:bg-white/25'
             }`}
             type="button"
             title="View Cart"
@@ -688,26 +678,26 @@ function CanteenTicketModal({ order, onClose }) {
   }, [order]);
 
   return (
-    <div className="absolute inset-0 bg-black/80 z-[99999] flex items-center justify-center p-6 animate-fadeIn" onClick={onClose}>
+    <div className="absolute inset-0 bg-black/80 z-[99999] flex items-center justify-center p-6" onClick={onClose}>
       <div 
-        className="w-full max-w-[320px] bg-orange-500/[0.04] backdrop-blur-3xl py-6 px-5 rounded-[28px] border-2 border-orange-500/35 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-[0_0_35px_rgba(249,115,22,0.12)] flex flex-col items-center relative overflow-hidden animate-scaleIn select-none"
+        className="w-full max-w-[320px] bg-white/[0.04] backdrop-blur-3xl py-6 px-5 rounded-[28px] border-2 border-white/15 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] flex flex-col items-center relative overflow-hidden select-none"
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* Header with Title and Ticket Icon */}
         <div className="flex items-center justify-between w-full pb-3 mb-4 border-b border-white/10">
           <span className="text-slate-300 font-extrabold uppercase tracking-wider text-[10px]">Canteen Slip</span>
-          <Ticket size={18} className="text-orange-400" />
+          <Ticket size={18} className="text-white/50" />
         </div>
 
         {/* Live Timer Indicator */}
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-orange-500/10 border border-orange-500/25 text-orange-300 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase mb-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-white/[0.08] border border-white/15 text-white/70 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-white/60"></span>
           {timeLeft}
         </div>
 
         <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest font-mono mt-1">Pickup PIN</span>
-        <div className="my-4 font-mono text-5xl font-black tracking-widest text-orange-400 select-all animate-pulse">
+        <div className="my-4 font-mono text-5xl font-black tracking-widest text-white select-all">
           {order.PickupPIN}
         </div>
 
@@ -717,7 +707,7 @@ function CanteenTicketModal({ order, onClose }) {
           {order.ItemsArray && order.ItemsArray.map((item, idx) => (
             <div key={idx} className="flex justify-between items-center text-[10px] text-white/95 font-semibold">
               <span className="pr-2 truncate">{item.Name}</span>
-              <span className="font-mono font-bold text-orange-400 shrink-0">x{item.Quantity}</span>
+              <span className="font-mono font-bold text-white/70 shrink-0">x{item.Quantity}</span>
             </div>
           ))}
         </div>
