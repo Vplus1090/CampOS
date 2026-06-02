@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Download, ChevronDown } from 'lucide-react';
+import { Download, ChevronDown } from 'lucide-react';
+import M3ScreenHeader from './M3ScreenHeader';
 
 export default function StudyMaterials({ setActiveTab, initialBranch, initialSemester }) {
   const [shelfBranch, setShelfBranch] = useState(initialBranch || 'All Branches');
@@ -118,122 +119,83 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
     }, 1500);
   };
 
+  const goBack = () => setActiveTab && setActiveTab('home');
+
   return (
-    <div className="relative flex flex-col h-full max-h-full overflow-hidden font-sans text-[#e6e1e5] select-none study-materials-dashboard bg-[#181125]">
-      
-      {/* M3 Large Top App Bar */}
-      <header className={`absolute top-0 left-0 right-0 z-20 flex flex-col px-6 transition-all duration-300 ease-in-out overflow-hidden ${
-        isScrolled 
-          ? 'h-[96px] pt-[26px] bg-[#292035] shadow-md justify-start' 
-          : 'h-[180px] bg-transparent justify-start pt-[26px]'
-      }`}>
-        {/* Top Row: Navigation (No Action Icons) */}
-        <div className="flex items-center justify-start w-full h-11 shrink-0">
-          <button
-            onClick={() => setActiveTab && setActiveTab('home')}
-            className="w-11 h-11 bg-[#292035] hover:bg-[#352a48] border border-white/10 text-[#d0bcff] rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-sm cursor-pointer shrink-0"
-            type="button"
-          >
-            <span className="text-xl font-bold">&larr;</span>
-          </button>
-          
-          {/* Small Header Title (Scrolled state) */}
-          <span className={`text-[20px] pl-3.5 font-medium text-[#e6e1e5] leading-none tracking-tight font-sans transition-all duration-300 ${
-            isScrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'
-          }`}>
-            Study Shelf
-          </span>
-        </div>
+    <div className="m3-screen study-materials-dashboard">
+      <M3ScreenHeader
+        title="Study Shelf"
+        subtitle="Books, tutorials & PYQs"
+        isScrolled={isScrolled}
+        onBack={goBack}
+      />
 
-        {/* Bottom Area: Large Headline & Subtitle (At-rest state) */}
-        <div className={`mt-3 pl-3.5 text-left transition-all duration-200 ${
-          isScrolled ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'
-        }`}>
-          <h1 className="text-[28px] font-normal leading-tight text-[#e6e1e5] tracking-tight font-sans">
-            Study Shelf
-          </h1>
-          <p className="text-[12px] text-[#cac4d0] mt-1 font-medium tracking-wide font-sans">
-            Books, Tutorials & PYQs
-          </p>
-        </div>
-      </header>
-
-      {/* Scrollable Content Wrapper */}
-      <div 
-        onScroll={handleScroll}
-        className="flex-1 pb-8 px-6 flex flex-col gap-6 overflow-y-auto scrollbar-none pt-[188px]"
-      >
-        {/* Nearest upcoming exam clock widget placed cleanly at the top */}
+      <div onScroll={handleScroll} className="m3-screen__scroll" style={{ paddingBottom: 32 }}>
         {nextExam && (
-          <div className="bg-[#211a30]/40 border border-[#483c5e]/50 rounded-[20px] px-5 py-3.5 flex items-center gap-3 shadow-sm w-full justify-between shrink-0">
+          <div className="m3-surface-card shrink-0 flex items-center justify-between gap-3">
             <div className="flex flex-col text-left">
-              <span className="text-[10px] font-bold text-[#cac4d0] uppercase tracking-widest font-sans leading-none">Upcoming Exam: {nextExam.name}</span>
-              <span className="text-base font-bold tracking-wider text-[#eaddff] mt-1.5">
+              <span className="m3-body-small font-bold uppercase tracking-widest">Upcoming: {nextExam.name}</span>
+              <span className="m3-title-medium text-m3-onPrimaryContainer mt-1.5" style={{ color: 'var(--m3-on-primary-container)' }}>
                 {nextExamCountdown}
               </span>
             </div>
             <span className="relative flex w-2 h-2">
-              <span className="absolute inline-flex w-full h-full bg-[#d0bcff]/40 rounded-full opacity-75 animate-ping"></span>
-              <span className="relative inline-flex w-2 h-2 bg-[#d0bcff] rounded-full"></span>
+              <span className="absolute inline-flex w-full h-full bg-m3-primary/40 rounded-full opacity-75 animate-ping" />
+              <span className="relative inline-flex w-2 h-2 bg-m3-primary rounded-full" />
             </span>
           </div>
         )}
 
-        {/* Dropdown Filters Row */}
         <div className="grid grid-cols-2 gap-4 shrink-0">
           <div className="flex flex-col gap-1.5 text-left">
-            <span className="text-[#cac4d0] text-[11px] font-medium uppercase tracking-wider pl-1">Branch</span>
-            <div className="relative w-full">
+            <span className="m3-body-small font-medium uppercase tracking-wider pl-1">Branch</span>
+            <div className="m3-select-wrap">
               <select
                 value={shelfBranch}
                 onChange={(e) => setShelfBranch(e.target.value)}
-                className="w-full bg-[#292035] hover:bg-[#352a48] border border-[#483c5e]/60 rounded-[16px] px-4 py-3.5 text-xs text-[#e6e1e5] font-semibold outline-none focus:border-[#948baf] cursor-pointer appearance-none transition-all duration-300"
+                className="m3-select"
               >
-                <option className="bg-[#292035] text-[#e6e1e5]" value="All Branches">All Branches</option>
-                <option className="bg-[#292035] text-[#e6e1e5]" value="Computer Science">Computer Science</option>
-                <option className="bg-[#292035] text-[#e6e1e5]" value="Electronics & Communication">Electronics & Communication</option>
-                <option className="bg-[#292035] text-[#e6e1e5]" value="Information Technology">Information Technology</option>
-                <option className="bg-[#292035] text-[#e6e1e5]" value="Biotechnology">Biotechnology</option>
+                <option value="All Branches">All Branches</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Electronics & Communication">Electronics & Communication</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Biotechnology">Biotechnology</option>
               </select>
-              <div className="absolute -translate-y-1/2 pointer-events-none text-[#d0bcff] right-4 top-1/2">
+              <div className="absolute -translate-y-1/2 pointer-events-none text-m3-primary right-4 top-1/2">
                 <ChevronDown size={14} />
               </div>
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <span className="text-[#cac4d0] text-[11px] font-medium uppercase tracking-wider pl-1">Semester</span>
-            <div className="relative w-full">
+            <span className="m3-body-small font-medium uppercase tracking-wider pl-1">Semester</span>
+            <div className="m3-select-wrap">
               <select
                 value={shelfSemester}
                 onChange={(e) => setShelfSemester(e.target.value)}
-                className="w-full bg-[#292035] hover:bg-[#352a48] border border-[#483c5e]/60 rounded-[16px] px-4 py-3.5 text-xs text-[#e6e1e5] font-semibold outline-none focus:border-[#948baf] cursor-pointer appearance-none transition-all duration-300"
+                className="m3-select"
               >
-                <option className="bg-[#292035] text-[#e6e1e5]" value="All Semesters">All Semesters</option>
+                <option value="All Semesters">All Semesters</option>
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <option className="bg-[#292035] text-[#e6e1e5]" key={i} value={`Semester ${i + 1}`}>Semester {i + 1}</option>
+                  <option key={i} value={`Semester ${i + 1}`}>Semester {i + 1}</option>
                 ))}
               </select>
-              <div className="absolute -translate-y-1/2 pointer-events-none text-[#d0bcff] right-4 top-1/2">
+              <div className="absolute -translate-y-1/2 pointer-events-none text-m3-primary right-4 top-1/2">
                 <ChevronDown size={14} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* M3 Segmented Button / Filters Row */}
         <div className="flex flex-wrap gap-2 py-1 shrink-0">
           {['All', 'Notes', 'Tutorials', 'PYQs', 'Books'].map((cat) => {
             const isActive = shelfCategory === cat;
             return (
               <button
                 key={cat}
+                type="button"
                 onClick={() => setShelfCategory(cat)}
-                className={`px-4 py-2 rounded-[8px] text-[11px] font-bold uppercase tracking-wider transition-all duration-300 border ${
-                  isActive
-                    ? 'bg-[#4f378b] text-[#eaddff] border-[#948baf]/30 shadow-sm'
-                    : 'bg-transparent hover:bg-[#352a48]/20 text-[#cac4d0] border-[#483c5e]/60 cursor-pointer'
-                }`}
+                className={`m3-filter-chip ${isActive ? 'm3-filter-chip--selected' : ''}`}
               >
                 {cat}
               </button>
@@ -247,51 +209,42 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
             filteredMaterials.map((course) => {
               const isDownloading = downloadingId === course.code;
               return (
-                <div
+                <article
                   key={course.code}
-                  className="bg-[#211a30]/40 border border-[#483c5e]/50 rounded-[24px] p-5 flex items-center justify-between transition-all duration-300 hover:border-[#483c5e] group"
+                  className="m3-surface-card flex items-center justify-between gap-3"
                 >
-                  <div className="flex flex-col gap-1 pr-4 text-left items-start">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-[#292035] border border-[#483c5e]/40 text-[#d0bcff] text-[10px] font-semibold px-2 py-0.5 rounded-[6px] tracking-wide font-sans">
-                        {course.code}
-                      </span>
-                      <span className="text-[10px] font-bold text-[#cac4d0]/70 uppercase tracking-widest">
-                        {course.type}
-                      </span>
+                  <div className="flex flex-col gap-1 pr-4 text-left items-start min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="m3-assist-chip text-[10px] py-0.5">{course.code}</span>
+                      <span className="m3-body-small font-bold uppercase tracking-widest opacity-70">{course.type}</span>
                     </div>
-                    <span className="text-base font-bold text-[#e6e1e5] leading-snug mt-1.5">
-                      {course.name}
-                    </span>
-                    <span className="text-xs text-[#cac4d0]/60 font-medium mt-1">
+                    <span className="m3-title-medium leading-snug mt-1">{course.name}</span>
+                    <span className="m3-body-small mt-1 opacity-80">
                       {course.branch} • {course.semester} • {course.size}
                     </span>
                   </div>
 
-                  {/* Interactive M3 Outlined Button */}
                   <button
+                    type="button"
                     onClick={() => handleDownload(course)}
                     disabled={isDownloading}
-                    className={`p-3 rounded-[12px] border transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 ${
-                      isDownloading
-                        ? 'bg-[#292035] border-[#483c5e] text-[#cac4d0]/50'
-                        : 'bg-[#292035] border-[#483c5e] text-[#d0bcff] hover:bg-[#352a48] active:scale-90'
-                    }`}
+                    className="m3-icon-button"
+                    aria-label={`Download ${course.code}`}
                   >
                     {isDownloading ? (
-                      <div className="w-5 h-5 border-2 rounded-full border-[#d0bcff] border-t-transparent animate-spin" />
+                      <div className="w-5 h-5 border-2 rounded-full border-m3-primary border-t-transparent animate-spin" />
                     ) : (
                       <Download size={18} />
                     )}
                   </button>
-                </div>
+                </article>
               );
             })
           ) : (
-            <div className="bg-[#211a30]/40 border border-[#483c5e]/50 rounded-[24px] p-12 text-center flex flex-col items-center justify-center shrink-0">
-              <span className="mb-3 text-4xl text-[#d0bcff]/40">🔍</span>
-              <h3 className="text-base font-bold text-[#e6e1e5]">No materials found</h3>
-              <p className="mt-1 text-sm text-[#cac4d0]/60">Try adjusting your filters or search query.</p>
+            <div className="m3-surface-card p-12 text-center flex flex-col items-center justify-center shrink-0">
+              <span className="mb-3 text-4xl opacity-40">🔍</span>
+              <h3 className="m3-title-medium">No materials found</h3>
+              <p className="m3-body-small mt-1">Try adjusting your filters.</p>
             </div>
           )}
         </div>

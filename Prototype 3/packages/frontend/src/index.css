@@ -1,16 +1,18 @@
+@import './styles/m3-expressive.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: var(--m3-font);
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: dark;
-  color: #e6e1e5; /* M3 Dark onSurface */
-  background: #181125; /* M3 Dark Lavender Surface */
+  color: var(--m3-on-surface);
+  background: var(--m3-surface);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -23,7 +25,8 @@
 
 body {
   margin: 0;
-  background-color: #181125; /* Lavender tinted dark background */
+  background-color: var(--m3-surface);
+  font-family: var(--m3-font);
 }
 
 #root {
@@ -49,11 +52,11 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Metro home screen — full viewport, growing button grid */
+/* Metro home screen — M3 expressive tiles */
 .home-screen {
-  --home-bg: #120d1c;
-  --home-pill: #d1c4e9;
-  --home-pill-hover: #ddd0f0;
+  --home-bg: var(--m3-home-surface);
+  --home-pill: var(--m3-primary);
+  --home-pill-hover: #e8deff;
   --home-pill-active: #c4b5e2;
   --home-gap: 10px;
   --home-pad-x: 20px;
@@ -89,19 +92,19 @@ body {
 
 .home-screen__welcome {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 500;
   line-height: 1.2;
-  color: #fff;
+  color: var(--m3-on-surface);
 }
 
 .home-screen__name {
   margin: 4px 0 0;
-  font-size: clamp(32px, 8vw, 38px);
+  font-size: clamp(2rem, 8vw, 2.375rem);
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: var(--m3-on-surface);
 }
 
 .home-screen__logout {
@@ -111,14 +114,16 @@ body {
   border: none;
   border-radius: 50%;
   background: var(--home-pill);
-  color: #000;
+  color: var(--m3-on-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-  transition: background 0.15s ease, transform 0.12s ease;
+  transition:
+    background var(--m3-duration-short) var(--m3-ease-standard),
+    transform var(--m3-duration-short) var(--m3-ease-spring);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -174,7 +179,7 @@ body {
   border: none;
   border-radius: var(--home-radius-round);
   background: var(--home-pill);
-  color: #000;
+  color: var(--m3-on-primary);
   font-size: clamp(15px, 2.5vh, 20px);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -184,7 +189,9 @@ body {
   justify-content: center;
   padding: 0 1em;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-  transition: background 0.15s ease, transform 0.12s ease;
+  transition:
+    background var(--m3-duration-short) var(--m3-ease-standard),
+    transform var(--m3-duration-short) var(--m3-ease-spring);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   position: relative;
@@ -348,16 +355,12 @@ body {
 /* Match phone frame background (removes “inner box” on desktop preview) */
 .mobile-screen-viewport:has(.home-screen),
 .mobile-device-simulator:has(.home-screen) {
-  background-color: #120d1c;
+  background-color: var(--m3-home-surface);
 }
 
-.mobile-screen-viewport:has(.mess-menu-dashboard),
-.mobile-screen-viewport:has(.study-materials-dashboard),
-.mobile-screen-viewport:has(.academic-calendar-dashboard),
-.mobile-device-simulator:has(.mess-menu-dashboard),
-.mobile-device-simulator:has(.study-materials-dashboard),
-.mobile-device-simulator:has(.academic-calendar-dashboard) {
-  background-color: #181125;
+.mobile-screen-viewport:has(.m3-screen),
+.mobile-device-simulator:has(.m3-screen) {
+  background-color: var(--m3-surface);
 }
 
 /* Mobile device frame simulation */
@@ -366,7 +369,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #0f0918; /* M3 Surface Container Lowest Lavender (dark) */
+  background-color: var(--m3-surface-container-lowest);
   padding: 20px;
   box-sizing: border-box;
 }
@@ -377,12 +380,12 @@ body {
   height: 88vh;
   max-height: 880px;
   min-height: 760px;
-  background-color: #181125; /* M3 Dark Lavender Surface */
+  background-color: var(--m3-surface);
   border-radius: 40px; 
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.05);
-  border: 8.5px solid #352a48; /* Sleek lavender-tinted bezel */
+  border: 8.5px solid var(--m3-surface-container-highest);
   overflow: hidden;
   position: relative;
   display: flex;

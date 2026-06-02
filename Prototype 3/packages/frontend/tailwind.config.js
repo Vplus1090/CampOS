@@ -38,8 +38,23 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['system-ui', 'Roboto', 'sans-serif'],
-      }
+        sans: ['Roboto Flex', 'Roboto', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        'm3-sm': '12px',
+        'm3-md': '16px',
+        'm3-lg': '20px',
+        'm3-xl': '28px',
+        'm3-2xl': '32px',
+      },
+      boxShadow: {
+        'm3-1': '0 1px 3px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2)',
+        'm3-2': '0 4px 12px rgba(0, 0, 0, 0.32)',
+      },
+      transitionTimingFunction: {
+        'm3-standard': 'cubic-bezier(0.2, 0, 0, 1)',
+        'm3-spring': 'cubic-bezier(0.34, 1.25, 0.64, 1)',
+      },
     },
   },
   plugins: [],

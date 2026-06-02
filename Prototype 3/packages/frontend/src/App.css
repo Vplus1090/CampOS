@@ -54,13 +54,13 @@
 /* Home: full-bleed — no inset padding or gradient “card” behind the grid */
 .campos-dashboard--home {
   padding: 0;
-  background: #120d1c;
+  background: var(--m3-home-surface);
 }
 
-/* Mess, Shelf, Calendar, etc. — edge-to-edge like lockscreen guest overlays */
+/* Mess, Shelf, Calendar, etc. — edge-to-edge M3 expressive shell */
 .campos-dashboard--immersive {
   padding: 0;
-  background: #181125;
+  background: var(--m3-surface);
 }
 
 /* ─── Dashboard Glowing Header & Stats ─────────────────────────────────────────── */

@@ -275,7 +275,7 @@ export default function LockScreen({ onLoginSuccess }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full h-[56px] bg-[#292035] rounded-[18px] px-5 text-base text-m3-onSurface outline-none transition-all focus:ring-2 focus:ring-m3-primary/20"
+              className="m3-filled-field"
             />
           </div>
 
@@ -291,7 +291,7 @@ export default function LockScreen({ onLoginSuccess }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full h-[56px] bg-[#292035] rounded-[18px] px-5 pr-12 text-base text-m3-onSurface outline-none transition-all focus:ring-2 focus:ring-m3-primary/20"
+                className="m3-filled-field pr-12"
               />
               <button
                 type="button"
@@ -321,7 +321,7 @@ export default function LockScreen({ onLoginSuccess }) {
             whileTap={{ scale: 0.96 }}
             type="submit"
             disabled={submitting}
-            className="w-full mt-3 h-20 bg-[#d0bcff] text-[#381e72] hover:bg-[#d0bcff]/95 disabled:opacity-50 disabled:pointer-events-none transition-colors font-bold text-lg rounded-[20px] shadow-sm flex items-center justify-center gap-2"
+            className="m3-filled-button w-full mt-3 !min-h-[72px] !text-lg disabled:opacity-50 disabled:pointer-events-none"
           >
             {submitting ? (
               <div className="flex items-center gap-3">
@@ -340,7 +340,7 @@ export default function LockScreen({ onLoginSuccess }) {
             whileTap={{ scale: 0.92 }}
             type="button"
             onClick={() => setShowGuestMess(true)}
-            className="w-14 h-14 flex items-center justify-center bg-[#292035] text-[#d0bcff] hover:bg-[#352a48] rounded-full transition-all shadow-sm border border-white/5"
+            className="m3-icon-button !w-14 !h-14"
           >
             <Utensils size={20} />
           </motion.button>
@@ -349,7 +349,7 @@ export default function LockScreen({ onLoginSuccess }) {
             whileTap={{ scale: 0.92 }}
             type="button"
             onClick={() => setShowGuestCalendar(true)}
-            className="w-14 h-14 flex items-center justify-center bg-[#292035] text-[#d0bcff] hover:bg-[#352a48] rounded-full transition-all shadow-sm border border-white/5"
+            className="m3-icon-button !w-14 !h-14"
           >
             <Calendar size={20} />
           </motion.button>
@@ -362,7 +362,7 @@ export default function LockScreen({ onLoginSuccess }) {
               setSetupSemester('Semester 1');
               setShowShelfSetup(true);
             }}
-            className="w-14 h-14 flex items-center justify-center bg-[#292035] text-[#d0bcff] hover:bg-[#352a48] rounded-full transition-all shadow-sm border border-white/5"
+            className="m3-icon-button !w-14 !h-14"
           >
             <BookOpen size={20} />
           </motion.button>
