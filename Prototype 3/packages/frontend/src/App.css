@@ -53,13 +53,13 @@
 
 /* Home: full-bleed — no inset padding or gradient “card” behind the grid */
 .campos-dashboard--home {
-  padding: 0;
+  padding: 0 !important;
   background: var(--m3-home-surface);
 }
 
 /* Mess, Shelf, Calendar, etc. — edge-to-edge M3 expressive shell */
 .campos-dashboard--immersive {
-  padding: 0;
+  padding: 0 !important;
   background: var(--m3-surface);
 }
 
@@ -2229,6 +2229,10 @@ input:checked + .slider:before {
   /* Scale down base layout */
   .campos-dashboard {
     padding: 20px 12px 0;
+  }
+  .campos-dashboard--home,
+  .campos-dashboard--immersive {
+    padding: 0 !important;
   }
 
   .brand-logo h1 {

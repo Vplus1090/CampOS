@@ -175,10 +175,16 @@
 
 .m3-top-app-bar--collapsed {
   height: 96px;
-  background: color-mix(in srgb, var(--m3-surface-container-high) 80%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--m3-surface-container-high);
   box-shadow: var(--m3-elevation-1);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .m3-top-app-bar--collapsed {
+    background: color-mix(in srgb, var(--m3-surface-container-high) 80%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
 }
 
 .m3-top-app-bar__row {
