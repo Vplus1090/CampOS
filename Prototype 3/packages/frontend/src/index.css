@@ -8,7 +8,9 @@
   --sans: var(--m3-font);
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
+  font-family: var(--sans);
+  font-size: 18px;
+  line-height: 145%;
   letter-spacing: 0.18px;
   color-scheme: dark;
   color: var(--m3-on-surface);
@@ -55,9 +57,9 @@ body {
 /* Metro home screen — M3 expressive tiles */
 .home-screen {
   --home-bg: var(--m3-home-surface);
-  --home-pill: var(--m3-primary);
-  --home-pill-hover: #e8deff;
-  --home-pill-active: #c4b5e2;
+  --home-pill: var(--m3-surface-container-high);
+  --home-pill-hover: var(--m3-surface-container-highest);
+  --home-pill-active: var(--m3-surface-container-low);
   --home-gap: 10px;
   --home-pad-x: 20px;
   --home-radius-pill: 9999px;
@@ -87,23 +89,23 @@ body {
 .home-screen__titles {
   min-width: 0;
   flex: 1;
-  text-align: left;
+  text-align: center;
 }
 
 .home-screen__welcome {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   line-height: 1.2;
-  color: var(--m3-on-surface);
+  color: var(--m3-on-surface-variant);
 }
 
 .home-screen__name {
-  margin: 4px 0 0;
-  font-size: clamp(2rem, 8vw, 2.375rem);
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  margin: 2px 0 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
   color: var(--m3-on-surface);
 }
 
@@ -114,7 +116,7 @@ body {
   border: none;
   border-radius: 50%;
   background: var(--home-pill);
-  color: var(--m3-on-primary);
+  color: var(--m3-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -179,7 +181,7 @@ body {
   border: none;
   border-radius: var(--home-radius-round);
   background: var(--home-pill);
-  color: var(--m3-on-primary);
+  color: var(--m3-primary);
   font-size: clamp(15px, 2.5vh, 20px);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -218,7 +220,7 @@ body {
 }
 
 .home-pill--shape-squircle {
-  border-radius: var(--home-radius-soft);
+  border-radius: var(--home-radius-pill);
   padding: 0;
 }
 
@@ -419,6 +421,125 @@ select::-ms-expand {
   display: none !important;
 }
 
+/* Enforce premium Google Sans Flex font globally, including for buttons and form elements */
+html,
+body,
+button,
+input,
+select,
+textarea,
+.font-sans {
+  font-family: "Google Sans Flex", "Roboto Flex", Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
 
+/* ─── Bouncy entrance animations ───────────────────────────────────────────── */
+@keyframes m3-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translateY(10px);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.025) translateY(-3px);
+  }
+  78% {
+    transform: scale(0.995) translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
 
+@keyframes m3-pill-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  78% {
+    transform: scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes m3-header-slide {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Home screen entrance */
+.home-screen {
+  animation: m3-bounce-in 0.45s var(--m3-ease-spring) both;
+}
+
+.home-screen__header {
+  animation: m3-header-slide 0.4s var(--m3-ease-spring) 0.05s both;
+}
+
+.home-screen__chips {
+  animation: m3-bounce-in 0.4s var(--m3-ease-spring) 0.08s both;
+}
+
+/* Staggered pill entrance on the home grid */
+.home-screen__grid .home-pill {
+  animation: m3-pill-pop 0.38s var(--m3-ease-spring) both;
+}
+.home-screen__grid .home-pill:nth-child(1) { animation-delay: 0.06s; }
+.home-screen__grid .home-pill:nth-child(2) { animation-delay: 0.10s; }
+.home-screen__grid .home-pill:nth-child(3) { animation-delay: 0.14s; }
+.home-screen__grid .home-pill:nth-child(4) { animation-delay: 0.18s; }
+.home-screen__grid .home-pill:nth-child(5) { animation-delay: 0.22s; }
+.home-screen__grid .home-pill:nth-child(6) { animation-delay: 0.26s; }
+.home-screen__grid .home-pill:nth-child(7) { animation-delay: 0.30s; }
+.home-screen__grid .home-pill:nth-child(8) { animation-delay: 0.34s; }
+
+/* M3 screen entrances (Notices, Timetable, Mess, etc.) */
+.m3-screen {
+  animation: m3-bounce-in 0.45s var(--m3-ease-spring) both;
+}
+
+/* Module screen entrances (Canteen, SkillSwap, PeerChat, StudentDashboard) */
+.canteen-dashboard,
+.skillgigs-module,
+.peer-chat-container,
+.student-dashboard-shell {
+  animation: m3-bounce-in 0.45s var(--m3-ease-spring) both;
+}
+
+/* Immersive overlay screen entrances (Payment, QR Pass, Success) */
+.campos-dashboard > main > div[class*="absolute inset-0"] {
+  animation: m3-bounce-in 0.4s var(--m3-ease-spring) both;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .home-screen,
+  .home-screen__header,
+  .home-screen__chips,
+  .home-screen__grid .home-pill,
+  .m3-screen,
+  .canteen-dashboard,
+  .skillgigs-module,
+  .peer-chat-container,
+  .student-dashboard-shell {
+    animation: none !important;
+  }
+}
 

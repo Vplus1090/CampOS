@@ -112,53 +112,36 @@ export default function AcademicCalendar({ setActiveTab }) {
         onBack={goBack}
       />
 
-      <div onScroll={handleScroll} className="m3-screen__scroll space-y-6" style={{ paddingBottom: 32 }}>
+      <div onScroll={handleScroll} className="m3-screen__scroll !gap-3" style={{ paddingBottom: 32 }}>
         {calendarEvents.map((event, idx) => {
           return (
-            <div key={idx} className="flex gap-5 relative">
-              {/* Timeline Indicator Column */}
-              <div className="flex flex-col items-center w-6 shrink-0 relative">
-                {/* Vertical Line Segments */}
-                {idx > 0 && <div className="absolute top-0 w-[2px] bg-[#483c5e]/30 h-[44px] left-1/2 -translate-x-1/2" />}
-                {idx < calendarEvents.length - 1 && <div className="absolute top-[44px] bottom-0 w-[2px] bg-[#483c5e]/30 left-1/2 -translate-x-1/2" />}
-                
-                {/* Timeline Dot Marker */}
-                <div
-                  className="w-[12px] h-[12px] rounded-full bg-m3-primary z-10 mt-[38px]"
-                  style={{ border: '2px solid var(--m3-surface)', boxShadow: '0 0 8px rgba(208,188,255,0.4)' }}
-                />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <article className="m3-surface-card flex flex-col gap-4 text-left">
-                  <div
-                    className="flex items-center gap-3.5 w-full pb-3.5"
-                    style={{ borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 35%, transparent)' }}
-                  >
-                    <div className="m3-icon-badge">
-                      <GraduationCap size={20} />
-                    </div>
-                    <h4 className="m3-title-medium flex-1">{event.category}</h4>
-                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                      {event.tags.map((tag) => (
-                        <span key={tag} className="m3-assist-chip text-[10px] py-0.5 uppercase">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <p className="m3-body-medium m3-text-variant leading-relaxed pr-2">{event.desc}</p>
-
-                  <div className="flex justify-start">
-                    <span className="m3-assist-chip gap-2 inline-flex">
-                      <Calendar size={12} className="text-m3-primary shrink-0" />
-                      <span className="text-[11px] font-medium tracking-wide uppercase">{event.date}</span>
+            <article key={idx} className="m3-surface-card flex flex-col gap-4 text-left">
+              <div
+                className="flex items-center gap-3.5 w-full pb-3.5"
+                style={{ borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 35%, transparent)' }}
+              >
+                <div className="m3-icon-badge">
+                  <GraduationCap size={20} />
+                </div>
+                <h4 className="m3-title-medium flex-1">{event.category}</h4>
+                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                  {event.tags.map((tag) => (
+                    <span key={tag} className="m3-assist-chip text-[10px] py-0.5 uppercase">
+                      {tag}
                     </span>
-                  </div>
-                </article>
+                  ))}
+                </div>
               </div>
-            </div>
+
+              <p className="m3-body-medium m3-text-variant leading-relaxed pr-2">{event.desc}</p>
+
+              <div className="flex justify-start">
+                <span className="m3-assist-chip gap-2 inline-flex">
+                  <Calendar size={12} className="text-m3-primary shrink-0" />
+                  <span className="text-[11px] font-medium tracking-wide uppercase">{event.date}</span>
+                </span>
+              </div>
+            </article>
           );
         })}
       </div>

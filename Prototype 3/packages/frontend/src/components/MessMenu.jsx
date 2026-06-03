@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, WifiOff, Sunrise, Sun, Moon } from 'lucide-react';
+import { QrCode, WifiOff, Sunrise, Sun, Moon, Calendar, CalendarDays } from 'lucide-react';
 import M3ScreenHeader from './M3ScreenHeader';
 
 export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) {
@@ -126,6 +126,32 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
             </button>
           ))}
 
+        {/* Filters */}
+        <div className="flex items-center justify-end w-full py-1 shrink-0 px-1">
+          <div className="m3-segmented-chips" role="tablist" aria-label="Menu view">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'daily'}
+              onClick={() => setViewMode('daily')}
+              className={`m3-segmented-chip ${viewMode === 'daily' ? 'm3-segmented-chip--selected' : ''}`}
+              title="Daily"
+            >
+              <Calendar size={18} />
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'weekly'}
+              onClick={() => setViewMode('weekly')}
+              className={`m3-segmented-chip ${viewMode === 'weekly' ? 'm3-segmented-chip--selected' : ''}`}
+              title="Weekly"
+            >
+              <CalendarDays size={18} />
+            </button>
+          </div>
+        </div>
+
         {viewMode === 'daily' ? (
           <div className="flex flex-col gap-4 shrink-0">
             {dailyMenu.map((meal) => (
@@ -176,29 +202,6 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
             </div>
           </div>
         )}
-      </div>
-
-      <div className="m3-segmented-fab">
-        <div className="m3-segmented" role="tablist" aria-label="Menu view">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={viewMode === 'daily'}
-            onClick={() => setViewMode('daily')}
-            className={`m3-segmented__option ${viewMode === 'daily' ? 'm3-segmented__option--selected' : ''}`}
-          >
-            Daily
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={viewMode === 'weekly'}
-            onClick={() => setViewMode('weekly')}
-            className={`m3-segmented__option ${viewMode === 'weekly' ? 'm3-segmented__option--selected' : ''}`}
-          >
-            Weekly
-          </button>
-        </div>
       </div>
     </div>
   );

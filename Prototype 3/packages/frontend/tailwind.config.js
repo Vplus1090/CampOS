@@ -38,7 +38,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Roboto Flex', 'Roboto', 'system-ui', 'sans-serif'],
+        sans: ['"Google Sans Flex"', '"Roboto Flex"', 'Roboto', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'm3-sm': '12px',

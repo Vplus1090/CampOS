@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  ArrowLeft, Clock, Calendar, BookOpen, AlertTriangle, 
-  Sparkles, RefreshCw, MapPin, User, Users, FileText, SlidersHorizontal,
-  ChevronDown
+  MapPin, User, Users, SlidersHorizontal,
+  ChevronDown, Sparkles, RefreshCw
 } from 'lucide-react';
-import { getUsername, getFromCache, saveToCache } from '../utils/cache';
+import M3ScreenHeader from './M3ScreenHeader';
 
-// Premium ultra-glassy frosted card styles
-const obsidianCardClass = "border border-white/[0.08] bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl rounded-[28px] p-5 relative overflow-hidden transition-all duration-300";
-const obsidianCardHoverClass = "hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.1)]";
-
+// Weekdays
 const weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 // Time converter to helper minutes
@@ -47,8 +43,12 @@ export default function Timetable({ currentUser, setActiveTab }) {
   const [selectedBatch, setSelectedBatch] = useState('g2');
   const [showFilters, setShowFilters] = useState(true);
 
-  const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
-  const [lastScrollTop, setLastScrollTop] = useState(0);
+  // Scroll detection state
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = (e) => {
+    setIsScrolled(e.target.scrollTop > 10);
+  };
 
   // Fetch CDN database on mount
   useEffect(() => {
@@ -130,25 +130,8 @@ export default function Timetable({ currentUser, setActiveTab }) {
     }
   }, [selectedPhase, selectedSemester, selectedCourse, dbMeta]);
 
-  // Scroll callback to minimize header
-  const handleScroll = (e) => {
-    const currentScrollTop = e.target.scrollTop;
-    if (currentScrollTop <= 5) {
-      setIsHeaderMinimized(false);
-      setLastScrollTop(0);
-      return;
-    }
-    if (Math.abs(currentScrollTop - lastScrollTop) < 8) return;
-    if (currentScrollTop > lastScrollTop) {
-      setIsHeaderMinimized(true);
-    } else {
-      setIsHeaderMinimized(false);
-    }
-    setLastScrollTop(currentScrollTop);
-  };
-
   // Fetch current batch timeline classes
-  const getDisplayEvents = () => {
+  const displayEvents = useMemo(() => {
     if (!dbClasses) return [];
     const classKey = `${selectedCourse}_${selectedSemester}_${selectedPhase}_${selectedBatch}`;
     const batchObj = dbClasses[classKey];
@@ -166,14 +149,12 @@ export default function Timetable({ currentUser, setActiveTab }) {
       typeLabel: ev.type === 'P' ? 'Practical' : ev.type === 'T' ? 'Tutorial' : 'Lecture',
       batches: ev.batches ? ev.batches.join(', ') : '',
     })).sort((a, b) => getMinutes(a.start) - getMinutes(b.start));
-  };
-
-  const displayEvents = getDisplayEvents();
+  }, [dbClasses, selectedCourse, selectedSemester, selectedPhase, selectedBatch, selectedDay]);
 
   // Dynamic Breaks in the Day Calculator
-  const getTimelineBreaks = () => {
+  const breaks = useMemo(() => {
     if (displayEvents.length < 2) return [];
-    const breaks = [];
+    const calculatedBreaks = [];
     for (let i = 0; i < displayEvents.length - 1; i++) {
       const endMin = getMinutes(displayEvents[i].end);
       const startMin = getMinutes(displayEvents[i+1].start);
@@ -195,16 +176,14 @@ export default function Timetable({ currentUser, setActiveTab }) {
         if (hr > 0) durationStr += `${hr} hr `;
         if (mn > 0) durationStr += `${mn} min`;
         
-        breaks.push({
+        calculatedBreaks.push({
           timeRange: `${formatTime(endMin)} - ${formatTime(startMin)}`,
           duration: durationStr.trim()
         });
       }
     }
-    return breaks;
-  };
-
-  const breaks = getTimelineBreaks();
+    return calculatedBreaks;
+  }, [displayEvents]);
 
   const getBatchName = () => {
     if (!dbMeta) return '';
@@ -213,304 +192,247 @@ export default function Timetable({ currentUser, setActiveTab }) {
   };
 
   return (
-    <div className="relative flex flex-col h-full max-h-full gap-4 pb-8 overflow-hidden font-sans text-white select-none timetable-dashboard bg-transparent">
-      
-      {/* ─── Collapsible Header (Fixed Spacing & Padding) ─── */}
-      <div 
-        className={`transition-all duration-500 ease-in-out overflow-hidden flex flex-col shrink-0 ${
-          isHeaderMinimized 
-            ? 'max-h-0 opacity-0 scale-95 pointer-events-none mb-0 mt-0 pb-0 pt-0' 
-            : 'max-h-[160px] opacity-100 scale-100 mb-1 mt-2 border-b border-white/10 pb-3'
-        }`}
-      >
-        <header className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-3.5 text-left">
-            <button
-              onClick={() => setActiveTab('home')}
-              className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-              type="button"
-            >
-              <span className="text-xl font-bold">&larr;</span>
-            </button>
-            <h2 className="text-[22px] italic font-normal text-white leading-none flex items-center gap-2 translate-y-[2px] tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Timetable
-            </h2>
-          </div>
+    <div className="m3-screen timetable-dashboard">
+      <M3ScreenHeader
+        title="Timetable"
+        subtitle="Lecture schedule & venue details"
+        isScrolled={isScrolled}
+        onBack={() => setActiveTab('home')}
+      />
 
-          <div className="flex items-center shrink-0">
-            {/* Filter Toggle Button */}
+      <div onScroll={handleScroll} className="m3-screen__scroll">
+        {/* Dynamic header row with filters toggle */}
+        <div className="flex justify-end items-center w-full px-1 mb-2 shrink-0">
+          {dbMeta && (
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`w-11 h-11 rounded-full border flex items-center justify-center transition duration-300 active:scale-90 cursor-pointer ${
-                showFilters 
-                  ? 'bg-white text-[#141a27] border-white' 
-                  : 'bg-white/[0.04] border-white/10 text-slate-300 hover:text-white'
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-1.5 shadow-sm cursor-pointer ${
+                showFilters
+                  ? 'bg-[#d0bcff] text-[#381e72]'
+                  : 'bg-[#292035] hover:bg-[#352a48] text-[#d0bcff]'
               }`}
               type="button"
-              title="Filter options"
             >
-              <SlidersHorizontal size={14} />
+              <SlidersHorizontal size={12} />
+              <span>{showFilters ? 'Hide Filters' : 'Filters'}</span>
             </button>
-          </div>
-        </header>
-      </div>
+          )}
+        </div>
 
-      {/* ─── Dynamic Filters Panel (Exactly replicating JPoop design) ─── */}
-      {showFilters && dbMeta && (
-        <div className="w-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl rounded-[24px] p-4 flex flex-col gap-3.5 shrink-0 text-left select-none">
-          
-          {/* 1. Day Selector Row */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Day</span>
-            <div className="w-full overflow-x-auto scrollbar-none flex flex-row items-center gap-1.5">
-              {weekDays.map((day) => {
-                const isActive = selectedDay === day;
-                return (
-                  <button
-                    key={day}
-                    onClick={() => setSelectedDay(day)}
-                    className={`px-3.5 py-1.5 rounded-lg text-[10px] font-bold transition duration-300 leading-none shrink-0 border ${
-                      isActive 
-                        ? 'bg-white border-white text-black font-extrabold' 
-                        : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {day}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 2. Course Selector Row */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Course</span>
-            <div className="w-full flex flex-wrap gap-1.5">
-              {dbMeta.courses.map((c) => {
-                const isActive = selectedCourse === c.id;
-                return (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCourse(c.id)}
-                    className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition duration-300 leading-none border ${
-                      isActive 
-                        ? 'bg-white border-white text-black font-extrabold' 
-                        : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {c.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 3. Semester & Phase Selector Row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Semester</span>
-              <div className="flex gap-1.5">
-                {(dbMeta.semesters[selectedCourse] || []).map((sem) => {
-                  const isActive = selectedSemester === sem.id;
+        {/* Dynamic Filters Panel */}
+        {showFilters && dbMeta && (
+          <div className="w-full bg-[#211a30]/55 border border-[#483c5e]/30 backdrop-blur-xl rounded-[28px] p-5 flex flex-col gap-4 shrink-0 text-left select-none shadow-lg">
+            
+            {/* 1. Day Selector */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Day</span>
+              <div className="m3-segmented-chips flex-wrap gap-y-2">
+                {weekDays.map((day) => {
+                  const isActive = selectedDay === day;
                   return (
                     <button
-                      key={sem.id}
-                      onClick={() => setSelectedSemester(sem.id)}
-                      className={`w-9 h-9 rounded-lg text-[10px] font-black transition duration-300 flex items-center justify-center border ${
-                        isActive 
-                          ? 'bg-white border-white text-black font-extrabold font-mono' 
-                          : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:text-white'
+                      key={day}
+                      onClick={() => setSelectedDay(day)}
+                      className={`m3-segmented-chip m3-segmented-chip--sm ${
+                        isActive ? 'm3-segmented-chip--selected' : ''
                       }`}
+                      type="button"
                     >
-                      {sem.name}
+                      {day}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Phase</span>
-              <div className="flex gap-1.5">
-                {(dbMeta.phases[selectedCourse]?.[selectedSemester] || []).map((ph) => {
-                  const isActive = selectedPhase === ph.id;
+            {/* 2. Course Selector */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Course</span>
+              <div className="m3-segmented-chips flex-wrap">
+                {dbMeta.courses.map((c) => {
+                  const isActive = selectedCourse === c.id;
                   return (
                     <button
-                      key={ph.id}
-                      onClick={() => setSelectedPhase(ph.id)}
-                      className={`w-9 h-9 rounded-lg text-[10px] font-black transition duration-300 flex items-center justify-center border ${
-                        isActive 
-                          ? 'bg-white border-white text-black font-extrabold font-mono' 
-                          : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:text-white'
+                      key={c.id}
+                      onClick={() => setSelectedCourse(c.id)}
+                      className={`m3-segmented-chip m3-segmented-chip--sm ${
+                        isActive ? 'm3-segmented-chip--selected' : ''
                       }`}
+                      type="button"
                     >
-                      {ph.name}
+                      {c.name}
                     </button>
                   );
                 })}
               </div>
             </div>
-          </div>
 
-          {/* 4. Batch Selector Dropdown */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Batch</span>
-            <div className="relative w-full">
-              <select
-                value={selectedBatch}
-                onChange={(e) => setSelectedBatch(e.target.value)}
-                className="w-full pl-4 pr-10 py-2.5 bg-white/10 hover:bg-white/[0.15] border border-white/15 hover:border-white/25 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-white/35 transition cursor-pointer appearance-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl"
-              >
-                {(dbMeta.batches[selectedCourse]?.[selectedSemester]?.[selectedPhase] || []).map((b) => (
-                  <option className="bg-[#141a27] text-white" key={b.id} value={b.id}>{b.name}</option>
-                ))}
-              </select>
-              <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-4 top-1/2">
-                <ChevronDown size={14} />
-              </div>
-            </div>
-          </div>
-
-        </div>
-      )}
-
-      {/* Loader for DB Fetch */}
-      {loadingDb && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
-          <RefreshCw className="animate-spin text-white/60" size={24} />
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Syncing Planner Database...</span>
-        </div>
-      )}
-
-      {/* Main Layout containing Timeline & Breaks side-by-side / stacked */}
-      {!loadingDb && (
-        <div 
-          onScroll={handleScroll}
-          className="flex-1 pb-16 overflow-y-auto scrollbar-none flex flex-col gap-6"
-        >
-          
-          {/* Timeline Lectures Column (Standardized Flex Spacing to prevent clipping) */}
-          <div className="w-full flex flex-col gap-5 mt-1">
-            
-            {!showFilters && (
-              <span className="text-[10px] font-mono font-black text-white/60 uppercase tracking-widest text-left select-none pb-1.5 block leading-none pl-1">
-                Schedule for {selectedDay} • {getBatchName() || 'All Batches'}
-              </span>
-            )}
-            
-            {displayEvents.length === 0 ? (
-              <div className={`${obsidianCardClass} p-8 flex flex-col items-center justify-center gap-2.5 text-center select-none `}>
-                <div className="w-12 h-12 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white/70 shadow-md">
-                  <Sparkles size={20} className="" />
+            {/* 3. Semester & Phase Selector */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Semester</span>
+                <div className="m3-segmented-chips">
+                  {(dbMeta.semesters[selectedCourse] || []).map((sem) => {
+                    const isActive = selectedSemester === sem.id;
+                    return (
+                      <button
+                        key={sem.id}
+                        onClick={() => setSelectedSemester(sem.id)}
+                        className={`m3-segmented-chip m3-segmented-chip--sm min-w-[36px] justify-center ${
+                          isActive ? 'm3-segmented-chip--selected' : ''
+                        }`}
+                        type="button"
+                      >
+                        {sem.name}
+                      </button>
+                    );
+                  })}
                 </div>
-                <h4 className="text-xs text-slate-200 font-extrabold uppercase tracking-widest">Free Day!</h4>
-                <span className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-[220px]">
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Phase</span>
+                <div className="m3-segmented-chips">
+                  {(dbMeta.phases[selectedCourse]?.[selectedSemester] || []).map((ph) => {
+                    const isActive = selectedPhase === ph.id;
+                    return (
+                      <button
+                        key={ph.id}
+                        onClick={() => setSelectedPhase(ph.id)}
+                        className={`m3-segmented-chip m3-segmented-chip--sm min-w-[36px] justify-center ${
+                          isActive ? 'm3-segmented-chip--selected' : ''
+                        }`}
+                        type="button"
+                      >
+                        {ph.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Batch Selector Dropdown */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono pl-1">Batch</span>
+              <div className="m3-select-wrap">
+                <select
+                  value={selectedBatch}
+                  onChange={(e) => setSelectedBatch(e.target.value)}
+                  className="m3-select"
+                >
+                  {(dbMeta.batches[selectedCourse]?.[selectedSemester]?.[selectedPhase] || []).map((b) => (
+                    <option className="bg-[#1c1529] text-[#e6e1e5]" key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute -translate-y-1/2 pointer-events-none text-[#cac4d0] right-4 top-1/2">
+                  <ChevronDown size={16} />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* Database Loading State */}
+        {loadingDb && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
+            <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Syncing Timetable DB...</span>
+          </div>
+        )}
+
+        {/* Database Error State */}
+        {!loadingDb && dbError && (
+          <div className="m3-surface-card p-6 flex flex-col items-center gap-3 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-400">
+              <Sparkles size={24} />
+            </div>
+            <p className="text-sm font-semibold text-[#e6e1e5]">{dbError}</p>
+          </div>
+        )}
+
+        {/* Timetable Lectures */}
+        {!loadingDb && !dbError && (
+          <div className="w-full flex flex-col gap-4">
+            {displayEvents.length === 0 ? (
+              <div className="m3-surface-card p-8 flex flex-col items-center justify-center gap-3 text-center select-none">
+                <div className="w-12 h-12 rounded-2xl bg-[#4f378b]/30 flex items-center justify-center text-[#d0bcff] shadow-md">
+                  <Sparkles size={22} />
+                </div>
+                <h4 className="text-sm text-[#e6e1e5] font-extrabold uppercase tracking-widest">Free Day!</h4>
+                <span className="text-xs text-slate-400 font-medium leading-relaxed max-w-[240px]">
                   No classes scheduled for today. Explore other days or batches!
                 </span>
               </div>
             ) : (
-              displayEvents.map((item, idx) => {
-                return (
-                  <div key={idx} className="flex gap-4 items-stretch w-full text-left">
-                    
-                    {/* 1. Time Stamps Column */}
-                    <div className="w-[62px] shrink-0 flex flex-col justify-between py-1.5 text-right font-mono text-[9px] font-black text-slate-400 select-none">
-                      <span>{item.start}</span>
-                      <span>{item.end}</span>
-                    </div>
-
-                    {/* 2. Timeline Axis Line Column */}
-                    <div className="w-3 shrink-0 flex flex-col items-center relative py-1">
-                      {/* Top Dot node */}
-                      <div className="w-2.5 h-2.5 rounded-full border bg-[#050608] border-white/60 z-20 shrink-0" />
-                      {/* Continuous connecting thin line */}
-                      <div className="flex-1 w-[1px] bg-white/[0.08] my-0.5" />
-                      {/* Bottom Dot node */}
-                      <div className="w-2.5 h-2.5 rounded-full border bg-[#050608] border-white/60 z-20 shrink-0" />
-                    </div>
-
-                    {/* 3. Lecture detailed frosted card Column */}
-                    <div className="flex-1 min-w-0 pb-1">
-                      <div className={`${obsidianCardClass} ${obsidianCardHoverClass} p-5 flex flex-col gap-3.5`}>
-                        
-                        {/* Time duration header block */}
-                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-mono font-bold tracking-wider leading-none select-none">
-                          <Clock size={11} className="text-slate-400" />
-                          <span>{item.time}</span>
-                        </div>
-
-                        {/* Title of course */}
-                        <h4 className="text-sm font-extrabold text-white truncate leading-snug tracking-wide select-text">
-                          {item.subject}
-                        </h4>
-
-                        {/* Sub-badges row */}
-                        <div className="flex flex-wrap gap-2 items-center w-full pt-1">
-                          {/* Type Pill */}
-                          <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border flex items-center gap-1 leading-none shadow-sm capitalize ${
-                            item.type === 'lab' 
-                              ? 'bg-white/[0.08] border-white/20 text-white/70' 
-                              : item.type === 'tutorial'
-                                ? 'bg-white/[0.06] border-white/15 text-white/60'
-                                : 'bg-white/[0.04] border-white/10 text-white/50'
-                          }`}>
-                            <FileText size={9} />
-                            {item.typeLabel}
-                          </span>
-
-                          {/* Instructor Pill */}
-                          <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm truncate max-w-[120px]">
-                            <User size={9} className="text-slate-400" />
-                            {item.instructor}
-                          </span>
-
-                          {/* Batch Pill */}
-                          {item.batches && (
-                            <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm uppercase font-mono">
-                              <Users size={9} className="text-slate-400" />
-                              {item.batches}
-                            </span>
-                          )}
-
-                          {/* Venue room Pill */}
-                          <span className="px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/5 text-slate-300 text-[9px] font-bold flex items-center gap-1 leading-none shadow-sm uppercase font-mono">
-                            <MapPin size={9} className="text-white/50 shrink-0" />
-                            {item.room}
-                          </span>
-                        </div>
-
-                      </div>
-                    </div>
-
+              displayEvents.map((item, idx) => (
+                <div key={idx} className="m3-surface-card p-5 flex flex-col gap-3.5 text-left shadow-sm">
+                  {/* Card Header: time range badge + type */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="m3-badge text-[11px] font-bold">
+                      {item.time}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#d0bcff]">
+                      {item.typeLabel}
+                    </span>
                   </div>
-                );
-              })
+
+                  {/* Subject Name */}
+                  <h4 className="text-base font-extrabold text-white tracking-wide leading-snug">
+                    {item.subject}
+                  </h4>
+
+                  {/* Assist Chips Row */}
+                  <div className="flex flex-wrap gap-2 pt-1 w-full">
+                    {/* Venue Room */}
+                    <span className="m3-assist-chip">
+                      <MapPin size={11} className="mr-1 text-[#d0bcff] shrink-0" />
+                      {item.room}
+                    </span>
+
+                    {/* Instructor */}
+                    <span className="m3-assist-chip">
+                      <User size={11} className="mr-1 text-[#d0bcff] shrink-0" />
+                      {item.instructor}
+                    </span>
+
+                    {/* Batches */}
+                    {item.batches && (
+                      <span className="m3-assist-chip">
+                        <Users size={11} className="mr-1 text-[#d0bcff] shrink-0" />
+                        {item.batches}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
             )}
           </div>
+        )}
 
-          {/* Breaks in the Day section rendered cleanly below the lectures list */}
-          {breaks.length > 0 && (
-            <div className="w-full mt-2">
-              <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-left border-dashed border-white/20 bg-white/[0.01]`}>
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-300 border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
-                  <Sparkles size={12} className="text-slate-400" /> Breaks in the Day
-                </h4>
+        {/* Breaks in the Day Section */}
+        {!loadingDb && !dbError && breaks.length > 0 && (
+          <div className="w-full mt-2">
+            <div className="m3-surface-card p-5 flex flex-col gap-4 text-left border-dashed border-[#483c5e]/50 bg-transparent">
+              <h4 className="text-[11px] font-black uppercase tracking-wider text-[#d0bcff] border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
+                <Sparkles size={12} className="text-[#d0bcff]" /> Breaks in the Day
+              </h4>
 
-                <div className="grid grid-cols-2 gap-3">
-                  {breaks.map((brk, bIdx) => (
-                    <div key={bIdx} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm text-left">
-                      <span className="text-[10px] font-mono font-bold text-slate-300 leading-none">{brk.timeRange}</span>
-                      <span className="text-[9px] font-black text-white/60 uppercase tracking-widest font-mono mt-0.5 leading-none">{brk.duration}</span>
-                    </div>
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                {breaks.map((brk, bIdx) => (
+                  <div key={bIdx} className="bg-[#211a30]/35 border border-[#483c5e]/20 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm text-left">
+                    <span className="text-[10px] font-bold text-[#e6e1e5] leading-none">{brk.timeRange}</span>
+                    <span className="text-[9px] font-black text-[#d0bcff] uppercase tracking-widest mt-0.5 leading-none">{brk.duration}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-
-        </div>
-      )}
-
+          </div>
+        )}
+      </div>
     </div>
   );
 }

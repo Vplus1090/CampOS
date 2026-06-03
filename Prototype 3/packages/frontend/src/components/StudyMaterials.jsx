@@ -132,16 +132,16 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
 
       <div onScroll={handleScroll} className="m3-screen__scroll" style={{ paddingBottom: 32 }}>
         {nextExam && (
-          <div className="m3-surface-card shrink-0 flex items-center justify-between gap-3">
+          <div className="bg-[var(--m3-primary)] text-[var(--m3-on-primary)] shrink-0 flex items-center justify-between gap-3 rounded-[20px] p-4 shadow-sm">
             <div className="flex flex-col text-left">
-              <span className="m3-body-small font-bold uppercase tracking-widest">Upcoming: {nextExam.name}</span>
-              <span className="m3-title-medium text-m3-onPrimaryContainer mt-1.5" style={{ color: 'var(--m3-on-primary-container)' }}>
+              <span className="text-[11px] font-bold uppercase tracking-widest opacity-85">Upcoming: {nextExam.name}</span>
+              <span className="text-[18px] font-bold mt-0.5">
                 {nextExamCountdown}
               </span>
             </div>
             <span className="relative flex w-2 h-2">
-              <span className="absolute inline-flex w-full h-full bg-m3-primary/40 rounded-full opacity-75 animate-ping" />
-              <span className="relative inline-flex w-2 h-2 bg-m3-primary rounded-full" />
+              <span className="absolute inline-flex w-full h-full bg-[var(--m3-on-primary)]/40 rounded-full opacity-75 animate-ping" />
+              <span className="relative inline-flex w-2 h-2 bg-[var(--m3-on-primary)]" />
             </span>
           </div>
         )}
@@ -187,7 +187,7 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 py-1 shrink-0">
+        <div className="m3-segmented-chips justify-center flex-wrap py-1 shrink-0">
           {['All', 'Notes', 'Tutorials', 'PYQs', 'Books'].map((cat) => {
             const isActive = shelfCategory === cat;
             return (
@@ -195,7 +195,7 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
                 key={cat}
                 type="button"
                 onClick={() => setShelfCategory(cat)}
-                className={`m3-filter-chip ${isActive ? 'm3-filter-chip--selected' : ''}`}
+                className={`m3-segmented-chip m3-segmented-chip--sm ${isActive ? 'm3-segmented-chip--selected' : ''}`}
               >
                 {cat}
               </button>

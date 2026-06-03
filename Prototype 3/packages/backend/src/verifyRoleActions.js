@@ -52,7 +52,7 @@ async function runTests() {
   }
 
   // Find or seed a test SkillGig for our reporting and moderation tests
-  let targetGig = await SkillGig.findOne({ StudentName: { $ne: 'Dhruv' } });
+  let targetGig = await SkillGig.findOne({ StudentName: { $ne: 'Student' } });
   if (!targetGig) {
     console.log('ℹ️ No existing non-owner SkillGig found. Seeding a temporary one...');
     targetGig = await SkillGig.create({

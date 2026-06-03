@@ -7,7 +7,7 @@ import Notice from '../models/Notice.js';
  */
 const seedSkillGigs = async () => {
   try {
-    // 1. Seed Skill Gigs (Students: Kunal, Ripunjay, Krish, Dhruv, Abhinav, Ashmit, Sanya)
+    // 1. Seed Skill Gigs (Students: Kunal, Ripunjay, Krish, Student, Abhinav, Ashmit, Sanya)
     const gigCount = await SkillGig.countDocuments();
     if (gigCount === 0) {
       console.log('🌱 Skill Swap board is empty. Seeding student profiles...');
@@ -35,11 +35,11 @@ const seedSkillGigs = async () => {
           ContactInfo: 'krish.design@campos.edu | Mobile: +91 98765 43210',
         },
         {
-          StudentName: 'Dhruv',
+          StudentName: 'Student',
           SkillOffered: 'Machine Learning & PyTorch',
           SkillWanted: 'React Native & iOS App Development',
           Status: 'Active',
-          ContactInfo: 'dhruv.ml@campos.edu | Slack: #dhruv-ml',
+          ContactInfo: 'student.ml@campos.edu | Slack: #student-ml',
         },
         {
           StudentName: 'Abhinav',

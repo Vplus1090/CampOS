@@ -39,17 +39,17 @@ function VerticalPill({ icon: Icon, children, stacked }) {
   );
 }
 
-/** Canteen row only — one linked control with chevron segment */
+/** Canteen row only — one unified button spanning full width */
 function CanteenPillRow({ onClick, title }) {
   return (
-    <div className="home-pill-split" role="group" aria-label={title}>
-      <button type="button" className="home-pill home-pill-split__main home-pill--align-start" onClick={onClick} title={title}>
-        <PillLabel icon={Coffee}>Canteen</PillLabel>
-      </button>
-      <button type="button" className="home-pill home-pill-split__side home-pill--icon-only" onClick={onClick} title="Open Canteen">
-        <ChevronRight className="home-pill__icon" strokeWidth={2.5} aria-hidden />
-      </button>
-    </div>
+    <button 
+      type="button" 
+      className="home-pill home-pill--c4 home-pill--shape-pill home-pill--align-center" 
+      onClick={onClick} 
+      title={title}
+    >
+      <PillLabel icon={Coffee}>Canteen</PillLabel>
+    </button>
   );
 }
 
@@ -118,6 +118,13 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
     return 'Guest';
   }, [currentUser]);
 
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }, []);
+
   const openCanteen = () => onTileClick('canteen');
 
   const studentGrid = (
@@ -134,7 +141,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
 
       <button
         type="button"
-        className="home-pill home-pill--c3 home-pill--shape-round home-pill--align-start"
+        className="home-pill home-pill--c3 home-pill--shape-round home-pill--align-center"
         onClick={() => onTileClick('student_dashboard')}
         title="Student Dashboard"
       >
@@ -238,13 +245,14 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   return (
     <div className="home-screen text-white font-sans select-none relative z-10">
       <header className="home-screen__header">
-        <div className="home-screen__titles">
-          <p className="home-screen__welcome">Welcome</p>
-          <h1 className="home-screen__name">{displayName}</h1>
-        </div>
         <button type="button" className="home-screen__logout" onClick={onLogout} title="Log out">
           <ChevronLeft className="home-screen__logout-icon" strokeWidth={2.75} aria-hidden />
         </button>
+        <div className="home-screen__titles">
+          <p className="home-screen__welcome">{greeting}</p>
+          <h1 className="home-screen__name">{displayName}</h1>
+        </div>
+        <div className="w-12 h-12 shrink-0 opacity-0 pointer-events-none" /> {/* Spacer to center titles */}
       </header>
 
       {(activePass || activeOrder) && (
@@ -284,7 +292,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
         <div className="home-screen__grid home-screen__grid--rows-1">
           <button
             type="button"
-            className="home-pill home-pill--c4 home-pill--shape-round home-pill--align-start"
+            className="home-pill home-pill--c4 home-pill--shape-round home-pill--align-center"
             onClick={openCanteen}
             title="Canteen Admin"
           >

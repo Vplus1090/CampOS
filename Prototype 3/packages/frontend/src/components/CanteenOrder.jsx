@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee, Ticket, Trash2, Search } from 'lucide-react';
+import { Trash2, Search, Plus, RefreshCw } from 'lucide-react';
+import M3ScreenHeader from './M3ScreenHeader';
 import { API_BASE } from '../config/api';
 
 export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, triggerPayment, cart = [], setCart, isCartCheckout = false }) {
@@ -16,6 +17,10 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null);
   const [addedItemIds, setAddedItemIds] = useState({});
+
+  // M3 screen state
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   const handleAddToCartClick = (item) => {
     addToCart(item);
@@ -248,6 +253,11 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     }
   };
 
+  // Scroll handler for collapsing header
+  const handleScroll = (e) => {
+    setIsScrolled(e.target.scrollTop > 12);
+  };
+
   // Calculate dynamic totals
   const totalAmount = cart.reduce((total, cartItem) => {
     const latestMenuInfo = menu.find((m) => m._id === cartItem._id);
@@ -255,59 +265,61 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     return total + itemPrice * cartItem.quantity;
   }, 0);
 
-  const categories = [...new Set(menu.map((item) => item.Category))];
+  const categories = ['All', ...new Set(menu.map((item) => item.Category))];
 
+  const filteredMenu = menu
+    .filter((item) => selectedCategory === 'All' || item.Category === selectedCategory)
+    .filter((item) => item.Name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  /* ───────────────────── Checkout View ───────────────────── */
   if (isCartCheckout) {
     return (
-      <div className="canteen-module text-white font-sans min-h-screen pb-24 relative select-none">
-        {/* Header summary */}
-        <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
-          <button
-            onClick={() => setActiveTab && setActiveTab('canteen')}
-            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-            type="button"
-          >
-            <span className="text-xl font-bold">&larr;</span>
-          </button>
-          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-            Order Checkout
-          </h2>
-        </header>
+      <div className="m3-screen canteen-dashboard">
+        <M3ScreenHeader
+          title="Checkout"
+          subtitle="Review your order"
+          isScrolled={isScrolled}
+          onBack={() => setActiveTab && setActiveTab('canteen')}
+        />
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <div className="w-8 h-8 rounded-full border border-transparent border-t-white border-r-white animate-spin" />
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Loading checkout...</p>
-          </div>
-        ) : error ? (
-          <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-8 flex flex-col items-center justify-center gap-4 text-center">
-            <p className="text-sm font-semibold text-white/60">⚠️ {error}</p>
-            <button className="bg-white text-[#141a27] font-black text-xs uppercase tracking-wider rounded-xl px-6 py-3 cursor-pointer transition-all active:scale-95 shadow-md" onClick={fetchMenuAndOrders}>Retry</button>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-6 w-full mt-2 text-left">
-            {/* Selected Items Card */}
-            <div className="rounded-[32px] p-6 border-2 border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-xl flex flex-col gap-4 text-left">
-              <div className="flex justify-between items-center w-full border-b border-white/5 pb-3">
-                <h3 className="text-base font-black uppercase tracking-wider text-white">🛒 Selected Items</h3>
-                {cart.length > 0 && (
-                  <span className="bg-white/20 text-white text-[10px] font-black font-mono w-5 h-5 rounded-full flex items-center justify-center select-none shadow-md">{cart.reduce((sum, ci) => sum + ci.quantity, 0)}</span>
-                )}
-              </div>
-
-              {cart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 gap-2 text-center select-none">
-                  <span className="text-3xl">🥗</span>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Your cart is empty.</p>
-                  <button
-                    onClick={() => setActiveTab('canteen')}
-                    className="bg-white text-[#141a27] font-black text-xs uppercase tracking-wider rounded-xl px-6 py-2.5 mt-2 cursor-pointer active:scale-95 transition"
-                  >
-                    Add Items
-                  </button>
+        <div onScroll={handleScroll} className="m3-screen__scroll">
+          {loading ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
+              <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Loading checkout...</span>
+            </div>
+          ) : error ? (
+            <div className="m3-surface-card p-6 flex flex-col items-center gap-3 text-center">
+              <p className="text-sm font-semibold text-[#e6e1e5]">⚠️ {error}</p>
+              <button className="m3-filled-button" style={{ maxWidth: 160 }} onClick={fetchMenuAndOrders}>Retry</button>
+            </div>
+          ) : (
+            <div className="w-full flex flex-col gap-5">
+              {/* Selected Items */}
+              <div className="m3-surface-card p-5 flex flex-col gap-4 text-left">
+                <div className="flex justify-between items-center border-b border-[#483c5e]/30 pb-3">
+                  <h3 className="m3-title-medium">Selected Items</h3>
+                  {cart.length > 0 && (
+                    <span className="m3-badge">{cart.reduce((sum, ci) => sum + ci.quantity, 0)}</span>
+                  )}
                 </div>
-              ) : (
-                <div className="flex flex-col gap-4">
+
+                {cart.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-3 text-center select-none">
+                    <div className="w-12 h-12 rounded-2xl bg-[#4f378b]/30 flex items-center justify-center text-[#d0bcff] shadow-md">
+                      <Search size={22} />
+                    </div>
+                    <h4 className="text-sm text-[#e6e1e5] font-extrabold uppercase tracking-widest">Cart empty</h4>
+                    <span className="text-xs text-slate-400 font-medium">Go back and add some items!</span>
+                    <button
+                      className="m3-filled-button mt-2"
+                      style={{ maxWidth: 180, minHeight: 44 }}
+                      onClick={() => setActiveTab('canteen')}
+                    >
+                      Browse Menu
+                    </button>
+                  </div>
+                ) : (
                   <div className="flex flex-col gap-3">
                     {cart.map((cartItem) => {
                       const currentMenuItem = menu.find((m) => m._id === cartItem._id);
@@ -316,17 +328,19 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                       return (
                         <div
                           key={cartItem._id}
-                          className={`flex flex-col gap-2 p-5 bg-white/[0.03] border ${
-                            isCurrentlyUnavailable ? 'border-white/10 bg-white/[0.01]' : 'border-white/10'
-                          } rounded-2xl relative`}
+                          className={`rounded-[var(--m3-shape-xl)] p-4 flex flex-col gap-2.5 border transition-all ${
+                            isCurrentlyUnavailable
+                              ? 'border-[#8c1d18]/40 bg-[#8c1d18]/8 opacity-70'
+                              : 'border-[#483c5e]/25 bg-[#292035]/40'
+                          }`}
                         >
-                          <div className="flex justify-between items-start w-full">
-                            <div className="flex flex-col text-left">
-                              <span className="text-xs font-extrabold text-white leading-tight">{cartItem.Name}</span>
-                              <span className="text-[10px] font-semibold text-slate-400 mt-1">₹{cartItem.Price} each</span>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="text-sm font-bold text-[#e6e1e5] leading-tight">{cartItem.Name}</h4>
+                              <span className="m3-body-small mt-0.5 block">₹{cartItem.Price} each</span>
                             </div>
                             <button
-                              className="text-slate-400 hover:text-white/60 transition cursor-pointer select-none"
+                              className="w-8 h-8 rounded-full bg-[#292035] hover:bg-[#352a48] text-[#cac4d0] hover:text-[#f2b8b5] flex items-center justify-center transition-all cursor-pointer"
                               onClick={() => removeFromCart(cartItem._id)}
                               title="Remove Item"
                             >
@@ -335,171 +349,171 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                           </div>
                           
                           {isCurrentlyUnavailable && (
-                            <span className="text-[9px] font-black uppercase tracking-wider text-white/60">
-                              🛑 SOLD OUT! Remove to checkout.
+                            <span className="text-[10px] font-bold text-[#f2b8b5] uppercase tracking-wider">
+                              Sold out — remove to checkout
                             </span>
                           )}
 
-                          <div className="flex justify-end items-center gap-3 mt-1 w-full border-t border-white/5 pt-2">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mr-auto">Quantity</span>
-                            
-                            <button
-                              className="w-6 h-6 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-white flex items-center justify-center text-xs font-bold transition cursor-pointer"
-                              disabled={isCurrentlyUnavailable}
-                              onClick={() => updateQuantity(cartItem._id, -1)}
-                            >
-                              －
-                            </button>
-                            <span className="text-xs font-mono font-bold text-white px-1">{cartItem.quantity}</span>
-                            <button
-                              className="w-6 h-6 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-white flex items-center justify-center text-xs font-bold transition cursor-pointer"
-                              disabled={isCurrentlyUnavailable}
-                              onClick={() => updateQuantity(cartItem._id, 1)}
-                            >
-                              ＋
-                            </button>
+                          <div className="flex justify-between items-center border-t border-[#483c5e]/20 pt-2.5">
+                            <span className="text-[10px] font-bold text-[#cac4d0] uppercase tracking-wider">Quantity</span>
+                            <div className="flex items-center gap-2.5">
+                              <button
+                                className="w-7 h-7 rounded-full bg-[#292035] hover:bg-[#352a48] text-[#d0bcff] flex items-center justify-center text-sm font-bold transition cursor-pointer"
+                                disabled={isCurrentlyUnavailable}
+                                onClick={() => updateQuantity(cartItem._id, -1)}
+                              >
+                                −
+                              </button>
+                              <span className="text-sm font-bold text-[#e6e1e5] w-5 text-center">{cartItem.quantity}</span>
+                              <button
+                                className="w-7 h-7 rounded-full bg-[#292035] hover:bg-[#352a48] text-[#d0bcff] flex items-center justify-center text-sm font-bold transition cursor-pointer"
+                                disabled={isCurrentlyUnavailable}
+                                onClick={() => updateQuantity(cartItem._id, 1)}
+                              >
+                                +
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
+                )}
+              </div>
 
-                  <div className="border-t border-white/5 pt-4 flex flex-col gap-2.5 mt-1">
-                    <span className="text-slate-400 uppercase tracking-widest text-[9px] font-black">Bill Details</span>
-                    <div className="flex justify-between items-center text-xs text-slate-300 font-semibold">
-                      <span>Item Total</span>
-                      <span className="font-mono">₹{totalAmount}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs text-slate-400 font-medium">
-                      <span>Taxes & GST (0%)</span>
-                      <span className="font-mono">₹0</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs text-slate-400 font-medium">
-                      <span>Delivery & Handling (0%)</span>
-                      <span className="font-mono">₹0</span>
-                    </div>
+              {/* Bill Summary */}
+              {cart.length > 0 && (
+                <div className="m3-surface-card p-5 flex flex-col gap-3 text-left">
+                  <h3 className="m3-title-small text-[#cac4d0] uppercase tracking-widest text-[10px] border-b border-[#483c5e]/30 pb-2">Bill Details</h3>
+                  <div className="flex justify-between items-center text-xs text-[#cac4d0] font-medium">
+                    <span>Item Total</span>
+                    <span className="font-bold text-[#e6e1e5]">₹{totalAmount}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs text-[#948baf] font-medium">
+                    <span>Taxes & GST</span>
+                    <span>₹0</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs text-[#948baf] font-medium">
+                    <span>Delivery & Handling</span>
+                    <span>₹0</span>
+                  </div>
+                  <div className="border-t border-[#483c5e]/30 pt-3 flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-[#e6e1e5] uppercase tracking-widest">Grand Total</span>
+                    <span className="text-base font-extrabold text-[#d0bcff]">₹{totalAmount}</span>
+                  </div>
+                </div>
+              )}
 
-                    <div className="border-t border-white/5 pt-3.5 flex justify-between items-center w-full font-sans text-sm font-black mt-1">
-                      <span className="text-slate-200 uppercase tracking-widest text-[10px]">Grand Total</span>
-                      <span className="text-white font-mono font-black text-base">₹{totalAmount}</span>
-                    </div>
+              {/* Place Order */}
+              {cart.length > 0 && (
+                <form onSubmit={handleCheckout} className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Student Registration ID</span>
+                    <input
+                      type="text"
+                      placeholder="e.g., Vardaan"
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      required
+                      className="m3-filled-field"
+                    />
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    className="m3-filled-button"
+                    disabled={submittingOrder || cart.length === 0 || cart.some(ci => {
+                      const m = menu.find(mi => mi._id === ci._id);
+                      return m && !m.IsAvailable;
+                    })}
+                  >
+                    Place Order · ₹{totalAmount}
+                  </button>
+                </form>
+              )}
 
-                    <form onSubmit={handleCheckout} className="flex flex-col gap-4 mt-2">
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 pl-1" htmlFor="student-id-input">Student Registration ID</label>
-                        <input
-                          id="student-id-input"
-                          type="text"
-                          placeholder="e.g., Vardaan"
-                          value={studentId}
-                          onChange={(e) => setStudentId(e.target.value)}
-                          required
-                          className="w-full bg-white/[0.05] border border-white/15 focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all outline-none"
-                        />
+              {/* Recent Orders log */}
+              {orders.length > 0 && (
+                <div className="m3-surface-card p-5 flex flex-col gap-4 text-left">
+                  <h3 className="m3-title-small text-[#cac4d0] uppercase tracking-widest text-[10px] border-b border-[#483c5e]/30 pb-2">Orders Log</h3>
+                  <div className="flex flex-col gap-3">
+                    {orders.map((order) => (
+                      <div key={order._id || order.id} className="rounded-[var(--m3-shape-xl)] bg-[#292035]/40 border border-[#483c5e]/25 p-4 flex flex-col gap-2.5 text-left">
+                        <div className="flex items-center justify-between">
+                          <span className="m3-body-small font-bold">#{String(order._id).substring(18)}</span>
+                          <span className="m3-assist-chip text-[10px]">{order.OrderStatus}</span>
+                        </div>
+                        <span className="text-xs font-semibold text-[#e6e1e5] leading-snug">
+                          {order.ItemsArray.map(i => `${i.Name} ×${i.Quantity}`).join(', ')}
+                        </span>
+                        <div className="flex justify-between items-center border-t border-[#483c5e]/20 pt-2 text-[10px]">
+                          <span className="font-medium text-[#cac4d0]">Reg: {order.StudentId}</span>
+                          <span className="font-extrabold text-[#d0bcff]">₹{order.TotalAmount}</span>
+                        </div>
                       </div>
-                      
-                      <button
-                        type="submit"
-                        className="w-full bg-white text-[#141a27] hover:bg-slate-50 font-black rounded-xl py-3.5 shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 text-xs uppercase tracking-wider cursor-pointer disabled:opacity-50"
-                        disabled={submittingOrder || cart.length === 0 || cart.some(ci => {
-                          const m = menu.find(mi => mi._id === ci._id);
-                          return m && !m.IsAvailable;
-                        })}
-                      >
-                        🚀 Place Canteen Order &bull; ₹{totalAmount}
-                      </button>
-                    </form>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
-
-            {/* Recent Orders log at Checkout */}
-            {orders.length > 0 && (
-              <div className="rounded-[32px] p-6 border-2 border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-xl flex flex-col gap-4 text-left">
-                <h3 className="text-base font-black uppercase tracking-wider text-white border-b border-white/5 pb-3">🧾 Orders Log</h3>
-                
-                <div className="flex flex-col gap-3">
-                  {orders.map((order) => {
-                    return (
-                      <div key={order._id || order.id} className="p-5 bg-white/[0.02] border border-white/10 rounded-2xl flex flex-col gap-2 transition-all duration-300 hover:scale-[1.01]">
-                        <div className="flex justify-between items-center w-full">
-                          <span className="text-[10px] font-mono font-bold text-slate-400">#{String(order._id).substring(18)}</span>
-                          <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
-                            order.OrderStatus.toLowerCase() === 'placed'
-                              ? 'bg-white/10 text-white/60 border-white/15'
-                              : 'bg-white/10 text-white/60 border-white/15'
-                          }`}>
-                            {order.OrderStatus}
-                          </span>
-                        </div>
-                        
-                        <div className="text-xs font-semibold text-white leading-tight">
-                          {order.ItemsArray.map(i => `${i.Name} x${i.Quantity}`).join(', ')}
-                        </div>
-                        
-                        <div className="flex justify-between items-center w-full border-t border-white/5 pt-2 mt-1 text-[10px] font-bold text-slate-400 font-sans">
-                          <span>Reg: {order.StudentId}</span>
-                          <span className="text-white font-mono font-black">₹{order.TotalAmount}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }
 
+  /* ───────────────────── Main Menu View ───────────────────── */
   return (
-    <div className="canteen-module text-white font-sans min-h-screen pb-24 relative select-none">
-      
-      {/* Module Header and Controls */}
-      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between gap-4 mb-3">
-        <div className="flex items-center">
-          <button
-            onClick={() => setActiveTab('home')}
-            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-            type="button"
-          >
-            <span className="text-xl font-bold">&larr;</span>
-          </button>
-          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-            Campus Canteen
-          </h2>
-        </div>
-        
-        {/* Canteen Admin exclusive item creation button */}
-        {isCanteenAdmin && (
-          <button 
-            className="bg-white hover:bg-slate-50 text-[#141a27] font-extrabold text-[11px] uppercase tracking-wider rounded-xl px-4 py-2.5 transition-all duration-300 active:scale-95 shadow-md flex items-center gap-1.5 cursor-pointer"
-            onClick={() => setShowAddModal(true)}
-            type="button"
-          >
-            Add Menu Item
-          </button>
-        )}
-      </header>
+    <div className="m3-screen canteen-dashboard">
+      <M3ScreenHeader
+        title="Canteen"
+        subtitle={`${menu.filter(m => m.IsAvailable).length} items available`}
+        isScrolled={isScrolled}
+        onBack={() => setActiveTab('home')}
+      />
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-12 gap-3">
-          <div className="w-8 h-8 rounded-full border border-transparent border-t-white border-r-white animate-spin" />
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Loading canteen menu...</p>
-        </div>
-      ) : error ? (
-        <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-8 flex flex-col items-center justify-center gap-4 text-center">
-          <p className="text-sm font-semibold text-white/60">⚠️ {error}</p>
-          <button className="bg-white text-[#141a27] font-black text-xs uppercase tracking-wider rounded-xl px-6 py-3 cursor-pointer transition-all active:scale-95 shadow-md" onClick={fetchMenuAndOrders}>Retry</button>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-6 text-left">
-          
-          {/* Glassmorphic Search Bar */}
-          <div className="relative w-full">
-            <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 z-10">
+      <div onScroll={handleScroll} className="m3-screen__scroll">
+        {/* Admin "Add Item" button */}
+        {isCanteenAdmin && (
+          <div className="flex justify-end items-center w-full px-1 mb-2 shrink-0">
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-1.5 shadow-sm cursor-pointer bg-[#d0bcff] text-[#381e72] hover:brightness-110 active:scale-95"
+              type="button"
+            >
+              <Plus size={14} />
+              <span>Add Item</span>
+            </button>
+          </div>
+        )}
+
+        {/* Category Chips */}
+        {!loading && !error && categories.length > 1 && (
+          <div className="flex flex-col gap-2 shrink-0 mb-2">
+            <div className="m3-segmented-chips flex-wrap gap-y-2">
+              {categories.map((cat) => {
+                const isActive = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`m3-segmented-chip m3-segmented-chip--sm ${
+                      isActive ? 'm3-segmented-chip--selected' : ''
+                    }`}
+                    type="button"
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Search Field */}
+        {!loading && !error && (
+          <div className="relative w-full shrink-0 mb-1">
+            <span className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-[#948baf] z-10">
               <Search size={16} />
             </span>
             <input
@@ -507,207 +521,236 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search canteen menu..."
-              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-400 outline-none focus:border-white/30 transition-all duration-300 shadow-inner backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
+              className="m3-filled-field !pl-12 !pr-4 !rounded-full !h-[48px] text-sm"
             />
           </div>
+        )}
 
-          {/* Menu Catalog Section */}
-          <div className="flex flex-col gap-6 w-full">
-            <div className="grid grid-cols-1 gap-4">
-              {menu
-                .filter((item) => item.Name.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map((item) => {
-                  const isSoldOut = !item.IsAvailable;
-                  return (
-                    <div
-                      key={item._id}
-                      className={`rounded-[28px] p-6 transition-all duration-300 relative border-2 ${
-                        isSoldOut 
-                          ? 'border-white/10 bg-white/[0.01] opacity-60' 
-                          : 'border-white/15 bg-white/[0.02] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
-                      } backdrop-blur-3xl flex flex-col gap-3.5 text-left`}
-                    >
-                      <div className="flex justify-between items-center w-full">
-                        <span className="text-[9px] font-sans font-black uppercase tracking-wider text-slate-400">{item.Category}</span>
-                        <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
-                          isSoldOut 
-                            ? 'bg-white/5 text-white/40 border-white/10' 
-                            : 'bg-white/10 text-white/70 border-white/15'
-                        }`}>
-                          {isSoldOut ? 'Sold Out' : 'Available'}
-                        </span>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
+            <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Loading canteen menu...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <div className="m3-surface-card p-6 flex flex-col items-center gap-3 text-center">
+            <p className="text-sm font-semibold text-[#e6e1e5]">⚠️ {error}</p>
+            <button className="m3-filled-button" style={{ maxWidth: 160 }} onClick={fetchMenuAndOrders}>Retry</button>
+          </div>
+        )}
+
+        {/* Menu Items */}
+        {!loading && !error && (
+          <div className="w-full flex flex-col gap-4">
+            {filteredMenu.length === 0 ? (
+              <div className="m3-surface-card p-8 flex flex-col items-center justify-center gap-3 text-center select-none">
+                <div className="w-12 h-12 rounded-2xl bg-[#4f378b]/30 flex items-center justify-center text-[#d0bcff] shadow-md">
+                  <Search size={22} />
+                </div>
+                <h4 className="text-sm text-[#e6e1e5] font-extrabold uppercase tracking-widest">No items found</h4>
+                <span className="text-xs text-slate-400 font-medium leading-relaxed max-w-[240px]">
+                  Try a different search term or category filter.
+                </span>
+              </div>
+            ) : (
+              filteredMenu.map((item) => {
+                const isSoldOut = !item.IsAvailable;
+                return (
+                  <div
+                    key={item._id}
+                    className={`m3-surface-card p-5 flex flex-col gap-3.5 text-left shadow-sm transition-all ${
+                      isSoldOut ? 'opacity-55' : ''
+                    }`}
+                  >
+                    {/* Card Header: category + status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="m3-assist-chip">{item.Category}</span>
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${
+                        isSoldOut ? 'text-[#f2b8b5]' : 'text-[#d0bcff]'
+                      }`}>
+                        {isSoldOut ? 'Sold Out' : 'Available'}
+                      </span>
+                    </div>
+
+                    {/* Item Name */}
+                    <h4 className="text-base font-extrabold text-white tracking-wide leading-snug">
+                      {item.Name}
+                    </h4>
+
+                    {/* Price Display / Admin Edit */}
+                    {isCanteenAdmin && editingItemId === item._id ? (
+                      <div className="flex items-center gap-2 w-full max-w-[220px]">
+                        <input
+                          type="number"
+                          className="m3-filled-field !h-9 !text-xs !rounded-xl !px-3"
+                          placeholder="New Price"
+                          value={editPrice}
+                          onChange={(e) => setEditPrice(e.target.value)}
+                        />
+                        <button 
+                          className="w-9 h-9 shrink-0 rounded-xl bg-[#4f378b] hover:bg-[#5f479b] text-[#eaddff] flex items-center justify-center text-xs font-bold transition active:scale-90 cursor-pointer"
+                          onClick={() => handleUpdatePrice(item._id)}
+                          disabled={savingPrice}
+                        >
+                          ✓
+                        </button>
+                        <button 
+                          className="w-9 h-9 shrink-0 rounded-xl bg-[#292035] hover:bg-[#352a48] text-[#cac4d0] flex items-center justify-center text-xs font-bold transition active:scale-90 cursor-pointer"
+                          onClick={() => { setEditingItemId(null); setEditPrice(''); }}
+                        >
+                          ✕
+                        </button>
                       </div>
-                      
-                      <h4 className="text-base font-extrabold text-white leading-none mt-1 select-text font-sans">{item.Name}</h4>
-                      
-                      {/* Price Display / Admin Edit */}
-                      {isCanteenAdmin && editingItemId === item._id ? (
-                        <div className="flex items-center gap-2 mt-1 w-full max-w-[200px]">
-                          <input
-                            type="number"
-                            className="w-full bg-white/[0.05] border border-white/15 focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white outline-none"
-                            placeholder="New Price"
-                            value={editPrice}
-                            onChange={(e) => setEditPrice(e.target.value)}
-                          />
-                          <button 
-                            className="w-7 h-7 bg-white/20 hover:bg-white/30 text-white rounded-lg flex items-center justify-center text-xs font-mono font-bold transition active:scale-90"
-                            onClick={() => handleUpdatePrice(item._id)}
-                            disabled={savingPrice}
-                          >
-                            ✓
-                          </button>
-                          <button 
-                            className="w-7 h-7 bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] text-white rounded-lg flex items-center justify-center text-xs font-mono font-bold transition active:scale-90"
-                            onClick={() => { setEditingItemId(null); setEditPrice(''); }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 font-sans">
-                          <span>Price:</span>
-                          <span className="text-white font-mono font-black">₹{item.Price}</span>
-                          {isCanteenAdmin && (
-                            <button
-                              className="w-6 h-6 hover:bg-white/[0.06] border border-transparent hover:border-white/10 text-slate-400 hover:text-white rounded-lg flex items-center justify-center transition"
-                              onClick={() => { setEditingItemId(item._id); setEditPrice(item.Price); }}
-                              title="Edit Price"
-                            >
-                              ✏️
-                            </button>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="w-full mt-1.5">
-                        {/* Stock toggle switches & deletes (Canteen Admin only) */}
-                        {isCanteenAdmin ? (
-                          <div className="flex justify-between items-center border-t border-white/5 pt-3.5">
-                            <button
-                              className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-white/40 hover:text-white/60 transition"
-                              onClick={() => handleDeleteItem(item._id)}
-                              title="Delete Item"
-                            >
-                              🗑️ Delete
-                            </button>
-
-                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleAvailability(item._id)}>
-                              <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-300 ${item.IsAvailable ? 'bg-white/40' : 'bg-slate-700'}`}>
-                                <div className={`w-3 h-3 rounded-full bg-white transition-transform duration-300 ${item.IsAvailable ? 'translate-x-4' : 'translate-x-0'}`} />
-                              </div>
-                              <span className="text-[9px] font-sans font-black uppercase tracking-wider text-slate-400">In Stock</span>
-                            </div>
-                          </div>
-                        ) : (
-                          // Add to cart buttons (Students only)
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="m3-badge text-[11px] font-bold">₹{item.Price}</span>
+                        {isCanteenAdmin && (
                           <button
-                            className={`w-full py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer backdrop-blur-md ${
-                              isSoldOut 
-                                ? 'bg-white/[0.02] border border-white/5 text-slate-500 cursor-not-allowed' 
-                                : addedItemIds[item._id]
-                                  ? 'bg-white/[0.08] border border-white/20 text-white/70'
-                                  : 'bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 text-white/70 shadow-md active:scale-[0.98]'
-                            }`}
-                            disabled={isSoldOut}
-                            onClick={() => handleAddToCartClick(item)}
+                            className="w-7 h-7 rounded-full hover:bg-[#352a48] text-[#cac4d0] hover:text-[#d0bcff] flex items-center justify-center transition cursor-pointer text-xs"
+                            onClick={() => { setEditingItemId(item._id); setEditPrice(item.Price); }}
+                            title="Edit Price"
                           >
-                            {isSoldOut ? 'Sold Out' : addedItemIds[item._id] ? '✓ Added!' : '＋ Add to Cart'}
+                            ✏️
                           </button>
                         )}
                       </div>
+                    )}
+
+                    {/* Actions Row */}
+                    <div className="w-full mt-0.5">
+                      {isCanteenAdmin ? (
+                        <div className="flex justify-between items-center border-t border-[#483c5e]/25 pt-3">
+                          <button
+                            className="flex items-center gap-1.5 text-[10px] font-bold text-[#f2b8b5]/60 hover:text-[#f2b8b5] transition cursor-pointer uppercase tracking-wider"
+                            onClick={() => handleDeleteItem(item._id)}
+                            title="Delete Item"
+                          >
+                            <Trash2 size={12} /> Delete
+                          </button>
+
+                          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => toggleAvailability(item._id)}>
+                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-300 ${item.IsAvailable ? 'bg-[#4f378b]' : 'bg-[#292035]'}`}>
+                              <div className={`w-4 h-4 rounded-full bg-[#d0bcff] transition-transform duration-300 shadow-sm ${item.IsAvailable ? 'translate-x-4' : 'translate-x-0'}`} />
+                            </div>
+                            <span className="text-[10px] font-bold text-[#cac4d0] uppercase tracking-wider">In Stock</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          className={`w-full py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                            isSoldOut 
+                              ? 'bg-[#292035]/50 text-[#948baf]/50 cursor-not-allowed' 
+                              : addedItemIds[item._id]
+                                ? 'bg-[#4f378b] text-[#eaddff]'
+                                : 'bg-[#292035] hover:bg-[#352a48] text-[#d0bcff] active:scale-[0.98] shadow-sm'
+                          }`}
+                          disabled={isSoldOut}
+                          onClick={() => handleAddToCartClick(item)}
+                        >
+                          {isSoldOut ? 'Sold Out' : addedItemIds[item._id] ? '✓ Added!' : '+ Add to Cart'}
+                        </button>
+                      )}
                     </div>
-                  );
-                })}
-            </div>
-            {menu.filter((item) => item.Name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-              <p className="text-center text-xs font-semibold text-slate-400 uppercase tracking-widest py-12">
-                No items match your search
-              </p>
+                  </div>
+                );
+              })
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Canteen Admin: Add Item Modal */}
       {showAddModal && isCanteenAdmin && (
-        <div className="absolute inset-0 bg-[#0f131a]/80 backdrop-blur-xl z-[99999] flex items-center justify-center p-6" onClick={() => setShowAddModal(false)}>
-          <div className="bg-slate-900/90 border border-white/10 rounded-[32px] p-6 shadow-2xl w-full max-w-sm flex flex-col gap-5" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header flex items-center justify-between border-b border-white/5 pb-3">
-              <h3 className="text-base font-black text-white uppercase tracking-wider">Add Menu Item</h3>
-              <button className="text-slate-400 hover:text-white font-extrabold cursor-pointer" onClick={() => setShowAddModal(false)}>✕</button>
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[99999] flex items-center justify-center p-6" onClick={() => setShowAddModal(false)}>
+          <div
+            className="w-full max-w-sm rounded-[var(--m3-shape-2xl)] bg-[#211a30] border border-[#483c5e]/40 p-6 shadow-2xl flex flex-col gap-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[#483c5e]/30 pb-3">
+              <h3 className="m3-title-medium">Add Menu Item</h3>
+              <button className="w-8 h-8 rounded-full hover:bg-[#352a48] text-[#cac4d0] flex items-center justify-center transition cursor-pointer font-bold" onClick={() => setShowAddModal(false)}>✕</button>
             </div>
             
             <form onSubmit={handleAddItem} className="flex flex-col gap-4 text-left">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 pl-1" htmlFor="new-item-name">Item Name</label>
+                <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Item Name</span>
                 <input
-                  id="new-item-name"
                   type="text"
                   placeholder="Paneer Patty, Mango Shake"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   required
-                  className="w-full bg-white/[0.05] border border-white/15 focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all outline-none"
+                  className="m3-filled-field"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 pl-1" htmlFor="new-item-price">Price (₹)</label>
+                <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Price (₹)</span>
                 <input
-                  id="new-item-price"
                   type="number"
                   placeholder="Price"
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
                   required
-                  className="w-full bg-white/[0.05] border border-white/15 focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all outline-none"
+                  className="m3-filled-field"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 pl-1" htmlFor="new-item-category">Category</label>
-                <select
-                  id="new-item-category"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  required
-                  className="w-full bg-[#1e2533] border border-white/15 focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all outline-none cursor-pointer"
-                >
-                  <option value="Pizza">Pizza</option>
-                  <option value="Pasta">Pasta</option>
-                  <option value="Starters">Starters</option>
-                  <option value="Beverages">Beverages</option>
-                  <option value="Snacks">Snacks</option>
-                  <option value="Desserts">Desserts</option>
-                </select>
+                <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Category</span>
+                <div className="m3-select-wrap">
+                  <select
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    required
+                    className="m3-select"
+                  >
+                    <option value="Pizza">Pizza</option>
+                    <option value="Pasta">Pasta</option>
+                    <option value="Starters">Starters</option>
+                    <option value="Beverages">Beverages</option>
+                    <option value="Snacks">Snacks</option>
+                    <option value="Desserts">Desserts</option>
+                  </select>
+                  <div className="absolute -translate-y-1/2 pointer-events-none text-[#cac4d0] right-4 top-1/2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 pl-1" htmlFor="new-item-availability">Availability Status</label>
-                <select
-                  id="new-item-availability"
-                  value={newAvailable ? 'yes' : 'no'}
-                  onChange={(e) => setNewAvailable(e.target.value === 'yes')}
-                  required
-                  className="w-full bg-[#1e2533] border border-white/15 focus:border-white/35 focus:ring-2 focus:ring-white/5 rounded-xl px-4 py-3 text-sm font-semibold text-white tracking-wide transition-all outline-none cursor-pointer"
-                >
-                  <option value="yes">🟢 In Stock (Available)</option>
-                  <option value="no">🔴 Out of Stock (Unavailable)</option>
-                </select>
+                <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Availability</span>
+                <div className="m3-select-wrap">
+                  <select
+                    value={newAvailable ? 'yes' : 'no'}
+                    onChange={(e) => setNewAvailable(e.target.value === 'yes')}
+                    required
+                    className="m3-select"
+                  >
+                    <option value="yes">In Stock (Available)</option>
+                    <option value="no">Out of Stock (Unavailable)</option>
+                  </select>
+                  <div className="absolute -translate-y-1/2 pointer-events-none text-[#cac4d0] right-4 top-1/2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex justify-between items-center gap-3 pt-3">
+              <div className="flex gap-3 pt-2">
                 <button 
                   type="button" 
-                  className="flex-1 bg-white/[0.05] border border-white/10 hover:bg-white/[0.1] text-white font-extrabold text-xs uppercase tracking-wider py-3.5 rounded-xl cursor-pointer transition-all duration-300" 
+                  className="flex-1 h-[48px] rounded-full border-none bg-[#292035] hover:bg-[#352a48] text-[#cac4d0] font-bold text-xs uppercase tracking-wider cursor-pointer transition-all" 
                   onClick={() => setShowAddModal(false)}
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 bg-white text-[#141a27] hover:bg-slate-50 font-extrabold text-xs uppercase tracking-wider py-3.5 rounded-xl cursor-pointer transition-all duration-300 disabled:opacity-50"
+                  className="m3-filled-button flex-1"
+                  style={{ minHeight: 48 }}
                   disabled={addingItem}
                 >
                   {addingItem ? 'Adding...' : 'Add Item'}
@@ -718,31 +761,36 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         </div>
       )}
 
-      {/* Checkout Success Modal Dialog */}
+      {/* Checkout Success Modal */}
       {orderSuccess && (
-        <div className="absolute inset-0 bg-[#0f131a]/85 backdrop-blur-xl z-[99999] flex items-center justify-center p-6" onClick={() => setOrderSuccess(null)}>
-          <div className="bg-slate-900/90 border border-white/10 rounded-[32px] p-6 shadow-2xl w-full max-w-sm flex flex-col gap-5 text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="text-4xl">🎉</div>
-            <h3 className="text-base font-black uppercase tracking-wider text-white">Order Placed!</h3>
-            <p className="text-xs leading-relaxed text-slate-300">Your order has been received by the kitchen team and is now being processed.</p>
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[99999] flex items-center justify-center p-6" onClick={() => setOrderSuccess(null)}>
+          <div
+            className="w-full max-w-sm rounded-[var(--m3-shape-2xl)] bg-[#211a30] border border-[#483c5e]/40 p-6 shadow-2xl flex flex-col gap-5 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-14 h-14 rounded-full bg-[#4f378b]/40 flex items-center justify-center text-[#d0bcff] mx-auto shadow-lg text-2xl">
+              🎉
+            </div>
+            <h3 className="m3-title-medium">Order Placed!</h3>
+            <p className="text-xs leading-relaxed text-[#cac4d0]">Your order has been received by the kitchen team and is now being processed.</p>
             
-            <div className="p-4 bg-white/[0.02] border border-white/10 rounded-2xl flex flex-col gap-2.5 text-left text-xs font-semibold text-slate-300 select-text">
-              <div className="flex justify-between items-center w-full">
-                <span>Order Reference:</span>
-                <span className="font-mono text-white">#{orderSuccess._id}</span>
+            <div className="rounded-[var(--m3-shape-xl)] bg-[#292035]/50 border border-[#483c5e]/25 p-4 flex flex-col gap-2.5 text-left text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-[#cac4d0]">Order Reference</span>
+                <span className="font-bold text-[#e6e1e5]">#{orderSuccess._id}</span>
               </div>
-              <div className="flex justify-between items-center w-full">
-                <span>Student ID:</span>
-                <span className="text-white">{orderSuccess.StudentId}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[#cac4d0]">Student ID</span>
+                <span className="font-bold text-[#e6e1e5]">{orderSuccess.StudentId}</span>
               </div>
-              <div className="flex justify-between items-center w-full">
-                <span>Total Amount:</span>
-                <span className="font-mono text-white">₹{orderSuccess.TotalAmount}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[#cac4d0]">Total Amount</span>
+                <span className="font-extrabold text-[#d0bcff]">₹{orderSuccess.TotalAmount}</span>
               </div>
             </div>
 
             <button
-              className="w-full bg-white text-[#141a27] hover:bg-slate-50 font-black rounded-xl py-3.5 shadow-md flex items-center justify-center transition active:scale-95 text-xs uppercase tracking-wider cursor-pointer"
+              className="m3-filled-button"
               onClick={() => setOrderSuccess(null)}
             >
               Back to Menu
