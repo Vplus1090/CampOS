@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Utensils, Calendar, BookOpen, KeyRound, X, QrCode, SmartphoneNfc, CreditCard, Eye, EyeOff, Lock } from 'lucide-react';
+import { Utensils, Calendar, BookOpen, KeyRound, X, QrCode, SmartphoneNfc, CreditCard, Eye, EyeOff, Lock, Palette } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -47,6 +47,23 @@ export default function LockScreen({ onLoginSuccess }) {
   const [setupSemester, setSetupSemester] = useState('Semester 1');
   const [guestShelfBranch, setGuestShelfBranch] = useState('All Branches');
   const [guestShelfSemester, setGuestShelfSemester] = useState('All Semesters');
+
+  // Theme states
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    return localStorage.getItem('campos-theme') || 'lavender';
+  });
+
+  const applyTheme = (themeId) => {
+    setCurrentTheme(themeId);
+    localStorage.setItem('campos-theme', themeId);
+    document.body.classList.remove('theme-lavender', 'theme-blue', 'theme-green', 'theme-orange', 'theme-yellow');
+    document.body.classList.add(`theme-${themeId}`);
+  };
+
+  useEffect(() => {
+    applyTheme(currentTheme);
+  }, [currentTheme]);
 
   // Additional Guest State Hooks
   const [showGuestQr, setShowGuestQr] = useState(false);
@@ -152,9 +169,9 @@ export default function LockScreen({ onLoginSuccess }) {
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-        className="absolute inset-0 z-[99999] bg-[#181125] flex flex-col overflow-hidden text-m3-onSurface"
+        className="absolute inset-0 z-[99999] bg-m3-surface flex flex-col overflow-hidden text-m3-onSurface"
       >
-        <div className={`flex-1 bg-[#181125] scrollbar-none ${
+        <div className={`flex-1 bg-m3-surface scrollbar-none ${
           (showGuestMess || showGuestCalendar || showGuestShelf)
             ? 'h-full max-h-full overflow-hidden'
             : 'overflow-y-auto p-4'
@@ -166,11 +183,11 @@ export default function LockScreen({ onLoginSuccess }) {
             <div className="flex flex-col items-center justify-center h-full gap-6 text-center relative">
               <button 
                 onClick={() => setShowGuestPayment(false)}
-                className="absolute top-4 left-4 p-3 rounded-full bg-[#292035] hover:bg-[#352a48] text-[#d0bcff] transition-colors cursor-pointer"
+                className="absolute top-4 left-4 p-3 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-primary transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
-              <h2 className="text-5xl font-black text-[#d0bcff] font-sans">₹{guestPaymentData?.amount || 60}</h2>
+              <h2 className="text-5xl font-black text-m3-primary font-sans">₹{guestPaymentData?.amount || 60}</h2>
               <p className="text-m3-onSurfaceVariant text-sm">Payment overlays simplified for lockscreen rewrite</p>
             </div>
           )}
@@ -178,11 +195,11 @@ export default function LockScreen({ onLoginSuccess }) {
             <div className="flex flex-col items-center justify-center h-full gap-6 text-center relative">
               <button 
                 onClick={() => setShowGuestQr(false)}
-                className="absolute top-4 left-4 p-3 rounded-full bg-[#292035] hover:bg-[#352a48] text-[#d0bcff] transition-colors cursor-pointer"
+                className="absolute top-4 left-4 p-3 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-primary transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
-               <QrCode size={180} className="text-[#d0bcff]" />
+               <QrCode size={180} className="text-m3-primary" />
                <p className="text-m3-onSurfaceVariant font-bold">Active Guest Pass QR</p>
             </div>
           )}
@@ -193,11 +210,23 @@ export default function LockScreen({ onLoginSuccess }) {
 
   return (
     <motion.div 
-      className="absolute inset-0 bg-[#181125] flex flex-col justify-between items-center p-6 z-[9999] overflow-hidden select-none font-sans text-m3-onSurface"
+      className="absolute inset-0 bg-m3-surface flex flex-col justify-between items-center p-6 z-[9999] overflow-hidden select-none font-sans text-m3-onSurface"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+      {/* 🎨 Theme Selector Trigger (Top Left) */}
+      <motion.button
+        type="button"
+        onClick={() => setShowThemeSelector(true)}
+        className="absolute top-5 left-5 z-20 flex items-center justify-center p-3 rounded-full bg-m3-surfaceContainerHigh border border-m3-outlineVariant shadow-sm text-m3-primary hover:text-m3-primary/80 transition-colors cursor-pointer"
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={springConfig}
+      >
+        <Palette size={16} />
+      </motion.button>
+
       {/* 🟢/🔴 Portal Online/Offline Status Indicator (Top Right) */}
       <motion.div 
         className="absolute top-5 right-5 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-m3-surfaceContainerHigh border border-m3-outlineVariant shadow-sm"
@@ -412,7 +441,7 @@ export default function LockScreen({ onLoginSuccess }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              className="bg-[#211a30]/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              className="bg-m3-surfaceContainer/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -426,9 +455,9 @@ export default function LockScreen({ onLoginSuccess }) {
 
               <div className="flex flex-col gap-3">
                 {[
-                  { label: 'Student (Demo)', user: 'student', pass: 'Student@123', color: 'bg-[#292035] hover:bg-[#352a48] text-[#e6e1e5]' },
-                  { label: 'Canteen Admin', user: 'canteen', pass: 'Canteen@123', color: 'bg-[#292035] hover:bg-[#352a48] text-[#e6e1e5]' },
-                  { label: 'Super Admin', user: 'admin', pass: 'CampOS@Admin123', color: 'bg-[#4f378b] hover:bg-[#5b3f9f] text-[#eaddff]' },
+                  { label: 'Student (Demo)', user: 'student', pass: 'Student@123', color: 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface' },
+                  { label: 'Canteen Admin', user: 'canteen', pass: 'Canteen@123', color: 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface' },
+                  { label: 'Super Admin', user: 'admin', pass: 'CampOS@Admin123', color: 'bg-m3-primaryContainer hover:bg-m3-primaryContainer/90 text-m3-onPrimaryContainer' },
                 ].map((profile) => (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
@@ -467,7 +496,7 @@ export default function LockScreen({ onLoginSuccess }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              className="bg-[#211a30]/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              className="bg-m3-surfaceContainer/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -485,7 +514,7 @@ export default function LockScreen({ onLoginSuccess }) {
                 <select
                   value={setupBranch}
                   onChange={(e) => setSetupBranch(e.target.value)}
-                  className="w-full bg-[#292035] text-[#e6e1e5] rounded-[18px] px-4 py-4 text-sm font-bold outline-none border-none appearance-none"
+                  className="w-full bg-m3-surfaceContainerHigh text-m3-onSurface rounded-[18px] px-4 py-4 text-sm font-bold outline-none border-none appearance-none"
                 >
                   <option value="Computer Science">Computer Science</option>
                   <option value="Electronics & Communication">Electronics & Communication</option>
@@ -500,7 +529,7 @@ export default function LockScreen({ onLoginSuccess }) {
                 <select
                   value={setupSemester}
                   onChange={(e) => setSetupSemester(e.target.value)}
-                  className="w-full bg-[#292035] text-[#e6e1e5] rounded-[18px] px-4 py-4 text-sm font-bold outline-none border-none appearance-none"
+                  className="w-full bg-m3-surfaceContainerHigh text-m3-onSurface rounded-[18px] px-4 py-4 text-sm font-bold outline-none border-none appearance-none"
                 >
                   {['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'].map(s => (
                     <option key={s} value={s}>{s}</option>
@@ -516,10 +545,85 @@ export default function LockScreen({ onLoginSuccess }) {
                   setShowShelfSetup(false);
                   setShowGuestShelf(true);
                 }}
-                className="w-full mt-2 py-4 bg-[#d0bcff] text-[#381e72] rounded-[20px] font-bold text-sm shadow-sm transition-colors hover:bg-[#d0bcff]/90"
+                className="w-full mt-2 py-4 bg-m3-primary text-m3-onPrimary rounded-[20px] font-bold text-sm shadow-sm transition-colors hover:bg-m3-primary/90"
               >
                 Access Shelf
               </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🎨 Theme Selector Popup Overlay */}
+      <AnimatePresence>
+        {showThemeSelector && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 z-[99999] flex items-end justify-center" 
+            onClick={() => setShowThemeSelector(false)}
+          >
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+              className="bg-m3-surfaceContainer/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-xl font-bold text-m3-onSurface">
+                  <Palette size={22} className="text-m3-primary" /> Active Theme
+                </h3>
+                <button onClick={() => setShowThemeSelector(false)} className="p-2 -mr-2 text-m3-onSurfaceVariant hover:text-m3-primary rounded-full hover:bg-white/5 transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {[
+                  { id: 'lavender', label: 'Lavender Theme', desc: 'Default expressive purple dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
+                  { id: 'blue', label: 'Sapphire Blue', desc: 'Premium cool tech blue dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
+                  { id: 'green', label: 'Emerald Green', desc: 'Natural forest green dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
+                  { id: 'orange', label: 'Sunset Orange', desc: 'Vibrant organic orange dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
+                  { id: 'yellow', label: 'Amber Yellow', desc: 'Warm bright yellow dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
+                ].map((theme) => {
+                  const isActive = currentTheme === theme.id;
+                  
+                  // Compute theme-specific preview indicator colors manually
+                  const previewColorClass = 
+                    theme.id === 'lavender' ? 'bg-[#d0bcff]' :
+                    theme.id === 'blue' ? 'bg-[#a8c7ff]' :
+                    theme.id === 'green' ? 'bg-[#85d996]' :
+                    theme.id === 'orange' ? 'bg-[#ffb77c]' :
+                    'bg-[#e6c449]';
+
+                  return (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      key={theme.id}
+                      onClick={() => {
+                        applyTheme(theme.id);
+                        setShowThemeSelector(false);
+                      }}
+                      className={`w-full rounded-[20px] p-4 flex flex-col transition-all text-left ${
+                        isActive 
+                          ? theme.color 
+                          : 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface border border-transparent'
+                      }`}
+                    >
+                      <span className="text-base font-bold leading-tight flex items-center gap-2">
+                        <span className={`w-3.5 h-3.5 rounded-full ${previewColorClass}`} />
+                        {theme.label}
+                      </span>
+                      <span className="text-xs mt-1 opacity-70">
+                        {theme.desc}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
             </motion.div>
           </motion.div>
         )}

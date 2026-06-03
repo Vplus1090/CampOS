@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   UserPlus, Send, MessageCircle, X, Search, 
-  Trash2, Flag, CheckCircle2 
+  Trash2, Flag, CheckCircle2, RefreshCw 
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
+import M3ScreenHeader from './M3ScreenHeader';
 
 export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onStartChat }) {
   const [gigs, setGigs] = useState([]);
@@ -11,6 +12,9 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewTab, setViewTab] = useState('listings');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(null); // { message, onConfirm }
+  const [promptDialog, setPromptDialog] = useState(null); // { title, message, value, onConfirm }
   
   // Started chats tracker to dynamically flag matches & move them to ongoing
   const [startedChats, setStartedChats] = useState(() => {
@@ -20,6 +24,10 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
       return [];
     }
   });
+
+  const handleScroll = (e) => {
+    setIsScrolled(e.target.scrollTop > 12);
+  };
 
   const handleStartChat = (studentName) => {
     if (!startedChats.includes(studentName)) {
@@ -103,84 +111,90 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to permanently delete this skill swap listing?')) return;
-
-    try {
-      const res = await fetch(`${API_BASE}/api/skillgigs/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to remove skill swap');
+  const handleDelete = (id) => {
+    setConfirmDialog({
+      message: 'Are you sure you want to permanently delete this skill swap listing?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/skillgigs/${id}`, {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || 'Failed to remove skill swap');
+          }
+          
+          fetchGigs(searchQuery);
+          if (onUpdate) onUpdate();
+        } catch (err) {
+          alert(err.message);
+        }
       }
-      
-      fetchGigs(searchQuery);
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      alert(err.message);
-    }
+    });
   };
 
-  const handleMarkAsDone = async (id) => {
-    if (!window.confirm('Mark this skill swap match as successfully completed/done?')) return;
-
-    try {
-      const res = await fetch(`${API_BASE}/api/skillgigs/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ Status: 'Completed' }),
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to complete swap');
+  const handleMarkAsDone = (id) => {
+    setConfirmDialog({
+      message: 'Mark this skill swap match as successfully completed/done?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/skillgigs/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Status: 'Completed' }),
+            credentials: 'include',
+          });
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || 'Failed to complete swap');
+          }
+          
+          fetchGigs(searchQuery);
+          if (onUpdate) onUpdate();
+        } catch (err) {
+          alert(err.message);
+        }
       }
-      
-      fetchGigs(searchQuery);
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      alert(err.message);
-    }
+    });
   };
 
-  const handleReport = async (id) => {
-    const reason = window.prompt('Please enter the reason for reporting this listing:');
-    if (reason === null) return;
-    if (!reason.trim()) {
-      alert('Report reason is required.');
-      return;
-    }
+  const handleReport = (id) => {
+    setPromptDialog({
+      title: 'Report Listing',
+      message: 'Please enter the reason for reporting this listing:',
+      value: '',
+      onConfirm: async (reason) => {
+        try {
+          const res = await fetch(`${API_BASE}/api/skillgigs/${id}/report`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ReportReason: reason }),
+            credentials: 'include',
+          });
 
-    try {
-      const res = await fetch(`${API_BASE}/api/skillgigs/${id}/report`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ReportReason: reason.trim() }),
-        credentials: 'include',
-      });
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || 'Failed to report listing');
+          }
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to report listing');
+          alert('Thank you. The listing has been reported.');
+          fetchGigs(searchQuery);
+          if (onUpdate) onUpdate();
+        } catch (err) {
+          alert(err.message);
+        }
       }
-
-      alert('Thank you. The listing has been reported.');
-      fetchGigs(searchQuery);
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      alert(err.message);
-    }
+    });
   };
 
-  // Helper to color circles dynamically
+  // Helper to color circles dynamically using Material 3 containers
   const getAvatarBg = (name) => {
     const letter = name.charAt(0).toUpperCase();
-    if (letter === 'V' || letter === 'S') return 'bg-white/30';
-    if (letter === 'K' || letter === 'R') return 'bg-white/25';
-    if (letter === 'D' || letter === 'A') return 'bg-white/20';
-    return 'bg-white/15';
+    if (letter === 'V' || letter === 'S') return 'bg-m3-primaryContainer/40 text-m3-onPrimaryContainer';
+    if (letter === 'K' || letter === 'R') return 'bg-m3-surfaceContainerHighest text-m3-primary';
+    if (letter === 'D' || letter === 'A') return 'bg-m3-tertiaryContainer/40 text-m3-onTertiaryContainer';
+    return 'bg-m3-secondaryContainer text-m3-onSecondaryContainer';
   };
 
   const ongoingGigs = gigs.filter(gig => gig.StudentName.toLowerCase() === 'kunal' || startedChats.includes(gig.StudentName));
@@ -188,252 +202,313 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
   const displayedGigs = viewTab === 'listings' ? listingsGigs : ongoingGigs;
 
   return (
-    <div className="skillgigs-module flex flex-col gap-4 text-white font-sans min-h-screen pb-24 relative select-none">
-      {/* Header title */}
-      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between">
-        <div className="flex items-center">
-          <button
-            onClick={() => setActiveTab && setActiveTab('home')}
-            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-            type="button"
-          >
-            <span className="text-xl font-bold">&larr;</span>
-          </button>
-          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-            Skill Swap
-          </h2>
-        </div>
+    <div className="m3-screen skillgigs-module">
+      {/* M3 Header */}
+      <M3ScreenHeader
+        title="Skill Swap"
+        subtitle="Learn & teach with peers"
+        isScrolled={isScrolled}
+        onBack={() => setActiveTab && setActiveTab('home')}
+      />
+
+      {/* Main Scroll Area */}
+      <div onScroll={handleScroll} className="m3-screen__scroll">
         
-        {/* Search toggle or active count */}
-        <span className="bg-white/[0.05] border border-white/10 text-slate-300 font-bold font-mono text-[9px] px-3.5 py-1.5 rounded-full uppercase tracking-widest shrink-0">
-          {viewTab === 'listings' ? `${listingsGigs.length} Listings` : `${ongoingGigs.length} Matches`}
-        </span>
-      </header>
-
-      {/* Segmented Tab Switcher */}
-      <div className="flex justify-center w-full py-1 shrink-0 select-none">
-        <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner backdrop-blur-md">
-          <button
-            onClick={() => setViewTab('listings')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
-              viewTab === 'listings'
-                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-            type="button"
-          >
-            Listings ({listingsGigs.length})
-          </button>
-          <button
-            onClick={() => setViewTab('ongoing')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
-              viewTab === 'ongoing'
-                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-            type="button"
-          >
-            Ongoing ({ongoingGigs.length})
-          </button>
-        </div>
-      </div>
-
-      {/* ─── Top Dark Card: Offer a Skill ─── */}
-      {viewTab === 'listings' && isStudent && (
-        <div className="bg-white/[0.02] backdrop-blur-3xl border-2 border-white/15 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] relative overflow-hidden group">
-          
-          <div className="flex items-center gap-2 border-b border-white/5 pb-3 z-10">
-            <UserPlus size={18} className="text-white/60" />
-            <h3 className="font-extrabold text-base tracking-wide font-sans">Offer a Skill</h3>
+        {/* Segmented Chips Switcher */}
+        <div className="flex justify-center w-full py-1 shrink-0 select-none">
+          <div className="m3-segmented-chips">
+            <button
+              onClick={() => setViewTab('listings')}
+              className={`m3-segmented-chip ${viewTab === 'listings' ? 'm3-segmented-chip--selected' : ''}`}
+              type="button"
+            >
+              Listings
+            </button>
+            <button
+              onClick={() => setViewTab('ongoing')}
+              className={`m3-segmented-chip ${viewTab === 'ongoing' ? 'm3-segmented-chip--selected' : ''}`}
+              type="button"
+            >
+              Chats
+            </button>
           </div>
+        </div>
 
-          <form onSubmit={handleCreateGig} className="flex flex-col gap-3 z-10">
-            {/* Input 1: What can you teach */}
-            <input
-              type="text"
-              placeholder="What can you teach? (e.g. Guitar)"
-              value={skillOffered}
-              onChange={(e) => setSkillOffered(e.target.value)}
-              required
-              className="w-full bg-white/[0.04] text-white placeholder-slate-500 border border-white/10 focus:ring-1 focus:ring-white/20 focus:border-white/30 rounded-2xl p-4 text-sm font-semibold transition-all placeholder:text-xs placeholder:font-normal"
-            />
+        {/* Offer a Skill Form Panel */}
+        {viewTab === 'listings' && isStudent && (
+          <div className="m3-surface-card p-5 flex flex-col gap-4 text-left shadow-sm">
+            <div className="flex items-center gap-2 border-b border-[#cac4d0]/10 pb-3">
+              <UserPlus size={18} className="text-[#cac4d0]" />
+              <h3 className="m3-title-small text-[#e6e1e5]">Offer a Skill</h3>
+            </div>
 
-            {/* Row combining Input 2 and Purple paper plane send button */}
-            <div className="flex items-center gap-3">
+            <form onSubmit={handleCreateGig} className="flex flex-col gap-3">
+              {/* Input 1: What can you teach */}
               <input
                 type="text"
-                placeholder="What do you want to learn?"
-                value={skillWanted}
-                onChange={(e) => setSkillWanted(e.target.value)}
+                placeholder="What can you teach? (e.g. Guitar)"
+                value={skillOffered}
+                onChange={(e) => setSkillOffered(e.target.value)}
                 required
-                className="flex-1 bg-white/[0.04] text-white placeholder-slate-500 border border-white/10 focus:ring-1 focus:ring-white/20 focus:border-white/30 rounded-2xl p-4 text-sm font-semibold transition-all placeholder:text-xs placeholder:font-normal"
+                className="m3-filled-field !h-[48px] text-sm"
               />
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-12 h-12 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 transform shrink-0 disabled:opacity-50 cursor-pointer"
-              >
-                <Send size={16} className="text-white" />
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
-      {/* Search Input Filter */}
-      {viewTab === 'listings' && (
-        <div className="search-filter-container w-full mt-0 !mb-0">
-          <div className="relative flex items-center w-full">
-            <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 z-10">
+              {/* Row combining Input 2 and Purple send button */}
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="What do you want to learn?"
+                  value={skillWanted}
+                  onChange={(e) => setSkillWanted(e.target.value)}
+                  required
+                  className="m3-filled-field flex-1 !h-[48px] text-sm"
+                />
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-12 h-12 bg-m3-primary text-m3-onPrimary hover:brightness-110 active:scale-95 rounded-2xl flex items-center justify-center shadow-md transition-all duration-300 transform shrink-0 disabled:opacity-50 cursor-pointer"
+                >
+                  <Send size={16} />
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Search Input Filter */}
+        {viewTab === 'listings' && (
+          <div className="relative w-full shrink-0">
+            <span className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-[#948baf] z-10">
               <Search size={16} />
             </span>
             <input
               type="text"
-              className="w-full bg-white/[0.04] border border-white/10 focus:ring-1 focus:ring-white/20 focus:border-white/30 text-white placeholder-slate-400 pl-11 pr-10 py-3.5 rounded-2xl text-xs font-semibold backdrop-blur-md text-left placeholder:text-left"
+              className="m3-filled-field !pl-12 !pr-10 !rounded-full !h-[48px] text-sm"
               placeholder="Search for skills, listings, or students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
               <button 
-                className="absolute right-4 text-slate-400 hover:text-slate-200 cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#cac4d0] hover:text-[#e6e1e5] cursor-pointer"
                 onClick={() => setSearchQuery('')}
+                type="button"
               >
                 ✕
               </button>
             )}
           </div>
+        )}
+
+        {/* Content Listings Feed */}
+        {loading ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
+            <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Loading board...</span>
+          </div>
+        ) : error ? (
+          <div className="m3-surface-card p-6 flex flex-col items-center gap-3 text-center">
+            <p className="text-sm font-semibold text-[#e6e1e5]">⚠️ {error}</p>
+            <button 
+              className="m3-filled-button" 
+              style={{ maxWidth: 160 }} 
+              onClick={() => fetchGigs(searchQuery)}
+              type="button"
+            >
+              Retry
+            </button>
+          </div>
+        ) : displayedGigs.length === 0 ? (
+          <div className="m3-surface-card p-8 flex flex-col items-center justify-center gap-3 text-center select-none">
+            <div className="w-12 h-12 rounded-2xl bg-m3-primaryContainer/30 flex items-center justify-center text-m3-primary shadow-md">
+              <UserPlus size={22} />
+            </div>
+            <p className="text-sm font-semibold text-[#e6e1e5]">
+              {viewTab === 'listings' ? 'No active listings found.' : 'No ongoing chats found.'}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {displayedGigs.map((gig) => {
+              const isOwnListing = gig.StudentName === currentUser?.firstName;
+              const isAccepted = gig.StudentName.toLowerCase() === 'kunal' || startedChats.includes(gig.StudentName);
+
+              return (
+                <div 
+                  key={gig.id || gig._id} 
+                  className="m3-surface-card p-5 flex flex-col gap-4 text-left shadow-sm relative overflow-hidden transition-all duration-300 hover:scale-[1.01]"
+                >
+                  {/* Header Row */}
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex items-center gap-3">
+                      {/* Avatar containing student initial */}
+                      <div className={`w-12 h-12 ${getAvatarBg(gig.StudentName)} rounded-full flex items-center justify-center shadow-inner border border-[#cac4d0]/10 shrink-0 min-w-[48px] min-h-[48px]`}>
+                        <span className="font-extrabold text-base tracking-tighter">
+                          {gig.StudentName.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="m3-title-medium text-white leading-tight">
+                          {gig.SkillOffered}
+                        </h4>
+                        <span className="text-[10px] font-bold text-[#cac4d0] font-mono tracking-widest uppercase block mt-1">
+                          BY {gig.StudentName}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Flag report button for peer listings */}
+                    {!isOwnListing && !isSuperAdmin && (
+                      <button
+                        onClick={() => handleReport(gig.id || gig._id)}
+                        className="text-[#cac4d0] hover:text-[#efb8c8] p-1.5 transition-colors cursor-pointer animate-none"
+                        title="Report Listing"
+                        type="button"
+                      >
+                        <Flag size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Looking for Wanted Skill Pill */}
+                  <div className="bg-m3-surfaceContainerLow/60 border border-m3-outlineVariant/30 p-3.5 rounded-2xl w-full text-left">
+                    <p className="m3-body-small text-[#cac4d0]">
+                      Looking for: <span className="text-[#eaddff] font-bold ml-1">{gig.SkillWanted}</span>
+                    </p>
+                  </div>
+
+                  {/* Footer Actions */}
+                  <div className="w-full mt-1">
+                    {isSuperAdmin ? (
+                      <button
+                        onClick={() => handleDelete(gig.id || gig._id)}
+                        className="m3-filled-button bg-[#8c1d18] text-[#f9dedc] hover:brightness-110 !min-h-[44px]"
+                        type="button"
+                      >
+                        <Trash2 size={16} /> Moderate (Delete Listing)
+                      </button>
+                    ) : isOwnListing ? (
+                      <button
+                        onClick={() => handleDelete(gig.id || gig._id)}
+                        className="m3-filled-button bg-[#483c5e] text-[#e6e1e5] hover:brightness-110 !min-h-[44px]"
+                        type="button"
+                      >
+                        <Trash2 size={16} /> Delete Post
+                      </button>
+                    ) : isAccepted ? (
+                      <div className="bg-m3-surfaceContainer border border-m3-outlineVariant/30 rounded-2xl p-4 flex flex-col items-center gap-3 w-full">
+                        <span className="text-[#cac4d0] font-bold text-[10px] uppercase tracking-widest block text-center font-mono">
+                          {gig.Status === 'Completed' ? '✓ SWAP COMPLETED' : 'REQUEST ACCEPTED!'}
+                        </span>
+                        
+                        {gig.Status === 'Completed' ? (
+                          <div className="w-full py-3 bg-m3-secondaryContainer text-m3-onSecondaryContainer rounded-2xl text-xs font-bold flex items-center justify-center gap-2 select-none shadow-sm">
+                            <CheckCircle2 size={15} /> Swap Completed!
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2.5 w-full">
+                            <button
+                              onClick={() => handleStartChat(gig.StudentName)}
+                              className="m3-filled-button bg-m3-primary text-m3-onPrimary hover:brightness-110 !min-h-[44px] flex items-center justify-center gap-2 font-bold text-xs"
+                              type="button"
+                            >
+                              <MessageCircle size={15} /> Open Chat with {gig.StudentName}
+                            </button>
+                            <button
+                              onClick={() => handleMarkAsDone(gig.id || gig._id)}
+                              className="m3-filled-button bg-m3-surfaceVariant text-m3-onSurfaceVariant hover:brightness-110 !min-h-[40px] flex items-center justify-center gap-1.5 font-bold text-xs"
+                              type="button"
+                            >
+                              Mark as Done ✓
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleStartChat(gig.StudentName)}
+                        className="m3-filled-button bg-m3-secondaryContainer text-m3-onSecondaryContainer hover:brightness-110 !min-h-[44px] flex items-center justify-center gap-2 font-bold text-xs"
+                        type="button"
+                      >
+                        <MessageCircle size={15} /> Chat with {gig.StudentName}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+      </div>
+
+      {/* Custom Confirm Dialog */}
+      {confirmDialog && (
+        <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
+          <div className="m3-surface-card p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in">
+            <h3 className="m3-title-medium text-white">Confirm Action</h3>
+            <p className="m3-body-small text-[#cac4d0]">{confirmDialog.message}</p>
+            <div className="flex justify-end gap-2.5 mt-2">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="m3-filled-button bg-m3-surfaceVariant text-m3-onSurfaceVariant !min-h-[36px] text-xs !py-1 px-3 w-auto"
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  confirmDialog.onConfirm();
+                  setConfirmDialog(null);
+                }}
+                className="m3-filled-button bg-m3-primary text-m3-onPrimary !min-h-[36px] text-xs !py-1 px-3 w-auto"
+                type="button"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Content Listings Feed */}
-      {loading ? (
-        <div className="loading-state py-8 text-center">
-          <div className="spinner mx-auto border-t-white"></div>
-          <p className="text-xs font-mono text-slate-400 mt-4">Loading board...</p>
-        </div>
-      ) : error ? (
-        <div className="error-state text-center py-6">
-          <p className="text-sm font-medium text-slate-400">⚠️ {error}</p>
-          <button className="bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white rounded-xl px-4 py-2 text-xs font-semibold mt-2 cursor-pointer" onClick={() => fetchGigs(searchQuery)}>Retry</button>
-        </div>
-      ) : displayedGigs.length === 0 ? (
-        <div className="empty-state text-center py-12 bg-white/[0.02] rounded-[32px] border border-white/5">
-          <p className="text-sm font-bold text-slate-400">
-            {viewTab === 'listings' ? 'No active listings found.' : 'No ongoing matches found.'}
-          </p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {displayedGigs.map((gig) => {
-            const isOwnListing = gig.StudentName === currentUser?.firstName;
-            
-            // Dynamic check if listing is accepted (either Kunal or actively started chat)
-            const isAccepted = gig.StudentName.toLowerCase() === 'kunal' || startedChats.includes(gig.StudentName);
-
-            const cardBorder = isOwnListing 
-              ? 'border-white/20 bg-white/[0.04]'
-              : 'border-white/10 bg-white/[0.03]';
-
-            return (
-              <div 
-                key={gig.id || gig._id} 
-                className={`rounded-[28px] p-5 flex flex-col gap-4 border-2 ${cardBorder} backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-300 hover:scale-[1.01]`}
+      {/* Custom Prompt Dialog */}
+      {promptDialog && (
+        <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
+          <div className="m3-surface-card backdrop-blur-md p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in">
+            <h3 className="m3-title-medium text-white">{promptDialog.title}</h3>
+            <p className="m3-body-small text-[#cac4d0]">{promptDialog.message}</p>
+            <input
+              type="text"
+              value={promptDialog.value}
+              onChange={(e) => setPromptDialog(prev => ({ ...prev, value: e.target.value }))}
+              placeholder="Reason..."
+              className="m3-filled-field !h-[40px] text-xs"
+              autoFocus
+            />
+            <div className="flex justify-end gap-2.5 mt-2">
+              <button
+                onClick={() => setPromptDialog(null)}
+                className="m3-filled-button bg-m3-surfaceVariant text-m3-onSurfaceVariant !min-h-[36px] text-xs !py-1 px-3 w-auto"
+                type="button"
               >
-                {/* Header Row */}
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex items-center gap-3">
-                    {/* Pink/purple circular avatar containing student initial */}
-                    <div className={`w-12 h-12 ${getAvatarBg(gig.StudentName)} rounded-full flex items-center justify-center shadow-inner border border-white/10 shrink-0 min-w-[48px] min-h-[48px]`}>
-                      <span className="text-white font-extrabold text-base tracking-tighter">
-                        {gig.StudentName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="text-left">
-                      <h4 className="text-base font-extrabold text-white leading-tight font-sans">
-                        {gig.SkillOffered}
-                      </h4>
-                      <span className="text-[10px] font-bold text-slate-400 font-mono tracking-widest uppercase block mt-1">
-                        BY {gig.StudentName}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Flag report button for peer listings */}
-                  {!isOwnListing && !isSuperAdmin && (
-                    <button
-                      onClick={() => handleReport(gig.id || gig._id)}
-                      className="text-slate-400 hover:text-red-400 p-1.5 transition-colors cursor-pointer"
-                      title="Report Listing"
-                    >
-                      <Flag size={14} />
-                    </button>
-                  )}
-                </div>
-
-                {/* Looking for Wanted Skill Pill */}
-                <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl w-full flex items-center shadow-inner">
-                  <p className="text-xs font-semibold text-slate-300 font-sans text-left">
-                    Looking for: <span className="text-white/80 font-black ml-1">{gig.SkillWanted}</span>
-                  </p>
-                </div>
-
-                {/* Footer Buttons Section */}
-                <div className="w-full mt-1">
-                  {isSuperAdmin ? (
-                    <button
-                      onClick={() => handleDelete(gig.id || gig._id)}
-                      className="w-full py-3 bg-red-500/15 border border-red-500/30 hover:bg-red-500/25 active:scale-95 text-red-400 font-bold rounded-2xl text-xs uppercase tracking-wide transition-all shadow-md cursor-pointer"
-                    >
-                      Moderate (Delete Listing)
-                    </button>
-                  ) : isOwnListing ? (
-                    /* Delete Post full-width glassy button */
-                    <button
-                      onClick={() => handleDelete(gig.id || gig._id)}
-                      className="w-full py-3.5 bg-white/[0.05] border border-white/15 text-slate-200 hover:bg-white/[0.1] active:scale-95 font-bold rounded-2xl text-xs tracking-wider transition-all text-center backdrop-blur-md shadow-md cursor-pointer"
-                    >
-                      Delete Post
-                    </button>
-                  ) : isAccepted ? (
-                    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-3 w-full shadow-inner">
-                      <span className="text-white/60 font-black text-[10px] uppercase tracking-widest block text-center font-mono">
-                        {gig.Status === 'Completed' ? '✓ SWAP COMPLETED' : 'REQUEST ACCEPTED!'}
-                      </span>
-                      
-                      {gig.Status === 'Completed' ? (
-                        <div className="w-full py-3.5 bg-white/10 border border-white/20 text-white/75 font-black rounded-2xl text-xs flex items-center justify-center gap-2 select-none shadow-md">
-                          <CheckCircle2 size={15} /> Swap Completed!
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-2.5 w-full">
-                          <button
-                            onClick={() => handleStartChat(gig.StudentName)}
-                            className="w-full py-3.5 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-extrabold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
-                          >
-                            <MessageCircle size={15} /> Open Chat with {gig.StudentName}
-                          </button>
-                          <button
-                            onClick={() => handleMarkAsDone(gig.id || gig._id)}
-                            className="w-full py-2.5 bg-white/[0.05] border border-white/10 hover:bg-white/[0.1] active:scale-95 text-slate-300 hover:text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer backdrop-blur-md shadow-sm"
-                          >
-                            Mark as Done ✓
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleStartChat(gig.StudentName)}
-                      className="w-full py-3.5 bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 active:scale-95 text-white/70 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all backdrop-blur-md shadow-md cursor-pointer"
-                    >
-                      <MessageCircle size={15} /> Chat with {gig.StudentName}
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (promptDialog.value.trim()) {
+                    promptDialog.onConfirm(promptDialog.value.trim());
+                    setPromptDialog(null);
+                  } else {
+                    alert('Reason is required.');
+                  }
+                }}
+                className="m3-filled-button bg-m3-primary text-m3-onPrimary !min-h-[36px] text-xs !py-1 px-3 w-auto"
+                type="button"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

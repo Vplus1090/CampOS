@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
-  ArrowRight, Award, Calendar, BookOpen, Clock, 
-  DollarSign, CheckCircle2, AlertTriangle, TrendingUp,
-  ChevronDown, ChevronUp, RefreshCw, X, Shield, Lock, 
+  ChevronLeft, ChevronDown, ChevronUp, RefreshCw, X, Shield, Lock, 
   MapPin, Phone, Mail, User, Building, Landmark, Percent,
-  ArrowLeft, Download, Eye, EyeOff, Calculator, Grid3x3, ListFilter, SortAsc, SortDesc, Archive, Plus, Trash2
+  ArrowLeft, Download, Eye, EyeOff, Calculator, Grid3x3, ListFilter, SortAsc, SortDesc, Archive, Plus, Trash2,
+  ArrowRight, Award, Calendar, BookOpen, Clock, 
+  DollarSign, CheckCircle2, AlertTriangle, TrendingUp
 } from 'lucide-react';
 import { WebPortal } from '../utils/jsjiit';
 import { 
@@ -16,17 +16,18 @@ import {
   getProfileDataFromCache, saveProfileDataToCache,
   getExamScheduleFromCache, saveExamScheduleToCache,
   getUsername, getPassword, setCredentials, clearCredentials,
-  getAttendanceGoal, setAttendanceGoal, getCachedValueIfAny, getFromCache, saveToCache
+  getAttendanceGoal, setAttendanceGoal, getCachedValueIfAny, getFromCache, saveToCache,
+  saveRegisteredSubjectsToCache, getRegisteredSubjectsFromCache
 } from '../utils/cache';
 import { 
   calculateClassesNeeded, calculateClassesCanMiss
 } from '../utils/math';
 import { API_BASE } from '../config/api';
 import { resolveCurrentSemesterLabel, formatStyNumber } from '../utils/semester';
-
+ 
 // Premium ultra-glassy frosted card styles
-const obsidianCardClass = "border border-white/[0.08] bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl rounded-[28px] p-5 relative overflow-hidden transition-all duration-300";
-const obsidianCardHoverClass = "hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.1)]";
+const obsidianCardClass = "m3-surface-card shadow-2xl rounded-[24px] p-5 relative overflow-hidden transition-all duration-300";
+const obsidianCardHoverClass = "hover:bg-white/[0.05]";
 
 const gradePointMap = {
   "A+": 10,
@@ -308,6 +309,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
   const [marksSemesterData, setMarksSemesterData] = useState(null); // stores { courses: [...] }
   const [isMarksFromCache, setIsMarksFromCache] = useState(false);
   const [marksCacheTimestamp, setMarksCacheTimestamp] = useState(null);
+  const [marksGradesList, setMarksGradesList] = useState([]);
   const [timetableEvents, setTimetableEvents] = useState([]);
   const [feeInvoices, setFeeInvoices] = useState([]);
   const [feesLoading, setFeesLoading] = useState(false);
@@ -315,6 +317,44 @@ export default function StudentDashboard({ currentUser, onClose }) {
   const [isFeesFromCache, setIsFeesFromCache] = useState(false);
   const [feesCacheTimestamp, setFeesCacheTimestamp] = useState(null);
   const [examScheduleList, setExamScheduleList] = useState([]);
+
+  // --- Subjects & GPA Calculator States ---
+  const [subjectsList, setSubjectsList] = useState([]);
+  const [selectedSubjectsSem, setSelectedSubjectsSem] = useState(() => {
+    const enroll = getUsername(currentUser?.email);
+    if (enroll) {
+      const cached = localStorage.getItem(`semesters-${enroll}`);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          const list = parsed.data || parsed;
+          return list[0] || null;
+        } catch (e) {}
+      }
+    }
+    return null;
+  });
+  const [subjectsLoading, setSubjectsLoading] = useState(false);
+  const [subjectsError, setSubjectsError] = useState(null);
+
+  const [calcMode, setCalcMode] = useState('sgpa'); // 'sgpa' | 'cgpa'
+  const [calcSubjects, setCalcSubjects] = useState([]);
+  const [cgpaPrevCgpa, setCgpaPrevCgpa] = useState('');
+  const [cgpaPrevCredits, setCgpaPrevCredits] = useState('');
+  const [calculatorSelectedSem, setCalculatorSelectedSem] = useState(() => {
+    const enroll = getUsername(currentUser?.email);
+    if (enroll) {
+      const cached = localStorage.getItem(`semesters-${enroll}`);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          const list = parsed.data || parsed;
+          return list[0] || null;
+        } catch (e) {}
+      }
+    }
+    return null;
+  });
 
   // --- Real-time Synchronized Component Marks Cache ---
   const cachedSemMarks = useMemo(() => {
@@ -336,21 +376,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
   // --- Initialize Client Instance ---
   const wp = useMemo(() => new WebPortal({ apiUrl: `${API_BASE}/api/webportal/proxy` }), []);
-
-  // --- Collapsible Header scroll tracking ---
-  const [showHeaderCard, setShowHeaderCard] = useState(true);
-  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleScroll = (e) => {
-    const scrollTop = e.currentTarget.scrollTop;
-    // Hide header if scrolling down and scrolled past 20px
-    if (scrollTop > lastScrollTop && scrollTop > 20) {
-      setShowHeaderCard(false);
-    } else if (scrollTop < lastScrollTop) {
-      // Show header if scrolling up
-      setShowHeaderCard(true);
-    }
-    setLastScrollTop(scrollTop);
+    setIsScrolled(e.currentTarget.scrollTop > 10);
   };
 
   // --- Auto Login & Silent Sync Trigger & Cache Load ---
@@ -573,6 +602,19 @@ export default function StudentDashboard({ currentUser, onClose }) {
       try {
         const timetableRes = await wp.get_registered_subjects_and_faculties(latestSemObj);
         const rawSubjects = timetableRes.subjectlist || [];
+        
+        // Cache subjects for the active semester
+        await saveRegisteredSubjectsToCache(rawSubjects, enroll, latestSemObj);
+        
+        // Update subjects state
+        if (!selectedSubjectsSem || selectedSubjectsSem.registrationid === latestSemObj.registrationid || selectedSubjectsSem.registrationcode === latestSemObj.registrationcode) {
+          setSelectedSubjectsSem(latestSemObj);
+          setSubjectsList(rawSubjects);
+        }
+        if (!calculatorSelectedSem || calculatorSelectedSem.registrationid === latestSemObj.registrationid || calculatorSelectedSem.registrationcode === latestSemObj.registrationcode) {
+          setCalculatorSelectedSem(latestSemObj);
+        }
+
         const parsedTimetable = [];
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
@@ -701,6 +743,213 @@ export default function StudentDashboard({ currentUser, onClose }) {
     }
   };
 
+  // --- Subjects & GPA Calculator Helpers ---
+  const isLabSubject = (sub) => {
+    const code = (sub.subjectcode || '').toLowerCase();
+    const desc = (sub.subjectdesc || '').toLowerCase();
+    const comp = (sub.subjectcomponentcode || '').toLowerCase();
+    return comp === 'p' || comp === 'l' || desc.includes('lab') || desc.includes('practical') || code.endsWith('l');
+  };
+
+  const getSubjectCredits = (subCode) => {
+    if (Array.isArray(gradesList)) {
+      const match = gradesList.find(g => g.name === subCode);
+      if (match && match.coursecreditpoint) return match.coursecreditpoint;
+    }
+    const isLab = (subCode || '').toLowerCase().endsWith('l') || (subCode || '').toLowerCase().includes('lab');
+    return isLab ? 1 : 3;
+  };
+
+  const handleSubjectsSemesterChange = async (semObj) => {
+    setSelectedSubjectsSem(semObj);
+    if (!enrollmentNo) return;
+    
+    setSubjectsLoading(true);
+    setSubjectsError(null);
+
+    const cached = await getRegisteredSubjectsFromCache(enrollmentNo, semObj);
+    if (cached && cached.length > 0) {
+      setSubjectsList(cached);
+      setSubjectsLoading(false);
+      return;
+    }
+
+    try {
+      const pass = getPassword(currentUser?.email);
+      if (pass) {
+        await wp.student_login(enrollmentNo, pass);
+      }
+      const res = await wp.get_registered_subjects_and_faculties(semObj);
+      const rawSubjects = res.subjectlist || [];
+      setSubjectsList(rawSubjects);
+      await saveRegisteredSubjectsToCache(rawSubjects, enrollmentNo, semObj);
+    } catch (err) {
+      console.error('Failed to load registered subjects:', err);
+      setSubjectsError('Failed to fetch subjects. Please try again.');
+    } finally {
+      setSubjectsLoading(false);
+    }
+  };
+
+  const populateCalcFromSemester = async (sem) => {
+    if (!sem) return;
+    const enroll = getUsername(currentUser?.email);
+    if (!enroll) return;
+
+    let subjects = [];
+    const cached = await getRegisteredSubjectsFromCache(enroll, sem);
+    if (cached && cached.length > 0) {
+      subjects = cached;
+    } else {
+      try {
+        const pass = getPassword(currentUser?.email);
+        if (pass) {
+          await wp.student_login(enroll, pass);
+          const res = await wp.get_registered_subjects_and_faculties(sem);
+          subjects = res.subjectlist || [];
+          await saveRegisteredSubjectsToCache(subjects, enroll, sem);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch subjects for calculator:', err);
+      }
+    }
+
+    if (subjects.length > 0) {
+      const formatted = subjects.map(s => ({
+        id: s.subjectcode || Math.random().toString(36).substr(2, 9),
+        name: s.subjectdesc || s.subjectcode,
+        code: s.subjectcode,
+        credits: getSubjectCredits(s.subjectcode),
+        selectedGrade: ''
+      }));
+      setCalcSubjects(formatted);
+    } else {
+      setCalcSubjects([]);
+    }
+  };
+
+  const addCustomCalcSubject = () => {
+    const newSub = {
+      id: 'custom-' + Date.now(),
+      name: 'Custom Course',
+      code: 'CUSTOM',
+      credits: 3,
+      selectedGrade: ''
+    };
+    setCalcSubjects([...calcSubjects, newSub]);
+  };
+
+  const removeCalcSubject = (id) => {
+    setCalcSubjects(calcSubjects.filter(sub => sub.id !== id));
+  };
+
+  const updateCalcSubjectGrade = (id, grade) => {
+    setCalcSubjects(calcSubjects.map(sub => sub.id === id ? { ...sub, selectedGrade: grade } : sub));
+  };
+
+  const updateCalcSubjectCredits = (id, credits) => {
+    setCalcSubjects(calcSubjects.map(sub => sub.id === id ? { ...sub, credits: Number(credits) || 0 } : sub));
+  };
+
+  const updateCalcSubjectName = (id, name) => {
+    setCalcSubjects(calcSubjects.map(sub => sub.id === id ? { ...sub, name } : sub));
+  };
+
+  const calculatedSgpaResult = useMemo(() => {
+    let totalPoints = 0;
+    let totalCredits = 0;
+    
+    calcSubjects.forEach(sub => {
+      const grade = sub.selectedGrade;
+      const credits = Number(sub.credits) || 0;
+      if (grade && gradePointMap[grade] !== undefined) {
+        totalPoints += gradePointMap[grade] * credits;
+        totalCredits += credits;
+      }
+    });
+
+    if (totalCredits === 0) return { sgpa: '0.00', credits: 0 };
+    return {
+      sgpa: (totalPoints / totalCredits).toFixed(2),
+      credits: totalCredits
+    };
+  }, [calcSubjects]);
+
+  const calculatedCgpaResult = useMemo(() => {
+    const prevCgpa = parseFloat(cgpaPrevCgpa) || 0;
+    const prevCredits = parseFloat(cgpaPrevCredits) || 0;
+    const currentSgpa = parseFloat(calculatedSgpaResult.sgpa) || 0;
+    const currentCredits = parseFloat(calculatedSgpaResult.credits) || 0;
+
+    const totalCredits = prevCredits + currentCredits;
+    if (totalCredits === 0) return '0.00';
+    
+    return ((prevCgpa * prevCredits + currentSgpa * currentCredits) / totalCredits).toFixed(2);
+  }, [cgpaPrevCgpa, cgpaPrevCredits, calculatedSgpaResult]);
+
+  const latestCgpa = useMemo(() => {
+    if (gpaData?.cgpa) return gpaData.cgpa;
+    if (Array.isArray(gpaData?.semesterList) && gpaData.semesterList.length > 0) {
+      const sems = [...gpaData.semesterList].sort((a, b) => Number(a.stynumber) - Number(b.stynumber));
+      return sems[sems.length - 1]?.cgpa || '';
+    }
+    return '';
+  }, [gpaData]);
+
+  const estimatedCredits = useMemo(() => {
+    if (Array.isArray(gpaData?.semesterList)) {
+      const completedSemsCount = gpaData.semesterList.filter(s => s.sgpa && s.cgpa).length;
+      return completedSemsCount * 20;
+    }
+    return '';
+  }, [gpaData]);
+
+  useEffect(() => {
+    if (latestCgpa && !cgpaPrevCgpa) {
+      setCgpaPrevCgpa(latestCgpa);
+    }
+    if (estimatedCredits && !cgpaPrevCredits) {
+      setCgpaPrevCredits(String(estimatedCredits));
+    }
+  }, [latestCgpa, estimatedCredits]);
+
+  useEffect(() => {
+    if (activeTab === 'subjects' && selectedSubjectsSem) {
+      const load = async () => {
+        setSubjectsLoading(true);
+        setSubjectsError(null);
+        try {
+          const cached = await getRegisteredSubjectsFromCache(enrollmentNo, selectedSubjectsSem);
+          if (cached && cached.length > 0) {
+            setSubjectsList(cached);
+            setSubjectsLoading(false);
+            return;
+          }
+          const pass = getPassword(currentUser?.email);
+          if (pass && enrollmentNo) {
+            await wp.student_login(enrollmentNo, pass);
+            const res = await wp.get_registered_subjects_and_faculties(selectedSubjectsSem);
+            const rawSubjects = res.subjectlist || [];
+            setSubjectsList(rawSubjects);
+            await saveRegisteredSubjectsToCache(rawSubjects, enrollmentNo, selectedSubjectsSem);
+          }
+        } catch (err) {
+          console.error('Error fetching subjects:', err);
+          setSubjectsError('Failed to fetch subjects. Please try again.');
+        } finally {
+          setSubjectsLoading(false);
+        }
+      };
+      load();
+    }
+  }, [activeTab, selectedSubjectsSem, enrollmentNo]);
+
+  useEffect(() => {
+    if (activeTab === 'calculator' && calculatorSelectedSem && calcSubjects.length === 0) {
+      populateCalcFromSemester(calculatorSelectedSem);
+    }
+  }, [activeTab, calculatorSelectedSem]);
+
   // --- GPA Progression Neon Line Chart ---
   const GpaLineChart = ({ semesterList }) => {
     const sortedList = useMemo(() => {
@@ -718,13 +967,14 @@ export default function StudentDashboard({ currentUser, onClose }) {
       );
     }
 
-    // Dimensions
+    // Dimensions (Increased height from 180 to 220 for better readability)
     const width = 500;
-    const height = 180;
-    const paddingLeft = 32;
-    const paddingRight = 16;
-    const paddingTop = 22;
-    const paddingBottom = 28;
+    const height = 220;
+    const paddingLeft = 52;
+    const paddingRight = 24;
+    const paddingTop = 32;
+    const paddingBottom = 40;
+    const inset = 36; // Inset data points horizontally to prevent overlaps with Y-axis
 
     const minSem = 1;
     const maxSem = Math.max(...sortedList.map(item => Number(item.stynumber)), 1);
@@ -736,7 +986,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
     const getX = (stynumber) => {
       const num = Number(stynumber);
-      return paddingLeft + ((num - minSem) / semRange) * (width - paddingLeft - paddingRight);
+      if (semRange === 0) return paddingLeft + (width - paddingLeft - paddingRight) / 2;
+      return paddingLeft + inset + ((num - minSem) / semRange) * (width - paddingLeft - paddingRight - 2 * inset);
     };
 
     const getY = (gpa) => {
@@ -780,19 +1031,19 @@ export default function StudentDashboard({ currentUser, onClose }) {
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto select-none overflow-visible">
           <defs>
             <linearGradient id="sgpaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#d0bcff" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#d0bcff" stopOpacity="0.0" />
             </linearGradient>
             <linearGradient id="cgpaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#efb8c8" stopOpacity="0.16" />
+              <stop offset="100%" stopColor="#efb8c8" stopOpacity="0.0" />
             </linearGradient>
             
-            <filter id="glowSgpa" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3.5" floodColor="#10b981" floodOpacity="0.32" />
+            <filter id="glowSgpa" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#d0bcff" floodOpacity="0.28" />
             </filter>
-            <filter id="glowCgpa" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3.5" floodColor="#6366f1" floodOpacity="0.32" />
+            <filter id="glowCgpa" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#efb8c8" floodOpacity="0.22" />
             </filter>
           </defs>
 
@@ -800,23 +1051,25 @@ export default function StudentDashboard({ currentUser, onClose }) {
           {[4, 6, 8, 10].map((val) => {
             const y = getY(val);
             return (
-              <g key={val} className="opacity-40">
+              <g key={val}>
                 <line 
                   x1={paddingLeft} 
                   y1={y} 
                   x2={width - paddingRight} 
                   y2={y} 
-                  stroke="rgba(255,255,255,0.06)" 
-                  strokeWidth="1" 
+                  stroke="var(--m3-outline-variant)" 
+                  strokeOpacity="0.12" 
+                  strokeWidth="1.2" 
                   strokeDasharray="4 4"
                 />
                 <text 
-                  x={paddingLeft - 8} 
-                  y={y + 3} 
-                  fill="rgba(255,255,255,0.35)" 
-                  fontSize="8" 
-                  fontWeight="bold" 
-                  fontFamily="monospace"
+                  x={paddingLeft - 12} 
+                  y={y + 4.5} 
+                  fill="var(--m3-on-surface-variant)" 
+                  fillOpacity="0.65"
+                  fontSize="11.5" 
+                  fontWeight="600" 
+                  fontFamily="var(--m3-font)"
                   textAnchor="end"
                 >
                   {val.toFixed(1)}
@@ -837,8 +1090,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
             <path 
               d={sgpaPath} 
               fill="none" 
-              stroke="#10b981" 
-              strokeWidth="3" 
+              stroke="#d0bcff" 
+              strokeWidth="4" 
               strokeLinecap="round" 
               strokeLinejoin="round"
               filter="url(#glowSgpa)"
@@ -848,8 +1101,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
             <path 
               d={cgpaPath} 
               fill="none" 
-              stroke="#6366f1" 
-              strokeWidth="3" 
+              stroke="#efb8c8" 
+              strokeWidth="4" 
               strokeLinecap="round" 
               strokeLinejoin="round"
               filter="url(#glowCgpa)"
@@ -864,67 +1117,101 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
             return (
               <g key={item.stynumber}>
+                {/* Vertical projection line */}
                 <line 
                   x1={x} 
                   y1={paddingTop} 
                   x2={x} 
                   y2={height - paddingBottom} 
-                  stroke="rgba(255,255,255,0.04)" 
-                  strokeWidth="1" 
+                  stroke="var(--m3-outline-variant)" 
+                  strokeOpacity="0.08" 
+                  strokeWidth="1.2" 
                 />
                 
+                {/* X-Axis Semester Label */}
                 <text 
                   x={x} 
-                  y={height - paddingBottom + 14} 
-                  fill="rgba(255,255,255,0.4)" 
-                  fontSize="8.5" 
-                  fontWeight="black" 
-                  fontFamily="monospace"
+                  y={height - paddingBottom + 20} 
+                  fill="var(--m3-on-surface-variant)" 
+                  fillOpacity="0.8"
+                  fontSize="11.5" 
+                  fontWeight="700" 
+                  fontFamily="var(--m3-font)"
                   textAnchor="middle"
                 >
                   SEM {item.stynumber}
                 </text>
 
+                {/* SGPA Value Text (drawn above node with outline to prevent overlap confusion) */}
                 <text 
                   x={x} 
-                  y={ySgpa - 7} 
-                  fill="#34d399" 
-                  fontSize="7" 
-                  fontWeight="bold" 
-                  fontFamily="monospace"
+                  y={ySgpa - 13} 
+                  fill="var(--m3-primary)" 
+                  fontSize="12.5" 
+                  fontWeight="800" 
+                  fontFamily="var(--m3-font)"
                   textAnchor="middle"
+                  stroke="var(--m3-surface-container)"
+                  strokeWidth="4.5"
+                  paintOrder="stroke fill"
+                  strokeLinejoin="round"
                 >
                   {Number(item.sgpa).toFixed(2)}
                 </text>
 
+                {/* Outer Ring & Core Circle for SGPA node */}
                 <circle 
                   cx={x} 
                   cy={ySgpa} 
-                  r="3" 
-                  fill="#0b0c10" 
-                  stroke="#10b981" 
-                  strokeWidth="2" 
+                  r="8.5" 
+                  fill="none" 
+                  stroke="#d0bcff" 
+                  strokeWidth="1.5" 
+                  strokeOpacity="0.25"
+                />
+                <circle 
+                  cx={x} 
+                  cy={ySgpa} 
+                  r="4.5" 
+                  fill="var(--m3-surface-container)" 
+                  stroke="#d0bcff" 
+                  strokeWidth="2.5" 
                 />
 
+                {/* CGPA Value Text (drawn below node with outline to prevent overlap confusion) */}
                 <text 
                   x={x} 
-                  y={yCgpa + 12} 
-                  fill="#818cf8" 
-                  fontSize="7" 
-                  fontWeight="bold" 
-                  fontFamily="monospace"
+                  y={yCgpa + 20} 
+                  fill="var(--m3-tertiary)" 
+                  fontSize="12.5" 
+                  fontWeight="800" 
+                  fontFamily="var(--m3-font)"
                   textAnchor="middle"
+                  stroke="var(--m3-surface-container)"
+                  strokeWidth="4.5"
+                  paintOrder="stroke fill"
+                  strokeLinejoin="round"
                 >
                   {Number(item.cgpa).toFixed(2)}
                 </text>
 
+                {/* Outer Ring & Core Circle for CGPA node */}
                 <circle 
                   cx={x} 
                   cy={yCgpa} 
-                  r="3" 
-                  fill="#0b0c10" 
-                  stroke="#6366f1" 
-                  strokeWidth="2" 
+                  r="8.5" 
+                  fill="none" 
+                  stroke="#efb8c8" 
+                  strokeWidth="1.5" 
+                  strokeOpacity="0.25"
+                />
+                <circle 
+                  cx={x} 
+                  cy={yCgpa} 
+                  r="4.5" 
+                  fill="var(--m3-surface-container)" 
+                  stroke="#efb8c8" 
+                  strokeWidth="2.5" 
                 />
               </g>
             );
@@ -932,13 +1219,13 @@ export default function StudentDashboard({ currentUser, onClose }) {
         </svg>
 
         {/* Mini Legend */}
-        <div className="flex items-center justify-center gap-5 mt-2 select-none">
-          <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-white/70">
-            <span className="w-2 h-2 rounded-full bg-white/40 border border-white/20"></span>
+        <div className="flex items-center justify-center gap-6 mt-4 select-none">
+          <div className="flex items-center gap-2.5 text-xs font-bold tracking-wider text-white/90 font-sans">
+            <span className="w-3 h-3 rounded-full bg-[#d0bcff] shadow-[0_0_8px_rgba(208,188,255,0.4)]"></span>
             <span>SGPA</span>
           </div>
-          <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider text-white/50">
-            <span className="w-2 h-2 rounded-full bg-white/20 border border-white/10"></span>
+          <div className="flex items-center gap-2.5 text-xs font-bold tracking-wider text-white/90 font-sans">
+            <span className="w-3 h-3 rounded-full bg-[#efb8c8] shadow-[0_0_8px_rgba(239,184,200,0.4)]"></span>
             <span>CGPA</span>
           </div>
         </div>
@@ -1142,6 +1429,48 @@ export default function StudentDashboard({ currentUser, onClose }) {
     }
   }, [activeTab, gradesSubTab, selectedMarksSem]);
 
+  // Effect to load grades for selectedMarksSem to show Grade, Credit & Total Marks banner
+  useEffect(() => {
+    const loadGradesForMarksSem = async () => {
+      if (!selectedMarksSem) return;
+      const enroll = getUsername(currentUser?.email);
+      if (!enroll) return;
+      
+      try {
+        const cached = await getGradesFromCache(enroll, selectedMarksSem);
+        const list = cached?.data || cached;
+        if (list) {
+          setMarksGradesList(list);
+          return;
+        }
+        
+        const gradeCardObj = await wp.get_grade_card(selectedMarksSem);
+        const rawGrades = gradeCardObj.gradecard || [];
+        const parsedGrades = rawGrades.map(g => ({
+          name: g.subjectcode || 'Course Code',
+          desc: g.subjectdesc || 'Course Description',
+          total: Number(g.totalmarks || 90),
+          grade: g.grade || 'A',
+          t1: Number(g.t1 || 12),
+          t2: Number(g.t2 || 13),
+          t3: Number(g.t3 || 30),
+          internal: Number(g.internal || 32),
+          coursecreditpoint: Number(g.coursecreditpoint || 0)
+        }));
+        
+        setMarksGradesList(parsedGrades);
+        saveGradesToCache(parsedGrades, enroll, selectedMarksSem);
+      } catch (err) {
+        console.warn("Failed to load grades for selectedMarksSem:", err);
+        setMarksGradesList([]);
+      }
+    };
+
+    if (activeTab === 'grades' && gradesSubTab === 'marks' && selectedMarksSem) {
+      loadGradesForMarksSem();
+    }
+  }, [activeTab, gradesSubTab, selectedMarksSem]);
+
   // PDF marks downloader
   const [isDownloading, setIsDownloading] = useState(false);
   const handleDownloadMarksPdf = async (semester) => {
@@ -1207,108 +1536,119 @@ export default function StudentDashboard({ currentUser, onClose }) {
   };
 
   return (
-    <div className="student-dashboard-shell flex flex-col gap-4 text-white font-sans h-full w-full select-none relative min-h-0 bg-transparent">
+    <div className="m3-screen student-dashboard-shell bg-[#181125]">
       
-      {/* ─── Compact Glass Page Header ─── */}
-      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between z-10">
-        <div className="flex items-center">
-          <button
-            onClick={onClose}
-            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-            type="button"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-            Student Dashboard
-          </h2>
+      {/* ─── M3 Collapsing Top App Bar ─── */}
+      <header className={`m3-top-app-bar ${isScrolled ? 'm3-top-app-bar--collapsed' : ''}`}>
+        <div className="m3-top-app-bar__row justify-between">
+          <div className="flex items-center">
+            <button
+              onClick={onClose}
+              className="m3-icon-button"
+              type="button"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <span className="m3-top-app-bar__title-compact font-sans">
+              Student Dashboard
+            </span>
+          </div>
+
+          {isAuthenticated && (
+            <button
+              onClick={() => handlePortalSync(enrollmentNo, password)}
+              disabled={isSyncing}
+              className="m3-icon-button"
+              type="button"
+              title="Sync Registry"
+            >
+              <RefreshCw size={18} className={isSyncing ? "animate-spin" : ""} />
+            </button>
+          )}
         </div>
 
-        {isAuthenticated && (
-          <button
-            onClick={() => handlePortalSync(enrollmentNo, password)}
-            disabled={isSyncing}
-            className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-white/20 text-white hover:text-white/80 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0 disabled:opacity-50"
-            type="button"
-            title="Sync Registry"
-          >
-            <RefreshCw size={18} className={isSyncing ? "animate-spin" : ""} />
-          </button>
-        )}
+        <div className="m3-top-app-bar__headline">
+          <h1 className="m3-display-small font-sans !font-black tracking-tight">Student Dashboard</h1>
+          <p className="m3-body-small font-sans mt-0.5 text-[#cac4d0]">
+            {isAuthenticated && studentProfile ? `${studentProfile.name || 'Student'} • Sem ${studentProfile.semester || 'Active'}` : 'Sync with college registry'}
+          </p>
+        </div>
       </header>
 
       {/* ─── Immersive Portal Login Form (When Unauthenticated) ─── */}
       {!isAuthenticated && (
-        <div className="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto gap-5 px-1 select-text pt-4">
-          <div className={`${obsidianCardClass} text-center flex flex-col gap-6 py-8 px-6 border-white/10`}>
-            
-            {/* Morphing visual lock circle */}
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/[0.04] border border-white/15 mx-auto shadow-lg">
-              <Lock size={26} className="text-white/60" />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <h3 className="text-xl font-black tracking-tight">Sync Webkiosk Account</h3>
-              <p className="text-slate-400 text-xs font-semibold leading-normal">
-                Unlock real-time attendance forecasters and grades directly linked to the college registry.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-4 text-left">
-              {/* Enrollment Number */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-black text-white/55 tracking-widest uppercase pl-1">Enrollment ID</span>
-                <input
-                  type="text"
-                  placeholder="2501200031"
-                  value={enrollmentNo}
-                  onChange={(e) => setEnrollmentNo(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-white/30 rounded-xl px-5 py-3.5 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
-                />
+        <div onScroll={handleScroll} className="m3-screen__scroll pb-32">
+          <div className="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto gap-5 px-1 select-text pt-4">
+            <div className={`${obsidianCardClass} text-center flex flex-col gap-6 py-8 px-6`}>
+              
+              {/* Morphing visual lock circle */}
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#4f378b]/20 border border-[#483c5e]/30 text-[#d0bcff] mx-auto shadow-lg">
+                <Lock size={26} />
               </div>
 
-              {/* Password */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-black text-white/55 tracking-widest uppercase pl-1">Password</span>
-                <div className="relative w-full">
+              <div className="flex flex-col gap-1.5 font-sans">
+                <h3 className="text-xl font-black tracking-tight text-white">Sync Webkiosk Account</h3>
+                <p className="text-slate-400 text-xs font-semibold leading-normal">
+                  Unlock real-time attendance forecasters and grades directly linked to the college registry.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-4 text-left font-sans">
+                {/* Enrollment Number */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[9px] font-black text-white/55 tracking-widest uppercase pl-1">Enrollment ID</span>
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="•••••••••••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 focus:border-white/30 rounded-xl px-5 py-3.5 pr-12 text-sm font-semibold text-white tracking-wide outline-none transition duration-300"
+                    type="text"
+                    placeholder="2501200031"
+                    value={enrollmentNo}
+                    onChange={(e) => setEnrollmentNo(e.target.value)}
+                    className="w-full bg-[#292035] border border-[#483c5e]/40 hover:border-[#d0bcff]/50 focus:border-[#d0bcff] focus:ring-1 focus:ring-[#d0bcff] rounded-xl px-5 py-3.5 text-sm font-semibold text-white outline-none transition duration-300"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[9px] font-black text-white/55 tracking-widest uppercase pl-1">Password</span>
+                  <div className="relative w-full">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="•••••••••••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-[#292035] border border-[#483c5e]/40 hover:border-[#d0bcff]/50 focus:border-[#d0bcff] focus:ring-1 focus:ring-[#d0bcff] rounded-xl px-5 py-3.5 pr-12 text-sm font-semibold text-white outline-none transition duration-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#cac4d0] hover:text-[#d0bcff] transition"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {/* Sync Trigger button */}
+              <button
+                onClick={() => handlePortalSync(enrollmentNo, password)}
+                disabled={isSyncing || !enrollmentNo || !password}
+                className="w-full py-4 bg-[#d0bcff] text-[#381e72] font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl active:scale-95 hover:brightness-110 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-sans"
+              >
+                {isSyncing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <RefreshCw className="animate-spin" size={14} /> Linking Securely...
+                  </span>
+                ) : 'Link Secure Account'}
+              </button>
+
+              {/* Errors alert container */}
+              {error && (
+                <div className="p-3.5 bg-[#ba1a1a]/10 border border-[#ba1a1a]/30 text-[#ffb4ab] rounded-xl text-xs font-semibold flex items-center gap-2 text-left leading-normal font-sans">
+                  <AlertTriangle className="shrink-0 text-[#ffb4ab]" size={16} />
+                  <span>{error}</span>
+                </div>
+              )}
             </div>
-
-            {/* Sync Trigger button */}
-            <button
-              onClick={() => handlePortalSync(enrollmentNo, password)}
-              disabled={isSyncing || !enrollmentNo || !password}
-              className="w-full py-4 bg-white/20 hover:bg-white/30 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSyncing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <RefreshCw className="animate-spin" size={14} /> Linking Securely...
-                </span>
-              ) : 'Link Secure Account'}
-            </button>
-
-            {/* Errors alert container */}
-            {error && (
-              <div className="p-3.5 bg-white/[0.04] border border-white/10 text-white/60 rounded-xl text-xs font-semibold flex items-center gap-2 text-left leading-normal">
-                <AlertTriangle className="shrink-0 text-white/60" size={16} />
-                <span>{error}</span>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -1318,19 +1658,19 @@ export default function StudentDashboard({ currentUser, onClose }) {
         const portalTarget = document.querySelector('.mobile-screen-viewport');
         if (!portalTarget) return null;
         return createPortal(
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-2xl z-[99999] flex flex-col items-center justify-center p-6 select-none">
+          <div className="absolute inset-0 bg-[#181125]/80 backdrop-blur-2xl z-[99999] flex flex-col items-center justify-center p-6 select-none">
             {/* Back button */}
             <button
               onClick={onClose}
-              className="absolute top-8 left-5 w-11 h-11 bg-white/[0.08] hover:bg-white/[0.15] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center backdrop-blur-md cursor-pointer z-10"
+              className="absolute top-8 left-5 m3-icon-button"
               type="button"
             >
-              <ArrowLeft size={18} />
+              <ChevronLeft size={20} />
             </button>
             <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
+              <div className="w-14 h-14 border-4 border-[#d0bcff] rounded-full border-t-transparent animate-spin"></div>
               <h3 className="mt-6 font-sans text-lg font-black tracking-tight text-white drop-shadow-md">Scraping Registry Database</h3>
-              <p className="mt-2.5 font-mono text-[9px] font-bold tracking-widest uppercase text-white/60 drop-shadow-md">
+              <p className="mt-2.5 font-sans text-[9px] font-bold tracking-widest uppercase text-[#d0bcff] drop-shadow-md">
                 {syncPhase === 'authenticating' && 'Securing Webkiosk Tunnel...'}
                 {syncPhase === 'fetching_profile' && 'Extracting Student Credentials...'}
                 {syncPhase === 'fetching_meta' && 'Mapping Academic Registry...'}
@@ -1345,25 +1685,23 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
       {/* ─── Fully Synced Dashboard UI Layout (When Authenticated) ─── */}
       {isAuthenticated && (
-        <div className="flex-1 flex flex-col gap-0 min-h-0 z-10">
-          
-
-
+        <>
+          <div onScroll={handleScroll} className="m3-screen__scroll pb-32">
           {error && (
-            <div className="mx-1 mb-4 p-4 bg-white/[0.04] border-2 border-white/20 rounded-[24px] backdrop-blur-xl flex flex-col gap-3 text-left">
+            <div className="mx-1 mb-4 p-4 bg-[#ba1a1a]/10 border border-[#ba1a1a]/30 rounded-[24px] flex flex-col gap-3 text-left font-sans">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="text-white/60 shrink-0 mt-0.5" size={16} />
+                <AlertTriangle className="text-[#ffb4ab] shrink-0 mt-0.5" size={16} />
                 <div className="flex flex-col gap-0.5 flex-1">
-                  <span className="text-[9px] font-black text-white/70 tracking-widest uppercase font-mono">Registry Connection Failed</span>
-                  <p className="text-xs font-semibold text-white/60 leading-relaxed font-sans">{error}</p>
+                  <span className="text-[9px] font-black text-[#ffb4ab] tracking-widest uppercase">Registry Connection Failed</span>
+                  <p className="text-xs font-semibold text-[#ffb4ab]/85 leading-relaxed">{error}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 pt-2 border-t border-white/10 justify-between">
-                <span className="text-[9px] font-bold text-slate-400 uppercase font-mono">Displaying cached offline data</span>
+              <div className="flex items-center gap-2 pt-2 border-t border-[#ba1a1a]/20 justify-between">
+                <span className="text-[9px] font-bold text-[#ffb4ab]/70 uppercase">Displaying cached offline data</span>
                 <button
                   onClick={() => handlePortalSync(enrollmentNo, password, true)}
                   disabled={isSyncing}
-                  className="px-3.5 py-1.5 bg-white/10 border border-white/20 hover:bg-white/15 active:scale-95 text-white/75 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                  className="px-3.5 py-1.5 bg-[#ba1a1a]/20 border border-[#ba1a1a]/30 hover:bg-[#ba1a1a]/30 active:scale-95 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                   type="button"
                 >
                   {isSyncing ? <RefreshCw className="animate-spin" size={10} /> : <RefreshCw size={10} />} Retry Sync
@@ -1372,22 +1710,16 @@ export default function StudentDashboard({ currentUser, onClose }) {
             </div>
           )}
 
-          {/* ─── Scroll-locked Content Workspace ─── */}
-          <div 
-            onScroll={handleScroll}
-            className="flex-1 overflow-y-auto scrollbar-none min-h-0 pr-1 pt-1.5 pb-24"
-          >
-            
-            {/* 📊 TABS 1: ATTENDANCE BLOCK */}
-            {activeTab === 'attendance' && (
-              <div className="flex flex-col gap-4">
+          {/* 📊 TABS 1: ATTENDANCE BLOCK */}
+          {activeTab === 'attendance' && (
+            <div className="flex flex-col gap-4">
                 
                 {/* Selectors and Settings Grid */}
                 <div className="grid grid-cols-2 gap-3">
                   
                   {/* Semester Dropdown Selector */}
                   <div className={`${obsidianCardClass} !pt-3 !pb-3.5 !px-5 flex flex-col gap-1 text-left`}>
-                    <span className="text-[9px] font-black text-slate-400/90 uppercase tracking-widest font-mono">Academic Term</span>
+                    <span className="text-[9px] font-black text-slate-400/90 uppercase tracking-widest font-sans">Academic Term</span>
                     <select
                       value={selectedSemester?.registrationid || ''}
                       onChange={(e) => {
@@ -1406,7 +1738,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
                   {/* Attendance Goal Selector */}
                   <div className={`${obsidianCardClass} !pt-3 !pb-3.5 !px-5 flex flex-col gap-1 text-left`}>
-                    <span className="text-[9px] font-black text-slate-400/90 uppercase tracking-widest font-mono">Goal Margin</span>
+                    <span className="text-[9px] font-black text-slate-400/90 uppercase tracking-widest font-sans">Goal Margin</span>
                     <div className="flex items-center gap-1.5">
                       <input
                         type="number"
@@ -1418,9 +1750,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           setGoalPercentage(val);
                           setAttendanceGoal(val);
                         }}
-                        className="bg-transparent text-white/70 text-sm font-black outline-none w-8 font-mono p-0 border-none focus:ring-0 leading-none"
+                        className="bg-transparent text-white/70 text-sm font-black outline-none w-8 font-sans p-0 border-none focus:ring-0 leading-none"
                       />
-                      <span className="text-slate-400 text-xs font-extrabold font-mono select-none">% target</span>
+                      <span className="text-slate-400 text-xs font-extrabold font-sans select-none">% target</span>
                     </div>
                   </div>
 
@@ -1435,28 +1767,27 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 ) : (
                   attendanceList.map((item, idx) => {
                     const stat = getBunkStatus(item.attended, item.held);
-                    const cardBorder = stat.status === 'danger'
-                      ? 'border-white/20 bg-white/[0.04]'
-                      : 'border-white/[0.08] bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)]';
+                    const cardBgShadow = stat.status === 'danger'
+                      ? 'bg-white/[0.04]'
+                      : 'bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)]';
 
                     return (
                       <div 
                         key={idx}
-                        className={`rounded-[28px] border p-5 flex flex-col gap-3.5 backdrop-blur-3xl transition-all duration-300 relative overflow-hidden ${cardBorder}`}
+                        className={`rounded-[28px] p-5 flex flex-col gap-3.5 backdrop-blur-3xl transition-all duration-300 relative overflow-hidden ${cardBgShadow}`}
                       >
-                        <div className="flex justify-between items-start w-full">
-                          <div className="text-left flex-1 min-w-0 pr-3">
-                            <span className="text-[8px] font-black text-slate-400 tracking-wider font-mono block uppercase">{item.code} • {item.type}</span>
-                            <h4 className="text-sm font-bold text-white font-sans mt-0.5 break-words leading-snug">{item.name}</h4>
-                          </div>
-                          
-                          <div className="flex flex-col items-end shrink-0">
-                            <span className={`text-base font-black font-mono leading-none ${stat.status === 'danger' ? 'text-white/60' : 'text-white/80'}`}>
-                              {item.percentage}%
-                            </span>
-                            <span className="text-[9px] font-bold text-slate-400 mt-1.5 font-mono uppercase tracking-wide">
-                              {item.attended}/{item.held} Classes
-                            </span>
+                        <div className="flex flex-col w-full text-left">
+                          <span className="text-[8px] font-black text-slate-400 tracking-wider font-sans block uppercase mb-1">{item.code} • {item.type}</span>
+                          <div className="flex justify-between items-center w-full gap-3">
+                            <h4 className="text-sm font-bold text-white font-sans break-words leading-snug flex-1">{item.name}</h4>
+                            <div className="flex flex-col items-end shrink-0 text-right">
+                              <span className={`text-base font-black font-sans leading-none ${stat.status === 'danger' ? 'text-white/60' : 'text-white/80'}`}>
+                                {item.percentage}%
+                              </span>
+                              <span className="text-[9px] font-bold text-slate-400 mt-1 font-sans uppercase tracking-wide">
+                                {item.attended}/{item.held} Classes
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -1465,26 +1796,26 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           const activeCols = [item.hasLecture, item.hasTutorial, item.hasPractical].filter(Boolean).length;
                           const gridClass = activeCols === 3 ? 'grid-cols-3' : activeCols === 2 ? 'grid-cols-2' : 'grid-cols-1';
                           return (
-                            <div className={`grid ${gridClass} gap-2 w-full mt-1 py-2.5 px-3 bg-white/[0.02] border border-white/5 rounded-2xl text-[10px] font-sans shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]`}>
+                            <div className={`grid ${gridClass} gap-2 w-full mt-1 py-2.5 px-3 bg-white/[0.02] rounded-2xl text-[10px] font-sans shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]`}>
                               {item.hasLecture && (
                                 <div className="flex flex-col gap-0.5 text-left pr-2">
-                                  <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono tracking-wider">Lecture</span>
+                                  <span className="text-[8px] font-extrabold text-slate-400 uppercase font-sans tracking-wider">Lecture</span>
                                   <span className="font-black text-white/70 text-xs mt-0.5">{item.lecturePct}%</span>
-                                  <span className="text-[9px] font-mono text-slate-400 mt-0.5 font-bold">{item.lectureAttended}/{item.lectureHeld} Classes</span>
+                                  <span className="text-[9px] font-sans text-slate-400 mt-0.5 font-bold">{item.lectureAttended}/{item.lectureHeld} Classes</span>
                                 </div>
                               )}
                               {item.hasTutorial && (
                                 <div className={`flex flex-col gap-0.5 text-left ${activeCols > 1 ? 'border-l border-white/5 pl-2.5' : ''}`}>
-                                  <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono tracking-wider">Tutorial</span>
+                                  <span className="text-[8px] font-extrabold text-slate-400 uppercase font-sans tracking-wider">Tutorial</span>
                                   <span className="font-black text-white/70 text-xs mt-0.5">{item.tutorialPct}%</span>
-                                  <span className="text-[9px] font-mono text-slate-400 mt-0.5 font-bold">{item.tutorialAttended}/{item.tutorialHeld} Classes</span>
+                                  <span className="text-[9px] font-sans text-slate-400 mt-0.5 font-bold">{item.tutorialAttended}/{item.tutorialHeld} Classes</span>
                                 </div>
                               )}
                               {item.hasPractical && (
                                 <div className={`flex flex-col gap-0.5 text-left ${activeCols > 1 ? 'border-l border-white/5 pl-2.5' : ''}`}>
-                                  <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono tracking-wider">Practical</span>
+                                  <span className="text-[8px] font-extrabold text-slate-400 uppercase font-sans tracking-wider">Practical</span>
                                   <span className="font-black text-white/70 text-xs mt-0.5">{item.practicalPct}%</span>
-                                  <span className="text-[9px] font-mono text-slate-400 mt-0.5 font-bold">{item.practicalAttended}/{item.practicalHeld} Classes</span>
+                                  <span className="text-[9px] font-sans text-slate-400 mt-0.5 font-bold">{item.practicalAttended}/{item.practicalHeld} Classes</span>
                                 </div>
                               )}
                             </div>
@@ -1508,7 +1839,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             </span>
                           </div>
                           
-                          <span className={`text-[8px] font-black uppercase tracking-widest font-mono ${stat.status === 'danger' ? 'text-white/60 font-bold' : 'text-white/70 font-semibold'}`}>
+                          <span className={`text-[8px] font-black uppercase tracking-widest font-sans ${stat.status === 'danger' ? 'text-white/60 font-bold' : 'text-white/70 font-semibold'}`}>
                             {stat.status === 'danger' ? '⚠️ SHORTAGE' : '🟢 SECURE'}
                           </span>
                         </div>
@@ -1524,26 +1855,26 @@ export default function StudentDashboard({ currentUser, onClose }) {
             {activeTab === 'grades' && (
               <div className="flex flex-col gap-4">
                 
-                {/* ─── Premium Glassy Segmented Switcher (Frosted Glass and Breathtaking) ─── */}
+                {/* ─── M3 Segmented Chips Switcher ─── */}
                 <div className="flex justify-center mb-1">
-                  <div className="flex bg-white/[0.03] border border-white/[0.08] backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] rounded-2xl p-1 select-none w-full">
+                  <div className="m3-segmented-chips w-full justify-between">
                     {[
                       { id: 'overview', icon: <TrendingUp size={14} />, label: 'Overview' },
                       { id: 'marks', icon: <Archive size={14} />, label: 'Marks' },
-                      { id: 'semester', icon: <Award size={14} />, label: 'Semester' }
+                      { id: 'semester', icon: <Award size={14} />, label: 'Grades' }
                     ].map((sub) => (
                       <button
                         key={sub.id}
                         type="button"
                         onClick={() => setGradesSubTab(sub.id)}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-300 active:scale-95 cursor-pointer ${
+                        className={`flex-1 m3-segmented-chip flex items-center justify-center gap-1.5 py-2.5 transition-all duration-300 ${
                           gradesSubTab === sub.id
-                            ? 'bg-white/[0.08] border border-white/[0.12] text-white shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.05)]'
-                            : 'text-slate-400 hover:text-white hover:bg-white/[0.02] border border-transparent'
+                            ? 'm3-segmented-chip--selected'
+                            : 'text-[#cac4d0] hover:text-white'
                         }`}
                       >
                         {sub.icon}
-                        <span>{sub.label}</span>
+                        <span className="font-sans font-bold">{sub.label}</span>
                       </button>
                     ))}
                   </div>
@@ -1556,10 +1887,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     {/* Overall CGPA display card (signature glassmorphism) */}
                     <div className={`${obsidianCardClass} flex items-center justify-between p-5`}>
                       <div className="text-left">
-                        <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-mono">Academic Trend</span>
+                        <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-sans">Academic Trend</span>
                         <h4 className="text-sm font-bold text-white font-sans mt-0.5 uppercase tracking-wide">Cumulative Index (CGPA)</h4>
                       </div>
-                      <div className="flex items-center gap-1.5 text-white/80 bg-white/10 border border-white/15 px-3 py-1.5 rounded-xl text-xs font-mono font-bold shadow-sm">
+                      <div className="flex items-center gap-1.5 text-white/80 bg-white/10 px-3 py-1.5 rounded-xl text-xs font-sans font-bold shadow-sm">
                         <TrendingUp size={14} />
                         <span>
                           {gpaData?.cgpa ?? (Array.isArray(gpaData?.semesterList) && gpaData.semesterList.length > 0 
@@ -1571,7 +1902,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
                     {/* Vector progress graph (signature glassmorphism) */}
                     <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-center`}>
-                      <span className="text-[8px] font-black text-slate-400 tracking-widest uppercase font-mono text-left block border-b border-white/5 pb-2">
+                      <span className="text-[8px] font-black text-slate-400 tracking-widest uppercase font-sans text-left block border-b border-white/5 pb-2">
                         Grade Progression Vector
                       </span>
                       <GpaLineChart semesterList={gpaData?.semesterList || []} />
@@ -1588,19 +1919,19 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         {gpaData.semesterList.map((sem, sidx) => (
                           <div key={sidx} className={`${obsidianCardClass} !p-4 flex flex-col gap-2.5 text-left`}>
                             <div className="flex justify-between items-center w-full">
-                              <span className="text-[9px] font-black text-slate-400 tracking-wider font-mono uppercase">Semester {sem.stynumber}</span>
-                              <span className="text-[8px] font-bold text-slate-500 font-mono tracking-tighter">
+                              <span className="text-[9px] font-black text-slate-400 tracking-wider font-sans uppercase">Semester {sem.stynumber}</span>
+                              <span className="text-[8px] font-bold text-slate-500 font-sans tracking-tighter">
                                 GP: {Number(sem.earnedgradepoints || 0).toFixed(1)}/{Number(sem.totalcoursecredit || 0) * 10}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 justify-between mt-1 pt-2 border-t border-white/5">
                               <div className="flex flex-col">
-                                <span className="text-[7px] font-black text-slate-500 tracking-widest font-mono uppercase leading-none">SGPA</span>
-                                <span className="text-base font-black font-mono text-white/80 leading-none mt-1">{Number(sem.sgpa || 0).toFixed(2)}</span>
+                                <span className="text-[7px] font-black text-slate-500 tracking-widest font-sans uppercase leading-none">SGPA</span>
+                                <span className="text-base font-black font-sans text-white/80 leading-none mt-1">{Number(sem.sgpa || 0).toFixed(2)}</span>
                               </div>
                               <div className="flex flex-col items-end">
-                                <span className="text-[7px] font-black text-slate-500 tracking-widest font-mono uppercase leading-none">CGPA</span>
-                                <span className="text-base font-black font-mono text-white/60 leading-none mt-1">{Number(sem.cgpa || 0).toFixed(2)}</span>
+                                <span className="text-[7px] font-black text-slate-500 tracking-widest font-sans uppercase leading-none">CGPA</span>
+                                <span className="text-base font-black font-sans text-white/60 leading-none mt-1">{Number(sem.cgpa || 0).toFixed(2)}</span>
                               </div>
                             </div>
                           </div>
@@ -1617,7 +1948,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     {/* Glassy Selector & Statement Button Row */}
                     <div className="flex items-center gap-2.5 w-full">
                       <div className={`${obsidianCardClass} !pt-2.5 !pb-3 !px-4 flex flex-col gap-0.5 text-left flex-1 min-w-0`}>
-                        <span className="text-[8px] font-black text-slate-400/90 uppercase tracking-widest font-mono">Select Term</span>
+                        <span className="text-[8px] font-black text-slate-400/90 uppercase tracking-widest font-sans">Select Term</span>
                         <select
                           value={selectedMarksSem ? (selectedMarksSem.registrationid || selectedMarksSem.registration_id) : ''}
                           onChange={(e) => handleMarksSemChange(e.target.value)}
@@ -1635,7 +1966,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         type="button"
                         onClick={() => handleDownloadMarksPdf(selectedMarksSem)}
                         disabled={isDownloading || !selectedMarksSem}
-                        className="h-[45px] px-4 rounded-2xl flex items-center justify-center gap-2 border border-white/15 bg-white/[0.04] hover:border-white/25 hover:bg-white/[0.08] text-white/75 shadow-sm transition-all duration-300 cursor-pointer disabled:opacity-50 text-[10px] font-black uppercase tracking-wider shrink-0 active:scale-95 leading-none"
+                        className="h-[45px] px-4 rounded-2xl flex items-center justify-center gap-2 bg-white/[0.05] hover:bg-white/[0.09] text-white/80 shadow-sm transition-all duration-300 cursor-pointer disabled:opacity-50 text-[10px] font-black uppercase tracking-wider shrink-0 active:scale-95 leading-none"
                       >
                         {isDownloading ? <RefreshCw className="animate-spin" size={12} /> : <Download size={12} />}
                         <span>Statement</span>
@@ -1694,6 +2025,11 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             { obtained: 0, full: 0 }
                           );
 
+                          const matchingGrade = marksGradesList?.find(
+                            g => g.name.toLowerCase().trim() === course.code.toLowerCase().trim()
+                          );
+                          const hasGrade = matchingGrade && matchingGrade.grade && matchingGrade.grade.trim() !== "" && matchingGrade.grade.trim() !== "—";
+
                           return (
                             <div 
                               key={idx} 
@@ -1701,23 +2037,45 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             >
                               
                               {/* Subject header */}
-                              <div className="flex justify-between items-start w-full gap-3">
-                                <div className="text-left flex-1 min-w-0 pr-2">
-                                  <span className="text-[8px] font-black text-white/50 tracking-wider font-mono block uppercase leading-none">
-                                    {course.code}
-                                  </span>
-                                  <h4 className="text-sm font-bold text-white font-sans mt-1.5 break-words leading-snug">
-                                    {course.name}
-                                  </h4>
-                                </div>
-                              </div>
-
-                              {/* Purple score outline pill (aligned to start) */}
-                              <div className="border border-white/15 bg-white/[0.02] rounded-full py-1.5 px-4 flex items-center shadow-inner self-start select-none">
-                                <span className="text-[10px] font-black text-white/70 font-sans tracking-wide">
-                                  Score: {courseTotal.obtained}/{courseTotal.full}
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 w-full">
+                                <h4 className="text-sm font-black text-[#d0bcff] font-sans break-words leading-tight">
+                                  {course.name}
+                                </h4>
+                                <span className="text-[9px] font-black text-slate-300 bg-white/[0.04] border border-white/10 px-2 py-0.5 rounded-[6px] tracking-wider font-sans uppercase">
+                                  {course.code}
                                 </span>
                               </div>
+
+                              {/* Grade Card statistics banner (only shown if grades are available) */}
+                              {hasGrade ? (
+                                <div className="grid grid-cols-3 bg-white/[0.02] rounded-[16px] py-3.5 px-2 text-center select-none divide-x divide-white/10">
+                                  <div className="flex flex-col items-center justify-center">
+                                    <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Grade</span>
+                                    <span className="text-[20px] font-black text-white mt-1.5 leading-none">
+                                      {matchingGrade.grade}
+                                    </span>
+                                  </div>
+                                  <div className="flex flex-col items-center justify-center">
+                                    <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Credits</span>
+                                    <span className="text-[20px] font-black text-[#d0bcff] mt-1.5 leading-none">
+                                      {matchingGrade.coursecreditpoint || 0}
+                                    </span>
+                                  </div>
+                                  <div className="flex flex-col items-center justify-center">
+                                    <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Total Marks</span>
+                                    <span className="text-[16px] font-black text-white mt-2 leading-none">
+                                      {courseTotal.full > 0 ? `${courseTotal.obtained}/${courseTotal.full}` : '—'}
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                /* Purple score fallback pill (aligned to start) */
+                                <div className="bg-white/[0.04] rounded-full py-1.5 px-4 flex items-center shadow-inner self-start select-none">
+                                  <span className="text-[10px] font-black text-white/70 font-sans tracking-wide">
+                                    Score: {courseTotal.obtained}/{courseTotal.full}
+                                  </span>
+                                </div>
+                              )}
 
                               {/* Assessment column headings */}
                               <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest text-slate-500 px-0.5 select-none leading-none mt-1">
@@ -1742,17 +2100,24 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                     <div key={eidx} className="flex flex-col gap-1.5 text-left font-sans">
                                       <div className="flex justify-between items-center w-full text-[11px] leading-none">
                                         <span className="font-bold text-slate-300 uppercase tracking-wide text-[10px]">{examName}</span>
-                                        <span className="font-black text-slate-200 font-mono text-[11px]">
+                                        <span className="font-black text-slate-200 font-sans text-[11px]">
                                           {om} <span className="text-slate-500 text-[10px] font-semibold">/ {fm}</span>
                                         </span>
                                       </div>
                                       
-                                      {/* Flat progress bar container */}
-                                      <div className="w-full h-1.5 rounded-full bg-white/[0.03] border border-white/5 overflow-hidden relative shadow-inner">
+                                      {/* Material 3 Linear Progress Indicator */}
+                                      <div className="relative w-full h-2 flex items-center select-none">
+                                        {/* Inactive Track */}
+                                        <div className="absolute left-0 right-0 h-1 bg-[#4f378b]/20 rounded-full" />
+                                        
+                                        {/* Active Indicator */}
                                         <div 
-                                          className={`h-full rounded-full bg-gradient-to-r ${barColor} shadow-[0_0_10px] transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]`}
-                                          style={{ width: `${Math.max(percentage, 2)}%` }}
+                                          className="absolute left-0 h-2 bg-[#d0bcff] rounded-full transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                                          style={{ width: `${percentage}%` }}
                                         />
+                                        
+                                        {/* End Marker Dot */}
+                                        <div className="absolute right-0 w-1.5 h-1.5 rounded-full bg-[#d0bcff]" />
                                       </div>
                                     </div>
                                   );
@@ -1774,7 +2139,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     {/* Glassy Toolbar controls */}
                     <div className="flex items-center gap-2.5 w-full">
                       <div className={`${obsidianCardClass} !pt-2.5 !pb-3 !px-4 flex flex-col gap-0.5 text-left flex-1 min-w-0`}>
-                        <span className="text-[8px] font-black text-slate-400/90 uppercase tracking-widest font-mono">Select Term</span>
+                        <span className="text-[8px] font-black text-slate-400/90 uppercase tracking-widest font-sans">Select Term</span>
                         <select
                           value={selectedGradeCardSem ? (selectedGradeCardSem.registrationid || selectedGradeCardSem.registration_id) : ''}
                           onChange={(e) => handleGradeCardSemChange(e.target.value)}
@@ -1795,10 +2160,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             setCreditSort('default');
                             setGradeSort(prev => prev === 'default' ? 'asc' : prev === 'asc' ? 'desc' : 'default');
                           }}
-                          className={`h-[45px] px-3.5 rounded-2xl flex items-center justify-center gap-1.5 border transition-all duration-300 text-[10px] font-black uppercase tracking-wider cursor-pointer ${
+                          className={`h-[45px] px-3.5 rounded-2xl flex items-center justify-center gap-1.5 transition-all duration-300 text-[10px] font-black uppercase tracking-wider cursor-pointer ${
                             gradeSort !== 'default'
-                              ? 'bg-white/[0.08] border-white/12 text-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
-                              : 'bg-white/[0.03] border-white/5 hover:border-white/10 text-slate-400 hover:text-slate-200'
+                              ? 'bg-white/[0.09] text-white/90 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                              : 'bg-white/[0.04] hover:bg-white/[0.07] text-slate-400 hover:text-slate-200'
                           }`}
                         >
                           <span>Grade</span>
@@ -1811,10 +2176,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             setGradeSort('default');
                             setCreditSort(prev => prev === 'default' ? 'asc' : prev === 'asc' ? 'desc' : 'default');
                           }}
-                          className={`h-[45px] px-3.5 rounded-2xl flex items-center justify-center gap-1.5 border transition-all duration-300 text-[10px] font-black uppercase tracking-wider cursor-pointer ${
+                          className={`h-[45px] px-3.5 rounded-2xl flex items-center justify-center gap-1.5 transition-all duration-300 text-[10px] font-black uppercase tracking-wider cursor-pointer ${
                             creditSort !== 'default'
-                              ? 'bg-white/[0.08] border-white/12 text-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
-                              : 'bg-white/[0.03] border-white/5 hover:border-white/10 text-slate-400 hover:text-slate-200'
+                              ? 'bg-white/[0.09] text-white/90 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                              : 'bg-white/[0.04] hover:bg-white/[0.07] text-slate-400 hover:text-slate-200'
                           }`}
                         >
                           <span>Credit</span>
@@ -1889,21 +2254,21 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             return (
                               <div 
                                 key={idx}
-                                className={`${obsidianCardClass} !p-0 overflow-hidden transition-all duration-300 ${isExpanded ? 'border-white/20 bg-white/[0.04]' : ''}`}
+                                className={`${obsidianCardClass} !p-0 overflow-hidden transition-all duration-300 ${isExpanded ? 'bg-white/[0.04]' : ''}`}
                               >
                                 <div 
                                   onClick={() => setExpandedSubject(isExpanded ? null : idx)}
                                   className="p-5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.01] transition-colors"
                                 >
                                   <div className="text-left flex-1 min-w-0 pr-3 flex flex-col gap-1">
-                                    <span className="text-[8px] font-black text-slate-400 tracking-wider font-mono uppercase block">
+                                    <span className="text-[8px] font-black text-slate-400 tracking-wider font-sans uppercase block">
                                       {item.name} • {item.coursecreditpoint || 0} Credit{item.coursecreditpoint !== 1 ? 's' : ''}
                                     </span>
-                                    <h4 className="text-sm font-bold text-white font-sans truncate leading-snug">{item.desc}</h4>
+                                    <h4 className="text-sm font-bold text-white font-sans break-words leading-snug">{item.desc}</h4>
                                   </div>
 
                                   <div className="flex items-center gap-3 shrink-0">
-                                    <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-mono font-black text-xs shadow-inner transition-colors ${
+                                    <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-sans font-black text-xs shadow-inner transition-colors ${
                                       item.grade === 'A+' || item.grade === 'A'
                                         ? 'bg-white/15 border-white/25 text-white shadow-sm'
                                         : item.grade === 'B+' || item.grade === 'B'
@@ -1935,7 +2300,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                             }
                                             setGradesSubTab('marks');
                                           }}
-                                          className="px-3 py-1.5 bg-white/10 border border-white/20 hover:bg-white/15 active:scale-95 text-white/75 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm flex items-center gap-1 leading-none mt-1"
+                                          className="px-3 py-1.5 bg-white/10 hover:bg-white/15 active:scale-95 text-white/85 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm flex items-center gap-1 leading-none mt-1"
                                         >
                                           <span>⚡ Sync Marks Registry</span>
                                         </button>
@@ -1944,27 +2309,27 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                       <div className="w-full flex flex-col gap-3">
                                         <div className="grid grid-cols-4 gap-2 text-left bg-white/[0.02] border border-white/5 rounded-2xl p-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
                                           <div className="flex flex-col gap-0.5">
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T1</span>
-                                            <span className="text-xs font-mono font-black text-white/80">{getExamScore('t1')}</span>
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">T1</span>
+                                            <span className="text-xs font-sans font-black text-white/80">{getExamScore('t1')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T2</span>
-                                            <span className="text-xs font-mono font-black text-white/60">{getExamScore('t2')}</span>
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">T2</span>
+                                            <span className="text-xs font-sans font-black text-white/60">{getExamScore('t2')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">T3</span>
-                                            <span className="text-xs font-mono font-black text-white/80">{getExamScore('t3')}</span>
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">T3</span>
+                                            <span className="text-xs font-sans font-black text-white/80">{getExamScore('t3')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Internal</span>
-                                            <span className="text-xs font-mono font-black text-white/70">{getExamScore('internal')}</span>
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">Internal</span>
+                                            <span className="text-xs font-sans font-black text-white/70">{getExamScore('internal')}</span>
                                           </div>
                                         </div>
                                         <div className="w-full flex items-center justify-between border-t border-white/5 pt-2.5 select-none leading-none">
                                           <span className="text-[8.5px] font-black text-white/70 flex items-center gap-1.5 uppercase tracking-wider">
                                             <CheckCircle2 size={11} /> Registry Synced
                                           </span>
-                                          <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-widest font-mono">Real-time Verified</span>
+                                          <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-widest font-sans">Real-time Verified</span>
                                         </div>
                                       </div>
                                     )}
@@ -2029,24 +2394,24 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     >
                       <div className="flex justify-between items-start w-full border-b border-white/5 pb-3">
                         <div className="text-left">
-                          <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-mono">{item.sem}</span>
+                          <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-sans">{item.sem}</span>
                           <h4 className="text-sm font-bold text-white font-sans mt-0.5">{item.desc}</h4>
                         </div>
 
-                        <span className="bg-white/10 border border-white/15 text-white/70 font-mono text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-sm flex items-center gap-1 leading-none select-none">
+                        <span className="bg-white/10 text-white/70 font-sans text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-sm flex items-center gap-1 leading-none select-none">
                           <CheckCircle2 size={11} /> {item.status}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-end w-full text-left font-sans pt-0.5">
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Receipt No / ID</span>
-                          <span className="text-[11px] font-bold text-slate-300 font-mono">{item.txId}</span>
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">Receipt No / ID</span>
+                          <span className="text-[11px] font-bold text-slate-300 font-sans">{item.txId}</span>
                         </div>
 
                         <div className="flex flex-col items-end gap-0.5">
-                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Amount Paid</span>
-                          <span className="text-base font-mono font-black text-white/75 leading-none">{item.amount}</span>
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">Amount Paid</span>
+                          <span className="text-base font-sans font-black text-white/75 leading-none">{item.amount}</span>
                         </div>
                       </div>
                     </div>
@@ -2073,26 +2438,337 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     >
                       <div className="flex justify-between items-start w-full border-b border-white/5 pb-2.5">
                         <div className="text-left flex-1 min-w-0 pr-3">
-                          <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-mono">Exam Schedule</span>
-                          <h4 className="text-sm font-bold text-white font-sans mt-0.5 truncate">{item.subject}</h4>
+                          <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-sans">Exam Schedule</span>
+                          <h4 className="text-sm font-bold text-white font-sans mt-0.5 break-words">{item.subject}</h4>
                         </div>
-                        <span className="bg-white/10 border border-white/15 text-white/60 font-mono text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-wider shrink-0">
+                        <span className="bg-white/10 text-white/60 font-sans text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-wider shrink-0">
                           {item.room}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 text-left font-sans">
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Date</span>
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">Date</span>
                           <span className="text-xs font-bold text-slate-200">{item.date}</span>
                         </div>
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-mono">Time Window</span>
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">Time Window</span>
                           <span className="text-xs font-bold text-slate-200">{item.time}</span>
                         </div>
                       </div>
                     </div>
                   ))
+                )}
+
+              </div>
+            )}
+
+            {/* 📚 TABS: SUBJECTS TAB */}
+            {activeTab === 'subjects' && (
+              <div className="flex flex-col gap-4">
+                {/* Header Card / Semester Dropdown */}
+                <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+                  <div className={`${obsidianCardClass} !pt-3 !pb-3.5 !px-5 flex flex-col gap-1 text-left w-full sm:max-w-xs`}>
+                    <span className="text-[9px] font-black text-slate-400/90 uppercase tracking-widest font-sans">Academic Term</span>
+                    <select
+                      value={selectedSubjectsSem?.registrationid || ''}
+                      onChange={(e) => {
+                        const match = Array.isArray(semestersList) ? semestersList.find(s => s.registrationid === e.target.value) : null;
+                        if (match) handleSubjectsSemesterChange(match);
+                      }}
+                      className="bg-transparent text-slate-200 text-[13px] font-black w-full outline-none cursor-pointer font-sans border-none p-0 pl-0 ml-[-3px] focus:ring-0"
+                    >
+                      {Array.isArray(semestersList) && semestersList.map((sem, sidx) => (
+                        <option key={sidx} value={sem.registrationid} className="bg-[#121620] text-slate-200 font-sans">
+                          {sem.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Subject count pill */}
+                  {!subjectsLoading && !subjectsError && subjectsList.length > 0 && (
+                    <div className={`${obsidianCardClass} !py-3 !px-5 flex items-center justify-between gap-4 text-left shrink-0`}>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[9px] font-black text-slate-400/90 uppercase tracking-widest font-sans">Total Registered</span>
+                        <span className="text-slate-100 font-black text-sm font-sans">{subjectsList.length} Courses</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {subjectsLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 animate-pulse">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <div key={i} className={`${obsidianCardClass} h-[160px] opacity-50`}>
+                        <div className="h-4 w-20 bg-white/10 rounded mb-4" />
+                        <div className="h-6 w-3/4 bg-white/10 rounded mb-4" />
+                        <div className="h-4 w-full bg-white/5 rounded mt-4" />
+                      </div>
+                    ))}
+                  </div>
+                ) : subjectsError ? (
+                  <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center`}>
+                    <AlertTriangle className="text-red-400 mb-3" size={32} />
+                    <p className="text-slate-300 font-medium mb-4">{subjectsError}</p>
+                    <button
+                      onClick={() => handleSubjectsSemesterChange(selectedSubjectsSem)}
+                      className="px-5 py-2.5 rounded-full bg-[#d0bcff] text-[#381e72] font-black text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer shadow-md hover:bg-[#d0bcff]/90"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                ) : subjectsList.length === 0 ? (
+                  <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center`}>
+                    <BookOpen className="text-slate-500 mb-3" size={32} />
+                    <p className="text-slate-400 font-medium">No registered subjects found for this semester.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {subjectsList.map((sub, idx) => (
+                      <div key={idx} className={`${obsidianCardClass} flex flex-col justify-between h-full group hover:translate-y-[-2px] hover:bg-white/[0.04] transition-all duration-300`}>
+                        <div>
+                          <div className="flex justify-between items-start mb-2.5">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-purple-300 uppercase tracking-wider font-mono">
+                              {sub.subjectcode}
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                              isLabSubject(sub) ? 'bg-[#381e72]/50 text-[#d0bcff]' : 'bg-[#0053da]/30 text-blue-300'
+                            }`}>
+                              {isLabSubject(sub) ? 'Lab' : 'Theory'}
+                            </span>
+                          </div>
+                          <h3 className="text-slate-100 font-bold text-sm leading-snug mb-3 group-hover:text-purple-300 transition-colors duration-200 text-left">
+                            {sub.subjectdesc || 'Unnamed Subject'}
+                          </h3>
+                        </div>
+                        <div className="border-t border-white/5 pt-3 flex flex-col gap-2">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-slate-400">Faculty</span>
+                            <span className="text-slate-200 font-medium truncate max-w-[150px]" title={sub.employeename}>{sub.employeename || '—'}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-slate-400">Credits</span>
+                            <span className="text-slate-200 font-medium">{getSubjectCredits(sub.subjectcode)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 🧮 TABS: GPA CALCULATOR TAB */}
+            {activeTab === 'calculator' && (
+              <div className="flex flex-col gap-4">
+                
+                {/* ─── M3 Segmented Chips Switcher ─── */}
+                <div className="flex justify-center mb-1">
+                  <div className="m3-segmented-chips w-full justify-between">
+                    {[
+                      { id: 'sgpa', icon: <TrendingUp size={14} />, label: 'SGPA Simulator' },
+                      { id: 'cgpa', icon: <Calculator size={14} />, label: 'CGPA Projector' }
+                    ].map((sub) => (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => setCalcMode(sub.id)}
+                        className={`flex-1 m3-segmented-chip flex items-center justify-center gap-1.5 py-2.5 transition-all duration-300 ${
+                          calcMode === sub.id
+                            ? 'm3-segmented-chip--selected'
+                            : 'text-[#cac4d0] hover:text-white'
+                        }`}
+                      >
+                        {sub.icon}
+                        <span className="font-extrabold text-xs tracking-wider uppercase font-sans">{sub.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Result Card */}
+                <div className={`${obsidianCardClass} p-5 flex flex-col items-center justify-center text-center bg-gradient-to-br from-[#4f378b]/30 to-[#381e72]/10 border border-[#d0bcff]/20`}>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-sans mb-1">
+                    {calcMode === 'sgpa' ? 'Simulated SGPA' : 'Projected CGPA'}
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-black text-[#d0bcff] font-sans tracking-tight">
+                      {calcMode === 'sgpa' ? calculatedSgpaResult.sgpa : calculatedCgpaResult}
+                    </span>
+                    <span className="text-xs text-slate-400 font-bold">/ 10.00</span>
+                  </div>
+                  <span className="text-[11px] text-slate-300 mt-2 font-medium">
+                    {calcMode === 'sgpa' 
+                      ? `${calculatedSgpaResult.credits} total credits simulated`
+                      : 'Projected cumulative CGPA after this semester'
+                    }
+                  </span>
+                </div>
+
+                {calcMode === 'sgpa' ? (
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between w-full">
+                      {/* Auto-fill semester selector */}
+                      <div className={`${obsidianCardClass} !py-2.5 !px-4 flex items-center justify-between gap-3 text-left w-full sm:max-w-xs shrink-0`}>
+                        <div className="flex flex-col gap-0.5 w-full">
+                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-sans">Simulate Semester</span>
+                          <select
+                            value={calculatorSelectedSem?.registrationid || ''}
+                            onChange={(e) => {
+                              const match = Array.isArray(semestersList) ? semestersList.find(s => s.registrationid === e.target.value) : null;
+                              if (match) {
+                                setCalculatorSelectedSem(match);
+                                populateCalcFromSemester(match);
+                              }
+                            }}
+                            className="bg-transparent text-slate-200 text-xs font-black outline-none cursor-pointer font-sans border-none p-0 focus:ring-0 w-full"
+                          >
+                            {Array.isArray(semestersList) && semestersList.map((sem, sidx) => (
+                              <option key={sidx} value={sem.registrationid} className="bg-[#121620] text-slate-200 font-sans">
+                                {sem.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <button
+                          onClick={() => populateCalcFromSemester(calculatorSelectedSem)}
+                          className="flex-1 sm:flex-none px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200 active:scale-95 border border-white/10 cursor-pointer"
+                        >
+                          Reset Subjects
+                        </button>
+                        <button
+                          onClick={addCustomCalcSubject}
+                          className="flex-1 sm:flex-none px-4 py-2.5 bg-[#d0bcff] hover:bg-[#d0bcff]/90 text-[#381e72] rounded-xl text-xs font-black uppercase tracking-wider transition duration-200 active:scale-95 shadow-md cursor-pointer"
+                        >
+                          Add Course
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      {calcSubjects.length === 0 ? (
+                        <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center`}>
+                          <BookOpen className="text-slate-500 mb-2" size={24} />
+                          <p className="text-slate-400 text-xs font-medium">No subjects added. Select a semester to load courses or add a custom course manually.</p>
+                        </div>
+                      ) : (
+                        calcSubjects.map((sub) => (
+                          <div key={sub.id} className={`${obsidianCardClass} !p-3 flex items-center justify-between gap-3 text-left hover:bg-white/[0.03] transition-all`}>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <input
+                                type="text"
+                                value={sub.name}
+                                onChange={(e) => updateCalcSubjectName(sub.id, e.target.value)}
+                                className="bg-transparent border-none p-0 text-slate-100 font-bold text-xs w-full focus:ring-0 outline-none truncate"
+                                placeholder="Course Name"
+                              />
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[9px] font-bold text-slate-400/80 font-mono tracking-wider uppercase">
+                                  {sub.code || 'CUSTOM'}
+                                </span>
+                                <span className="text-[9px] text-slate-500 font-bold flex items-center gap-1">
+                                  Credits: 
+                                  <input
+                                    type="number"
+                                    value={sub.credits}
+                                    onChange={(e) => updateCalcSubjectCredits(sub.id, e.target.value)}
+                                    className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded px-1.5 py-0.5 text-[9px] font-black w-10 text-center focus:outline-none focus:border-purple-400"
+                                    min="1"
+                                    max="8"
+                                  />
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              {/* Grade selector */}
+                              <select
+                                value={sub.selectedGrade}
+                                onChange={(e) => updateCalcSubjectGrade(sub.id, e.target.value)}
+                                className="bg-[#211a30]/80 text-[#d0bcff] text-xs font-black border border-[#483c5e]/40 rounded-xl px-2 py-1 focus:outline-none focus:border-[#d0bcff] cursor-pointer"
+                              >
+                                <option value="" className="bg-[#121620] text-slate-400">Grade</option>
+                                {Object.keys(gradePointMap).map((g) => (
+                                  <option key={g} value={g} className="bg-[#121620] text-slate-200">{g} ({gradePointMap[g]} Pts)</option>
+                                ))}
+                              </select>
+
+                              {/* Delete button */}
+                              <button
+                                onClick={() => removeCalcSubject(sub.id)}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition cursor-pointer"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className={`${obsidianCardClass} !p-4 flex flex-col gap-1 text-left`}>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-sans">Current CGPA</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cgpaPrevCgpa}
+                          onChange={(e) => setCgpaPrevCgpa(e.target.value)}
+                          className="bg-transparent border-none p-0 text-slate-100 font-extrabold text-sm w-full focus:ring-0 outline-none"
+                          placeholder="e.g. 7.50"
+                          min="0"
+                          max="10"
+                        />
+                      </div>
+                      <div className={`${obsidianCardClass} !p-4 flex flex-col gap-1 text-left`}>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-sans">Completed Credits</span>
+                        <input
+                          type="number"
+                          value={cgpaPrevCredits}
+                          onChange={(e) => setCgpaPrevCredits(e.target.value)}
+                          className="bg-transparent border-none p-0 text-slate-100 font-extrabold text-sm w-full focus:ring-0 outline-none"
+                          placeholder="e.g. 80"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className={`${obsidianCardClass} p-4 flex flex-col gap-3 text-left font-sans text-xs`}>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 border-b border-white/5 pb-1.5 select-none">
+                        Calculation Breakdown
+                      </h4>
+                      <div className="flex justify-between items-center w-full">
+                        <span className="text-slate-400">Previous Total Points</span>
+                        <span className="text-slate-200 font-bold">
+                          {((parseFloat(cgpaPrevCgpa) || 0) * (parseFloat(cgpaPrevCredits) || 0)).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center w-full border-t border-white/5 pt-2">
+                        <span className="text-slate-400">Simulated Semester Points</span>
+                        <span className="text-slate-200 font-bold">
+                          {(parseFloat(calculatedSgpaResult.sgpa) * parseFloat(calculatedSgpaResult.credits)).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center w-full border-t border-white/5 pt-2">
+                        <span className="text-slate-400">Projected Total Credits</span>
+                        <span className="text-slate-200 font-bold">
+                          {(parseFloat(cgpaPrevCredits) || 0) + parseFloat(calculatedSgpaResult.credits)}
+                        </span>
+                      </div>
+                      <div className="border-t border-white/10 pt-2.5 flex justify-between items-center w-full">
+                        <span className="text-[#d0bcff] font-bold">Projected CGPA</span>
+                        <span className="text-[#d0bcff] font-black text-sm">
+                          {calculatedCgpaResult}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
               </div>
@@ -2106,24 +2782,24 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 `}>
                   <div className="flex justify-between items-start w-full">
                     <div className="flex items-center gap-3.5 text-left">
-                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-black text-white font-sans shadow-md border border-white/15 shrink-0 select-none uppercase">
+                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-black text-white font-sans shadow-md shrink-0 select-none uppercase">
                         {(studentProfile.name || '').split(' ').map(n => n[0]).join('').substring(0, 2)}
                       </div>
                       <div className="flex flex-col gap-2">
                         <h3 className="text-base font-extrabold text-white leading-tight font-sans tracking-wide">{studentProfile.name}</h3>
                         <div className="flex flex-col">
-                          <span className="text-[8px] font-black text-white/50 tracking-widest font-mono uppercase leading-normal">Enrollment ID</span>
-                          <span className="text-[11px] font-bold text-white/70 font-mono mt-[-0.5px] leading-normal">{studentProfile.enrollment}</span>
+                          <span className="text-[8px] font-black text-white/50 tracking-widest font-sans uppercase leading-normal">Enrollment ID</span>
+                          <span className="text-[11px] font-bold text-white/70 font-sans mt-[-0.5px] leading-normal">{studentProfile.enrollment}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">
                       {error ? (
-                        <span className="bg-white/[0.04] border border-white/10 text-white/50 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
+                        <span className="bg-white/[0.04] text-white/50 font-sans text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
                           <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span> Offline
                         </span>
                       ) : (
-                        <span className="bg-white/10 border border-white/15 text-white/70 font-mono text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
+                        <span className="bg-white/10 text-white/70 font-sans text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-1.5 select-none leading-none">
                           <span className="w-1.5 h-1.5 rounded-full bg-white/50"></span> Live Synced
                         </span>
                       )}
@@ -2131,7 +2807,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       <button
                         onClick={() => handlePortalSync(enrollmentNo, password)}
                         disabled={isSyncing}
-                        className="px-2.5 py-1.5 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-slate-300 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition duration-300 active:scale-95 cursor-pointer flex items-center gap-1 leading-none shadow-sm disabled:opacity-50"
+                        className="px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.09] text-slate-300 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition duration-300 active:scale-95 cursor-pointer flex items-center gap-1 leading-none shadow-sm disabled:opacity-50"
                       >
                         <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
                         {isSyncing ? "Syncing..." : "Sync Again"}
@@ -2141,16 +2817,16 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
                   <div className="grid grid-cols-3 gap-2 w-full pt-3.5 border-t border-white/10 text-left font-sans">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Branch</span>
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-sans">Branch</span>
                       <span className="text-[11px] font-bold text-slate-200 truncate">{(studentProfile?.branch || 'Computer Science & Engineering').replace('Computer Science & Engineering', 'CSE')}</span>
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Semester</span>
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-sans">Semester</span>
                       <span className="text-[11px] font-bold text-slate-200">{studentProfile?.semester || '—'}</span>
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-mono">Residency</span>
-                      <span className="text-[11px] font-bold text-white/60 font-mono truncate">{studentProfile.hostel}</span>
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest font-sans">Residency</span>
+                      <span className="text-[11px] font-bold text-white/60 font-sans truncate">{studentProfile.hostel}</span>
                     </div>
                   </div>
                 </div>
@@ -2167,7 +2843,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     </div>
                     <div className="flex justify-between items-center w-full border-t border-white/5 pt-2.5">
                       <span className="text-slate-400 font-semibold">Enrollment ID</span>
-                      <span className="text-slate-200 font-mono font-bold">{studentProfile.enrollment}</span>
+                      <span className="text-slate-200 font-sans font-bold">{studentProfile.enrollment}</span>
                     </div>
                     <div className="flex justify-between items-center w-full border-t border-white/5 pt-2.5">
                       <span className="text-slate-400 font-semibold">Primary Branch</span>
@@ -2207,23 +2883,25 @@ export default function StudentDashboard({ currentUser, onClose }) {
           </div>
 
           {/* ─── Glass Pill Navigation (icons only) ─── */}
-          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] z-[100] select-none">
+          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-[#211a30]/75 border border-[#483c5e]/30 backdrop-blur-2xl shadow-2xl z-[100] select-none m3-nav-entrance">
             {[
-              { id: 'attendance', icon: <Percent size={19} className="stroke-[2.5px]" />, label: 'Attendance' },
-              { id: 'grades',     icon: <Award    size={19} className="stroke-[2.5px]" />, label: 'Grades' },
-              { id: 'fees',       icon: <DollarSign size={19} className="stroke-[2.5px]" />, label: 'Ledger' },
-              { id: 'exams',      icon: <Calendar size={19} className="stroke-[2.5px]" />, label: 'Exams' },
-              { id: 'profile',    icon: <User     size={19} className="stroke-[2.5px]" />, label: 'Profile' },
+              { id: 'attendance', icon: <Percent size={17} className="stroke-[2.5px]" />, label: 'Attendance' },
+              { id: 'grades',     icon: <Award    size={17} className="stroke-[2.5px]" />, label: 'Grades' },
+              { id: 'subjects',   icon: <BookOpen size={17} className="stroke-[2.5px]" />, label: 'Subjects' },
+              { id: 'calculator', icon: <Calculator size={17} className="stroke-[2.5px]" />, label: 'GPA Calc' },
+              { id: 'fees',       icon: <DollarSign size={17} className="stroke-[2.5px]" />, label: 'Ledger' },
+              { id: 'exams',      icon: <Calendar size={17} className="stroke-[2.5px]" />, label: 'Exams' },
+              { id: 'profile',    icon: <User     size={17} className="stroke-[2.5px]" />, label: 'Profile' },
             ].map(({ id, icon, label }) => (
               <button
                 key={id}
                 type="button"
                 title={label}
                 onClick={() => setActiveTab(id)}
-                className={`w-[42px] h-[42px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${
+                className={`w-[38px] h-[38px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${
                   activeTab === id
-                    ? 'bg-white/[0.08] border border-white/[0.12] text-white shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.05)]'
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.03] border border-transparent'
+                    ? 'bg-[#d0bcff] text-[#381e72] border-none shadow-md'
+                    : 'text-[#cac4d0] hover:text-white hover:bg-[#4f378b]/20 border border-transparent'
                 }`}
               >
                 {icon}
@@ -2231,7 +2909,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
             ))}
           </nav>
 
-        </div>
+        </>
       )}
 
     </div>

@@ -12,12 +12,18 @@ import {
   ChevronRight,
   ChevronLeft,
   LayoutDashboard,
+  WifiOff,
 } from 'lucide-react';
 
-function PillLabel({ icon: Icon, children }) {
+function PillLabel({ icon: Icon, children, badge }) {
   return (
     <span className="home-pill__label">
-      {Icon && <Icon className="home-pill__icon" strokeWidth={2.25} aria-hidden />}
+      {Icon && (
+        <span className="relative inline-flex">
+          <Icon className="home-pill__icon" strokeWidth={2.25} aria-hidden />
+          {badge && <span className="home-pill__unread-dot" />}
+        </span>
+      )}
       <span>{children}</span>
     </span>
   );
@@ -55,6 +61,7 @@ function CanteenPillRow({ onClick, title }) {
 
 export default function MetroStartScreen({ currentUser, stats, onTileClick, onLogout, hasUnreadNotices }) {
   const [activePass, setActivePass] = useState(null);
+  const [remainingMinutes, setRemainingMinutes] = useState(0);
   const [activeOrder, setActiveOrder] = useState(null);
 
   useEffect(() => {
@@ -66,17 +73,28 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
       if (passStr) {
         try {
           const pass = JSON.parse(passStr);
-          if (pass?.ExpiryTime && new Date(pass.ExpiryTime) >= new Date()) {
-            setActivePass(pass);
+          if (pass?.ExpiryTime) {
+            const diffMs = new Date(pass.ExpiryTime) - new Date();
+            const mins = Math.max(0, Math.ceil(diffMs / 60000));
+            if (mins > 0) {
+              setActivePass(pass);
+              setRemainingMinutes(mins);
+            } else {
+              localStorage.removeItem(`cp_token_${username}`);
+              setActivePass(null);
+              setRemainingMinutes(0);
+            }
           } else {
-            localStorage.removeItem(`cp_token_${username}`);
             setActivePass(null);
+            setRemainingMinutes(0);
           }
         } catch {
           setActivePass(null);
+          setRemainingMinutes(0);
         }
       } else {
         setActivePass(null);
+        setRemainingMinutes(0);
       }
 
       const orderStr = localStorage.getItem(`cp_order_${username}`);
@@ -127,16 +145,17 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
 
   const openCanteen = () => onTileClick('canteen');
 
+  const isSquished = !!(activePass || activeOrder);
+
   const studentGrid = (
     <div className="home-screen__grid home-screen__grid--rows-5">
       <button
         type="button"
-        className="home-pill home-pill--c4 home-pill--shape-pill home-pill--align-center"
+        className={`home-pill home-pill--c4 home-pill--shape-pill home-pill--align-center ${hasUnreadNotices ? 'home-pill--notices-unread' : ''}`}
         onClick={() => onTileClick('notices')}
         title="Notices"
       >
-        <PillLabel icon={Megaphone}>Notices</PillLabel>
-        {hasUnreadNotices && <span className="home-pill__unread" aria-hidden />}
+        <PillLabel icon={Megaphone} badge={hasUnreadNotices}>Notices</PillLabel>
       </button>
 
       <button
@@ -160,36 +179,52 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
 
       <button
         type="button"
-        className="home-pill home-pill--c2 home-pill--shape-oval home-pill--tile-vertical"
+        className={`home-pill home-pill--c2 home-pill--shape-oval ${isSquished ? 'home-pill--align-center' : 'home-pill--tile-vertical'}`}
         onClick={() => onTileClick('mess')}
         title="Mess Menu"
       >
-        <VerticalPill icon={Utensils} stacked={['Mess', 'Menu']} />
+        {isSquished ? (
+          <PillLabel icon={Utensils}>Mess Menu</PillLabel>
+        ) : (
+          <VerticalPill icon={Utensils} stacked={['Mess', 'Menu']} />
+        )}
       </button>
       <button
         type="button"
-        className="home-pill home-pill--c2 home-pill--shape-oval home-pill--tile-vertical"
+        className={`home-pill home-pill--c2 home-pill--shape-oval ${isSquished ? 'home-pill--align-center' : 'home-pill--tile-vertical'}`}
         onClick={() => onTileClick('skillgigs')}
         title="Skill Swap"
       >
-        <VerticalPill icon={Handshake} stacked={['Skill', 'Swap']} />
+        {isSquished ? (
+          <PillLabel icon={Handshake}>Skill Swap</PillLabel>
+        ) : (
+          <VerticalPill icon={Handshake} stacked={['Skill', 'Swap']} />
+        )}
       </button>
 
       <button
         type="button"
-        className="home-pill home-pill--c2 home-pill--shape-soft home-pill--tile-vertical"
+        className={`home-pill home-pill--c2 home-pill--shape-soft ${isSquished ? 'home-pill--align-center' : 'home-pill--tile-vertical'}`}
         onClick={() => onTileClick('materials')}
         title="Shelf"
       >
-        <VerticalPill icon={Library}>Shelf</VerticalPill>
+        {isSquished ? (
+          <PillLabel icon={Library}>Shelf</PillLabel>
+        ) : (
+          <VerticalPill icon={Library}>Shelf</VerticalPill>
+        )}
       </button>
       <button
         type="button"
-        className="home-pill home-pill--c2 home-pill--shape-soft home-pill--tile-vertical"
+        className={`home-pill home-pill--c2 home-pill--shape-soft ${isSquished ? 'home-pill--align-center' : 'home-pill--tile-vertical'}`}
         onClick={() => onTileClick('calendar')}
         title="Calendar"
       >
-        <VerticalPill icon={Calendar}>Calendar</VerticalPill>
+        {isSquished ? (
+          <PillLabel icon={Calendar}>Calendar</PillLabel>
+        ) : (
+          <VerticalPill icon={Calendar}>Calendar</VerticalPill>
+        )}
       </button>
     </div>
   );
@@ -198,12 +233,11 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
     <div className="home-screen__grid home-screen__grid--rows-3">
       <button
         type="button"
-        className="home-pill home-pill--c4 home-pill--shape-pill home-pill--align-center"
+        className={`home-pill home-pill--c4 home-pill--shape-pill home-pill--align-center ${hasUnreadNotices ? 'home-pill--notices-unread' : ''}`}
         onClick={() => onTileClick('notices')}
         title="Notices"
       >
-        <PillLabel icon={Megaphone}>Notices</PillLabel>
-        {hasUnreadNotices && <span className="home-pill__unread" aria-hidden />}
+        <PillLabel icon={Megaphone} badge={hasUnreadNotices}>Notices</PillLabel>
       </button>
 
       <button
@@ -256,31 +290,47 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
       </header>
 
       {(activePass || activeOrder) && (
-        <div className="home-screen__chips flex flex-col gap-2.5">
+        <div className="home-screen__chips flex flex-col gap-3">
           {activePass && (
             <button
               type="button"
               onClick={() => onTileClick('MESS_QR_FULL')}
-              className="w-full rounded-[22px] border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 flex items-center justify-between text-left active:scale-[0.99] transition"
+              className="w-full rounded-[28px] bg-[#211a30] border border-white/5 px-6 py-5 flex items-center justify-between text-left active:scale-[0.99] transition-all duration-300 shadow-xl cursor-pointer"
             >
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300/80">Mess token</span>
-                <p className="text-sm font-bold text-white mt-0.5">Pass active — tap for QR</p>
+              <div className="flex flex-col gap-1.5">
+                <h4 className="text-lg font-bold text-white tracking-tight">Mess Access</h4>
+                <p className="text-sm font-bold text-white leading-tight">
+                  Pass active • {remainingMinutes} min left
+                </p>
+                <div className="flex items-center gap-1.5 text-xs text-[#cac4d0] mt-1 font-medium select-none">
+                  <WifiOff size={14} className="opacity-80" />
+                  <span>Tap for QR</span>
+                </div>
               </div>
-              <QrCode size={22} className="text-emerald-400 shrink-0" />
+              <div className="w-12 h-12 rounded-full bg-[#4f378b]/40 text-[#eaddff] flex items-center justify-center shrink-0 shadow-inner">
+                <QrCode size={20} />
+              </div>
             </button>
           )}
           {activeOrder && (
             <button
               type="button"
               onClick={() => onTileClick('SUCCESS')}
-              className="w-full rounded-[22px] border border-orange-400/30 bg-orange-500/10 px-4 py-3 flex items-center justify-between text-left active:scale-[0.99] transition"
+              className="w-full rounded-[28px] bg-[#211a30] border border-white/5 px-6 py-5 flex items-center justify-between text-left active:scale-[0.99] transition-all duration-300 shadow-xl cursor-pointer"
             >
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-orange-300/80">Canteen</span>
-                <p className="text-2xl font-black text-orange-300 font-mono mt-0.5">{activeOrder.PickupPIN}</p>
+              <div className="flex flex-col gap-1.5">
+                <h4 className="text-lg font-bold text-white tracking-tight">Canteen Order</h4>
+                <p className="text-sm font-semibold text-[#e6e1e5]">
+                  Pickup PIN • <span className="text-[#fb923c] font-black">{activeOrder.PickupPIN}</span>
+                </p>
+                <div className="flex items-center gap-1.5 text-xs text-[#cac4d0] mt-1 font-medium select-none">
+                  <Clock size={14} className="opacity-80" />
+                  <span>Tap for Receipt</span>
+                </div>
               </div>
-              <Ticket size={22} className="text-orange-400 shrink-0" />
+              <div className="w-12 h-12 rounded-full bg-[#fb923c]/20 text-[#fb923c] flex items-center justify-center shrink-0 shadow-inner">
+                <Ticket size={20} />
+              </div>
             </button>
           )}
         </div>

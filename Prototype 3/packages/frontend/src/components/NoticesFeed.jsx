@@ -165,7 +165,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                 priority === 'high' 
                   ? 'bg-[#ba1a1a]/15 text-[#ffb4ab] border-[#ffb4ab]/20' 
                   : priority === 'medium'
-                  ? 'bg-[#4f378b]/20 text-[#d0bcff] border-[#4f378b]/40'
+                  ? 'bg-m3-primaryContainer/20 text-m3-primary border-m3-primaryContainer/40'
                   : 'bg-white/[0.04] text-slate-400 border-white/10';
 
               return (
@@ -254,7 +254,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              className="bg-[#211a30]/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10"
+              className="bg-m3-surfaceContainer/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -305,11 +305,11 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                       onChange={(e) => setPriority(e.target.value)}
                       className="m3-select"
                     >
-                      <option value="Low" className="bg-[#211a30] text-[#e6e1e5]">Low - Casual</option>
-                      <option value="Medium" className="bg-[#211a30] text-[#e6e1e5]">Medium - Academic</option>
-                      <option value="High" className="bg-[#211a30] text-[#e6e1e5]">High - Critical</option>
+                      <option value="Low" className="bg-m3-surfaceContainer text-m3-onSurface">Low - Casual</option>
+                      <option value="Medium" className="bg-m3-surfaceContainer text-m3-onSurface">Medium - Academic</option>
+                      <option value="High" className="bg-m3-surfaceContainer text-m3-onSurface">High - Critical</option>
                     </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#d0bcff]">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-m3-primary">
                       <ChevronDown size={14} />
                     </div>
                   </div>

@@ -24,16 +24,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --card-bg: rgba(33, 26, 48, 0.75); /* Lavender container bg */
-    --card-border: rgba(72, 60, 94, 0.4); /* Lavender outline border */
-    --input-bg: rgba(28, 21, 41, 0.7); /* Lavender input bg */
+    --card-bg: color-mix(in srgb, var(--m3-surface-container) 75%, transparent);
+    --card-border: color-mix(in srgb, var(--m3-outline-variant) 40%, transparent);
+    --input-bg: color-mix(in srgb, var(--m3-surface-container-low) 70%, transparent);
     --text-primary: #f3f4f6;
     --text-secondary: #cac4d0;
     
-    /* Dark Mode Lavender settings */
-    --accent: #d0bcff;
-    --accent-bg: rgba(208, 188, 255, 0.12);
-    --accent-border: rgba(208, 188, 255, 0.2);
+    /* Dark Mode Theme-integrated settings */
+    --accent: var(--m3-primary);
+    --accent-bg: color-mix(in srgb, var(--m3-primary) 12%, transparent);
+    --accent-border: color-mix(in srgb, var(--m3-primary) 20%, transparent);
     --text-h: #e6e1e5;
   }
 }
