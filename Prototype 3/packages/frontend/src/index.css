@@ -408,6 +408,8 @@ body {
     min-height: 100vh;
     border-radius: 0;
     border: none;
+    transform: none !important;
+    transition: none !important;
   }
 }
 
@@ -433,6 +435,15 @@ textarea,
 }
 
 /* ─── Bouncy entrance animations ───────────────────────────────────────────── */
+@keyframes m3-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes m3-bounce-in {
   0% {
     opacity: 0;
@@ -512,7 +523,7 @@ textarea,
 
 /* M3 screen entrances (Notices, Timetable, Mess, etc.) */
 .m3-screen {
-  animation: m3-bounce-in 0.45s var(--m3-ease-spring) both;
+  animation: m3-fade-in 0.3s ease-out both;
 }
 
 /* Module screen entrances (Canteen, SkillSwap, PeerChat, StudentDashboard) */
@@ -520,12 +531,12 @@ textarea,
 .skillgigs-module,
 .peer-chat-container,
 .student-dashboard-shell {
-  animation: m3-bounce-in 0.45s var(--m3-ease-spring) both;
+  animation: m3-fade-in 0.3s ease-out both;
 }
 
 /* Immersive overlay screen entrances (Payment, QR Pass, Success) */
 .campos-dashboard > main > div[class*="absolute inset-0"] {
-  animation: m3-bounce-in 0.4s var(--m3-ease-spring) both;
+  animation: m3-fade-in 0.3s ease-out both;
 }
 
 /* Reduce motion for accessibility */
