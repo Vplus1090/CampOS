@@ -1,27 +1,13 @@
 import React, { useState } from 'react';
 import { GraduationCap, Calendar } from 'lucide-react';
+import M3ScreenHeader from './M3ScreenHeader';
 
 export default function AcademicCalendar({ setActiveTab }) {
-  const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
-  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleScroll = (e) => {
     const currentScrollTop = e.target.scrollTop;
-    
-    if (currentScrollTop <= 5) {
-      setIsHeaderMinimized(false);
-      setLastScrollTop(0);
-      return;
-    }
-    
-    if (Math.abs(currentScrollTop - lastScrollTop) < 8) return;
-
-    if (currentScrollTop > lastScrollTop) {
-      setIsHeaderMinimized(true);
-    } else {
-      setIsHeaderMinimized(false);
-    }
-    setLastScrollTop(currentScrollTop);
+    setIsScrolled(currentScrollTop > 10);
   };
   const calendarEvents = [
     {
@@ -84,109 +70,81 @@ export default function AcademicCalendar({ setActiveTab }) {
 
   const themeStyles = {
     teal: {
-      border: 'border-white/15 bg-white/[0.02]',
-      badge: 'bg-white/[0.06] text-white/60 border-white/10',
-      iconColor: 'text-white/50'
+      border: 'border-white/10',
+      bg: 'bg-[#211a30]/60',
+      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
+      iconColor: 'text-[#d0bcff]'
     },
     rose: {
-      border: 'border-white/15 bg-white/[0.02]',
-      badge: 'bg-white/[0.06] text-white/60 border-white/10',
-      iconColor: 'text-white/50'
+      border: 'border-white/10',
+      bg: 'bg-[#211a30]/60',
+      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
+      iconColor: 'text-[#d0bcff]'
     },
     amber: {
-      border: 'border-white/15 bg-white/[0.02]',
-      badge: 'bg-white/[0.06] text-white/60 border-white/10',
-      iconColor: 'text-white/50'
+      border: 'border-white/10',
+      bg: 'bg-[#211a30]/60',
+      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
+      iconColor: 'text-[#d0bcff]'
     },
     magenta: {
-      border: 'border-white/15 bg-white/[0.02]',
-      badge: 'bg-white/[0.06] text-white/60 border-white/10',
-      iconColor: 'text-white/50'
+      border: 'border-white/10',
+      bg: 'bg-[#211a30]/60',
+      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
+      iconColor: 'text-[#d0bcff]'
     },
     purple: {
-      border: 'border-white/15 bg-white/[0.02]',
-      badge: 'bg-white/[0.06] text-white/60 border-white/10',
-      iconColor: 'text-white/50'
+      border: 'border-white/10',
+      bg: 'bg-[#211a30]/60',
+      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
+      iconColor: 'text-[#d0bcff]'
     }
   };
 
+  const goBack = () => setActiveTab && setActiveTab('home');
+
   return (
-    <div className="relative flex flex-col h-full max-h-full gap-4 pb-4 overflow-hidden font-sans text-white select-none academic-calendar-dashboard">
-      
-      {/* Collapsible Area */}
-      <div 
-        className={`transition-all duration-500 ease-in-out overflow-hidden flex flex-col gap-4 shrink-0 ${
-          isHeaderMinimized 
-            ? 'max-h-0 opacity-0 scale-95 pointer-events-none mb-0 mt-0 pb-0' 
-            : 'max-h-[150px] opacity-100 scale-100 mb-1'
-        }`}
-      >
-        {/* Header title */}
-        <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
-          <div className="flex items-center gap-3.5">
-            <button
-              onClick={() => setActiveTab && setActiveTab('home')}
-              className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-              type="button"
-            >
-              <span className="text-xl font-bold">&larr;</span>
-            </button>
-            <h2 className="text-[22px] italic font-normal text-white leading-none flex items-center gap-2 translate-y-[2px] tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Academic Calendar
-            </h2>
-          </div>
-        </header>
-      </div>
+    <div className="m3-screen academic-calendar-dashboard">
+      <M3ScreenHeader
+        title="Academic Calendar"
+        subtitle="Odd sem • 2025–26"
+        isScrolled={isScrolled}
+        onBack={goBack}
+      />
 
-      {/* Timeline Event Cards */}
-      <div 
-        onScroll={handleScroll}
-        className="flex-1 pb-8 pr-1 space-y-5 overflow-y-auto scrollbar-none"
-      >
+      <div onScroll={handleScroll} className="m3-screen__scroll !gap-3" style={{ paddingBottom: 32 }}>
         {calendarEvents.map((event, idx) => {
-          const style = themeStyles[event.theme] || themeStyles.teal;
           return (
-            <div
-              key={idx}
-              className={`rounded-[28px] p-6 transition-all duration-500 relative border-2 ${style.border} ${style.bg} backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] shadow-xl flex flex-col gap-4 hover:scale-[1.005]`}
-            >
-              {/* Header: Title and Tags */}
-              <div className="flex flex-col items-start gap-2 text-left">
-                <div className="flex items-center flex-wrap gap-2.5">
-                  <GraduationCap size={18} className={`${style.iconColor} shrink-0`} />
-                  <h4 className="font-sans text-base font-extrabold leading-none tracking-wide text-white">
-                    {event.category}
-                  </h4>
-                  <div className="flex items-center gap-1.5">
-                    {event.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${style.badge}`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+            <article key={idx} className="m3-surface-card flex flex-col gap-4 text-left">
+              <div
+                className="flex items-center gap-3.5 w-full pb-3.5"
+                style={{ borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 35%, transparent)' }}
+              >
+                <div className="m3-icon-badge">
+                  <GraduationCap size={20} />
                 </div>
-                
-                <p className="text-xs font-semibold text-slate-300 leading-relaxed pl-[28px]">
-                  {event.desc}
-                </p>
+                <h4 className="m3-title-medium flex-1">{event.category}</h4>
+                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                  {event.tags.map((tag) => (
+                    <span key={tag} className="m3-assist-chip text-[10px] py-0.5 uppercase">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
 
-              {/* Date stamp pill aligned nicely */}
-              <div className="flex justify-end mt-1">
-                <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-xl px-3.5 py-1.5 shadow-md">
-                  <Calendar size={12} className="text-slate-400" />
-                  <span className="text-[10px] font-mono font-bold tracking-wide text-slate-200">
-                    {event.date}
-                  </span>
-                </div>
+              <p className="m3-body-medium m3-text-variant leading-relaxed pr-2">{event.desc}</p>
+
+              <div className="flex justify-start">
+                <span className="m3-assist-chip gap-2 inline-flex">
+                  <Calendar size={12} className="text-m3-primary shrink-0" />
+                  <span className="text-[11px] font-medium tracking-wide uppercase">{event.date}</span>
+                </span>
               </div>
-            </div>
+            </article>
           );
         })}
-        </div>
+      </div>
     </div>
   );
 }

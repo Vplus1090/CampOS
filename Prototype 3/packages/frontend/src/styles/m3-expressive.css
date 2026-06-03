@@ -1,0 +1,512 @@
+/**
+ * Material Design 3 — Expressive (dark, lavender)
+ * Shared tokens + components for CampOS
+ */
+
+:root {
+  /* Color — dark expressive lavender */
+  --m3-primary: #d0bcff;
+  --m3-on-primary: #381e72;
+  --m3-primary-container: #4f378b;
+  --m3-on-primary-container: #eaddff;
+
+  --m3-secondary: #ccc2dc;
+  --m3-on-secondary: #332d41;
+  --m3-secondary-container: #4a4458;
+  --m3-on-secondary-container: #e8def8;
+
+  --m3-tertiary: #efb8c8;
+  --m3-on-tertiary: #492532;
+  --m3-tertiary-container: #633b48;
+  --m3-on-tertiary-container: #ffd8e4;
+
+  --m3-error: #f2b8b5;
+  --m3-on-error: #601410;
+  --m3-error-container: #8c1d18;
+  --m3-on-error-container: #f9dedc;
+
+  --m3-surface: #181125;
+  --m3-on-surface: #e6e1e5;
+  --m3-surface-variant: #483c5e;
+  --m3-on-surface-variant: #cac4d0;
+  --m3-outline: #948baf;
+  --m3-outline-variant: #483c5e;
+
+  --m3-surface-container-lowest: #0f0918;
+  --m3-surface-container-low: #1c1529;
+  --m3-surface-container: #211a30;
+  --m3-surface-container-high: #292035;
+  --m3-surface-container-highest: #352a48;
+
+  --m3-home-surface: #181125;
+
+  /* Expressive shape — larger, softer corners */
+  --m3-shape-xs: 8px;
+  --m3-shape-sm: 12px;
+  --m3-shape-md: 16px;
+  --m3-shape-lg: 20px;
+  --m3-shape-xl: 28px;
+  --m3-shape-2xl: 32px;
+  --m3-shape-full: 9999px;
+
+  /* Elevation / state */
+  --m3-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --m3-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.32);
+  --m3-state-hover: rgba(208, 188, 255, 0.08);
+  --m3-state-pressed: rgba(208, 188, 255, 0.12);
+
+  /* Motion — expressive emphasized curves */
+  --m3-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --m3-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --m3-ease-spring: cubic-bezier(0.34, 1.25, 0.64, 1);
+  --m3-duration-short: 200ms;
+  --m3-duration-medium: 300ms;
+
+  --m3-font: "Google Sans Flex", "Roboto Flex", Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Typography scale (expressive: contrast in weight & size) */
+.m3-display-small {
+  font-family: var(--m3-font);
+  font-size: 2.25rem;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--m3-on-surface);
+}
+
+.m3-headline-small {
+  font-family: var(--m3-font);
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0;
+  color: var(--m3-on-surface);
+}
+
+.m3-title-medium {
+  font-family: var(--m3-font);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  color: var(--m3-on-surface);
+}
+
+.m3-title-small {
+  font-family: var(--m3-font);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--m3-on-surface);
+}
+
+.m3-body-medium {
+  font-family: var(--m3-font);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--m3-on-surface);
+}
+
+.m3-body-small {
+  font-family: var(--m3-font);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--m3-on-surface-variant);
+}
+
+.m3-label-large {
+  font-family: var(--m3-font);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+.m3-text-variant {
+  color: var(--m3-on-surface-variant);
+}
+
+/* Immersive full-screen shell */
+.m3-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  font-family: var(--m3-font);
+  color: var(--m3-on-surface);
+  background: var(--m3-surface);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+.m3-screen__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 160px 20px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Collapsing large top app bar (expressive) */
+.m3-top-app-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 20px 0;
+  height: 152px;
+  background: transparent;
+  overflow: hidden;
+  transition:
+    height var(--m3-duration-medium) var(--m3-ease-emphasized),
+    background-color var(--m3-duration-medium) var(--m3-ease-standard),
+    box-shadow var(--m3-duration-medium) var(--m3-ease-standard);
+}
+
+.m3-top-app-bar--collapsed {
+  height: 96px;
+  background: color-mix(in srgb, var(--m3-surface-container-high) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--m3-elevation-1);
+}
+
+.m3-top-app-bar__row {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.m3-top-app-bar__title-compact {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--m3-on-surface);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -6px);
+  transition:
+    opacity var(--m3-duration-short) var(--m3-ease-standard),
+    transform var(--m3-duration-short) var(--m3-ease-standard);
+}
+
+.m3-top-app-bar--collapsed .m3-top-app-bar__title-compact {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+.m3-top-app-bar__headline {
+  margin-top: 12px;
+  padding-left: 14px;
+  text-align: left;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--m3-duration-short) var(--m3-ease-standard),
+    transform var(--m3-duration-short) var(--m3-ease-standard);
+}
+
+.m3-top-app-bar--collapsed .m3-top-app-bar__headline {
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+}
+
+.m3-top-app-bar__headline .m3-display-small {
+  font-size: 1.75rem;
+}
+
+/* Icon button — filled tonal (expressive) */
+.m3-icon-button {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--m3-shape-full);
+  background: var(--m3-surface-container-high);
+  color: var(--m3-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: var(--m3-elevation-1);
+  transition:
+    background var(--m3-duration-short) var(--m3-ease-standard),
+    transform var(--m3-duration-short) var(--m3-ease-spring);
+}
+
+.m3-icon-button:hover {
+  background: var(--m3-surface-container-highest);
+}
+
+.m3-icon-button:active {
+  transform: scale(0.94);
+  background: var(--m3-surface-container);
+}
+
+/* Filled button — primary expressive */
+.m3-filled-button {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: var(--m3-shape-full);
+  background: var(--m3-primary);
+  color: var(--m3-on-primary);
+  font-family: var(--m3-font);
+  font-size: clamp(0.9375rem, 2.5vh, 1.0625rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--m3-elevation-2);
+  transition:
+    background var(--m3-duration-short) var(--m3-ease-standard),
+    transform var(--m3-duration-short) var(--m3-ease-spring);
+}
+
+.m3-filled-button:hover {
+  filter: brightness(1.06);
+}
+
+.m3-filled-button:active {
+  transform: scale(0.98);
+}
+
+/* Tonal surface card */
+.m3-surface-card {
+  border-radius: var(--m3-shape-xl);
+  background: color-mix(in srgb, var(--m3-surface-container-high) 55%, transparent);
+  padding: 16px;
+  transition: background var(--m3-duration-short) var(--m3-ease-standard);
+}
+
+.m3-surface-card:hover {
+  background: color-mix(in srgb, var(--m3-surface-container-high) 75%, transparent);
+}
+
+.m3-surface-card--interactive {
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.m3-surface-card--interactive:active {
+  transform: scale(0.99);
+}
+
+/* Icon badge in cards */
+.m3-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--m3-shape-lg);
+  background: color-mix(in srgb, var(--m3-primary-container) 65%, transparent);
+  color: var(--m3-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Assist chip */
+.m3-assist-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: var(--m3-shape-full);
+  background: color-mix(in srgb, var(--m3-primary) 8%, var(--m3-surface-container-highest));
+  color: var(--m3-on-surface);
+  font-family: var(--m3-font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Filter chip */
+.m3-filter-chip {
+  padding: 8px 16px;
+  border-radius: var(--m3-shape-sm);
+  border: none;
+  background: var(--m3-surface-container-high);
+  color: var(--m3-on-surface-variant);
+  font-family: var(--m3-font);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition:
+    background var(--m3-duration-short) var(--m3-ease-standard),
+    color var(--m3-duration-short) var(--m3-ease-standard);
+}
+
+.m3-filter-chip:hover {
+  background: var(--m3-surface-container-highest);
+  color: var(--m3-on-surface);
+}
+
+.m3-filter-chip--selected {
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+}
+
+/* Highlight badge (time pills) */
+.m3-badge {
+  padding: 4px 14px;
+  border-radius: var(--m3-shape-full);
+  background: color-mix(in srgb, var(--m3-primary-container) 55%, transparent);
+  color: var(--m3-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Segmented control (floating) */
+.m3-segmented {
+  display: flex;
+  padding: 4px;
+  border-radius: var(--m3-shape-full);
+  background: color-mix(in srgb, var(--m3-surface-container) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border: none;
+  box-shadow: var(--m3-elevation-2);
+}
+
+.m3-segmented__option {
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--m3-shape-full);
+  background: transparent;
+  color: var(--m3-on-surface-variant);
+  font-family: var(--m3-font);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background var(--m3-duration-short) var(--m3-ease-standard),
+    color var(--m3-duration-short) var(--m3-ease-standard);
+}
+
+.m3-segmented__option--selected {
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+  box-shadow: var(--m3-elevation-1);
+}
+
+.m3-segmented-fab {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+}
+
+/* Filled text field */
+.m3-filled-field {
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: var(--m3-shape-lg);
+  background: var(--m3-surface-container-high);
+  color: var(--m3-on-surface);
+  font-family: var(--m3-font);
+  font-size: 1rem;
+  padding: 0 20px;
+  outline: none;
+  transition: box-shadow var(--m3-duration-short) var(--m3-ease-standard);
+}
+
+.m3-filled-field:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--m3-primary) 35%, transparent);
+}
+
+.m3-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.m3-select-wrap > .absolute {
+  pointer-events: none;
+}
+
+.m3-select {
+  width: 100%;
+  appearance: none;
+  height: 52px;
+  border: none;
+  border-radius: var(--m3-shape-md);
+  background: var(--m3-surface-container-high);
+  color: var(--m3-on-surface);
+  font-family: var(--m3-font);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0 40px 0 16px;
+  cursor: pointer;
+  outline: none;
+  transition: box-shadow var(--m3-duration-short) var(--m3-ease-standard), background var(--m3-duration-short) var(--m3-ease-standard);
+}
+
+.m3-select:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--m3-primary) 35%, transparent);
+}
+
+/* M3 Chip-style segmented filter */
+.m3-segmented-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.m3-segmented-chip {
+  padding: 8px 16px;
+  border: none;
+  background: var(--m3-surface-container-high);
+  color: var(--m3-on-surface-variant);
+  font-family: var(--m3-font);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--m3-shape-sm);
+  transition: 
+    border-radius var(--m3-duration-medium) var(--m3-ease-spring),
+    background var(--m3-duration-short) var(--m3-ease-standard),
+    color var(--m3-duration-short) var(--m3-ease-standard),
+    box-shadow var(--m3-duration-short) var(--m3-ease-standard);
+}
+
+.m3-segmented-chip:hover {
+  background: var(--m3-surface-container-highest);
+  color: var(--m3-on-surface);
+}
+
+.m3-segmented-chip--selected {
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+  border-radius: 24px;
+  box-shadow: var(--m3-elevation-1);
+}
+
+.m3-segmented-chip--sm {
+  padding: 6px 10px;
+  font-size: 0.6875rem;
+}

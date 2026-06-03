@@ -60,7 +60,7 @@ const seedAdmin = async () => {
         email: 'student@campos.local',
         password: 'Student@123',
         role: 'student',
-        firstName: 'Dhruv',
+        firstName: 'Student',
         lastName: 'Gahlot',
         mustChangePassword: false,
         isEmailVerified: true,

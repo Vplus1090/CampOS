@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  QrCode, WifiOff, Sunrise, Sun, Moon 
-} from 'lucide-react';
+import { QrCode, WifiOff, Sunrise, Sun, Moon, Calendar, CalendarDays } from 'lucide-react';
+import M3ScreenHeader from './M3ScreenHeader';
 
 export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) {
-  const [buying, setBuying] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Toggle Daily vs Weekly view
-  const [viewMode, setViewMode] = useState('daily'); // 'daily', 'weekly'
-
-  // Load and keep pass countdown state reactive
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [viewMode, setViewMode] = useState('daily');
   const [activePass, setActivePass] = useState(null);
   const [remainingMinutes, setRemainingMinutes] = useState(0);
+
+  const handleScroll = (e) => {
+    setIsScrolled(e.target.scrollTop > 10);
+  };
 
   useEffect(() => {
     const checkPass = () => {
@@ -22,7 +20,7 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
       if (passStr) {
         try {
           const pass = JSON.parse(passStr);
-          if (pass && pass.ExpiryTime) {
+          if (pass?.ExpiryTime) {
             const remainingMs = new Date(pass.ExpiryTime) - new Date();
             const mins = Math.max(0, Math.ceil(remainingMs / (60 * 1000)));
             if (mins > 0) {
@@ -34,7 +32,7 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
               setRemainingMinutes(0);
             }
           }
-        } catch (e) {
+        } catch {
           setActivePass(null);
         }
       } else {
@@ -61,21 +59,21 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
       id: 'bf',
       title: 'Breakfast',
       time: '< 9:00 AM',
-      icon: <Sunrise size={18} className="text-white/70" />,
+      icon: <Sunrise size={18} className="text-m3-primary" />,
       items: ['Chana Masala', 'Puri', 'Halwa'],
     },
     {
       id: 'lh',
       title: 'Lunch',
       time: '12:00 - 14:00',
-      icon: <Sun size={18} className="text-white/70" />,
+      icon: <Sun size={18} className="text-m3-primary" />,
       items: ['Matar Paneer', 'Veg Khichdi', 'Dahi', 'Papad'],
     },
     {
       id: 'dn',
       title: 'Dinner',
       time: 'From 19:30',
-      icon: <Moon size={18} className="text-white/70" />,
+      icon: <Moon size={18} className="text-m3-primary" />,
       items: ['Methi Aloo', 'Chana Dal', 'Rice', 'Roti', 'Milk'],
     },
   ];
@@ -90,157 +88,121 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
     { day: 'Sunday', breakfast: 'Masala Dosa & Sambar', lunch: 'Special Sunday Paneer Feast', dinner: 'Aloo Gobi, Yellow Dal, Khichdi' },
   ];
 
+  const goBack = () => setActiveTab && setActiveTab('home');
+
   return (
-    <div className="mess-menu-dashboard flex flex-col gap-6 text-white font-sans min-h-screen pb-24 relative select-none">
-      
-      {/* Segmented Controls Header */}
-      <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
-        <button
-          onClick={() => setActiveTab && setActiveTab('home')}
-          className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-          type="button"
-        >
-          <span className="text-xl font-bold">&larr;</span>
-        </button>
-        <h2 className="flex items-center pl-3.5 text-left translate-y-[2px] text-[22px] italic font-normal text-white leading-none tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-          Mess Menu
-        </h2>
-      </header>
+    <div className="m3-screen mess-menu-dashboard">
+      <M3ScreenHeader
+        title="Mess Menu"
+        subtitle="Daily & weekly meals"
+        isScrolled={isScrolled}
+        onBack={goBack}
+      />
 
-      {/* Segmented Tab Switcher shifted below the heading */}
-      <div className="flex justify-center w-full py-1 shrink-0 select-none">
-        <div className="flex bg-white/[0.04] p-1.5 rounded-full border border-white/10 shadow-inner backdrop-blur-md">
-          <button
-            onClick={() => setViewMode('daily')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
-              viewMode === 'daily'
-                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-            type="button"
-          >
-            Daily
-          </button>
-          <button
-            onClick={() => setViewMode('weekly')}
-            className={`py-2 px-6 text-[10px] font-black uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer border ${
-              viewMode === 'weekly'
-                ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-            type="button"
-          >
-            Weekly
-          </button>
-        </div>
-      </div>
-
-      <div 
-        onClick={() => activePass && setActiveTab && setActiveTab('MESS_QR_FULL')}
-        className={`bg-white/[0.03] backdrop-blur-3xl border-2 border-white/15 text-white rounded-[32px] p-6 flex flex-col gap-4 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] relative overflow-hidden group transition-all duration-300 ${activePass ? 'cursor-pointer hover:scale-[1.01]' : ''}`}
-      >
-        
-        <div className="flex justify-between items-start w-full z-10 text-left">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-2xl font-black tracking-wide leading-none font-sans">Mess Access</h3>
-            <span className="text-slate-400 text-xs font-semibold flex items-center gap-1.5 mt-2">
-              <WifiOff size={14} className="text-slate-400" /> Offline Mode Ready
-            </span>
-          </div>
-
-          <div className="w-12 h-12 bg-white/[0.08] border border-white/10 rounded-2xl flex items-center justify-center shadow-lg">
-            <QrCode size={24} className="text-white" />
-          </div>
-        </div>
-
-        {/* Dynamic Pass Validity Pill */}
-        <div className="w-full mt-2 z-10">
-          {activePass ? (
-            <div className="bg-white/[0.06] border border-white/10 text-white rounded-2xl p-4 flex items-center justify-center gap-2 select-none shadow-md">
-              <span className="font-extrabold tracking-wide text-sm font-sans flex items-center gap-2">
-                🟢 Pass Active • {remainingMinutes} Mins Left
-              </span>
-            </div>
+      <div onScroll={handleScroll} className="m3-screen__scroll">
+        {(isStudent || !currentUser) &&
+          (activePass ? (
+            <button
+              type="button"
+              onClick={() => setActiveTab && setActiveTab('MESS_QR_FULL')}
+              className="m3-surface-card m3-surface-card--interactive shrink-0 flex items-center justify-between gap-3"
+            >
+              <div className="flex flex-col gap-1 min-w-0 text-left">
+                <span className="m3-title-small">Mess Access</span>
+                <span className="m3-body-small text-m3-onPrimaryContainer font-semibold" style={{ color: 'var(--m3-on-primary-container)' }}>
+                  Pass active • {remainingMinutes} min left
+                </span>
+                <span className="m3-body-small flex items-center gap-1.5">
+                  <WifiOff size={12} /> Tap for QR
+                </span>
+              </div>
+              <div className="m3-icon-badge">
+                <QrCode size={22} />
+              </div>
+            </button>
           ) : (
-            (isStudent || !currentUser) && (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleBuyPass(); }}
-                className="w-full bg-white text-[#141a27] hover:bg-slate-50 font-black rounded-xl py-3.5 shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] text-xs uppercase tracking-wider cursor-pointer"
-              >
-                Buy Guest Meal Pass • ₹60
-              </button>
-            )
-          )}
+            <button type="button" onClick={handleBuyPass} className="m3-filled-button shrink-0">
+              Buy Guest Meal Pass • ₹60
+            </button>
+          ))}
+
+        {/* Filters */}
+        <div className="flex items-center justify-end w-full py-1 shrink-0 px-1">
+          <div className="m3-segmented-chips" role="tablist" aria-label="Menu view">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'daily'}
+              onClick={() => setViewMode('daily')}
+              className={`m3-segmented-chip ${viewMode === 'daily' ? 'm3-segmented-chip--selected' : ''}`}
+              title="Daily"
+            >
+              <Calendar size={18} />
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'weekly'}
+              onClick={() => setViewMode('weekly')}
+              className={`m3-segmented-chip ${viewMode === 'weekly' ? 'm3-segmented-chip--selected' : ''}`}
+              title="Weekly"
+            >
+              <CalendarDays size={18} />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Render selected layout */}
-      {viewMode === 'daily' ? (
-        <div className="flex flex-col gap-4">
-          {dailyMenu.map((meal) => {
-            const colorStyle = 'border-white/15 bg-white/[0.02]';
-
-            return (
-              <div
-                key={meal.id}
-                className={`rounded-[28px] p-6 transition-all duration-300 relative border-2 ${colorStyle} backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] flex flex-col gap-4 text-left hover:scale-[1.01]`}
-              >
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-white/[0.06] border border-white/10 rounded-2xl flex items-center justify-center">
-                      {meal.icon}
-                    </div>
-                    <h4 className="text-base font-extrabold text-white font-sans tracking-wide leading-none">
-                      {meal.title}
-                    </h4>
+        {viewMode === 'daily' ? (
+          <div className="flex flex-col gap-4 shrink-0">
+            {dailyMenu.map((meal) => (
+              <article key={meal.id} className="m3-surface-card flex flex-col gap-4 text-left shrink-0">
+                <div className="flex justify-between items-center w-full gap-2">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="m3-icon-badge">{meal.icon}</div>
+                    <h4 className="m3-title-medium">{meal.title}</h4>
                   </div>
-                  
-                  <span className="bg-white/[0.05] border border-white/10 text-slate-300 font-bold font-mono text-[9px] px-3 py-1.5 rounded-full uppercase tracking-wider">
-                    {meal.time}
-                  </span>
+                  <span className="m3-badge">{meal.time}</span>
                 </div>
-
-                <div className="flex flex-wrap gap-2 mt-1">
+                <div className="flex flex-wrap gap-2">
                   {meal.items.map((item) => (
-                    <span
-                      key={item}
-                      className="bg-white/[0.04] border border-white/10 text-slate-200 font-bold px-3.5 py-1.5 rounded-xl text-[10px] tracking-wide"
-                    >
+                    <span key={item} className="m3-assist-chip">
                       {item}
                     </span>
                   ))}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[32px] p-6 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-slate-300 text-sm">
-              <thead>
-                <tr className="border-b border-white/5 text-slate-400 font-bold text-xs uppercase tracking-wider">
-                  <th className="py-3 px-2">Day</th>
-                  <th className="py-3 px-2">Breakfast</th>
-                  <th className="py-3 px-2">Lunch</th>
-                  <th className="py-3 px-2">Dinner</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 font-semibold text-xs text-slate-200">
-                {weeklyMenu.map((m) => (
-                  <tr key={m.day} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-4 px-2 font-black font-mono text-white/70">{m.day.substring(0, 3)}</td>
-                    <td className="py-4 px-2 text-white">{m.breakfast.split(' & ')[0]}</td>
-                    <td className="py-4 px-2 text-white">{m.lunch.split(', ')[0]}</td>
-                    <td className="py-4 px-2 text-white">{m.dinner.split(', ')[0]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              </article>
+            ))}
           </div>
-        </div>
-      )}
-
+        ) : (
+          <div className="m3-surface-card shrink-0 overflow-hidden p-4">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse m3-body-small">
+                <thead>
+                  <tr
+                    className="font-bold text-xs uppercase tracking-wider m3-text-variant"
+                    style={{ borderBottom: '1px solid var(--m3-outline-variant)' }}
+                  >
+                    <th className="py-3 px-2">Day</th>
+                    <th className="py-3 px-2">Breakfast</th>
+                    <th className="py-3 px-2">Lunch</th>
+                    <th className="py-3 px-2">Dinner</th>
+                  </tr>
+                </thead>
+                <tbody className="font-medium text-xs">
+                  {weeklyMenu.map((m) => (
+                    <tr key={m.day} className="hover:bg-white/[0.03] transition-colors" style={{ borderTop: '1px solid color-mix(in srgb, var(--m3-outline-variant) 35%, transparent)' }}>
+                      <td className="py-4 px-2 font-bold" style={{ color: 'var(--m3-primary)' }}>{m.day.substring(0, 3)}</td>
+                      <td className="py-4 px-2">{m.breakfast.split(' & ')[0]}</td>
+                      <td className="py-4 px-2">{m.lunch.split(', ')[0]}</td>
+                      <td className="py-4 px-2">{m.dinner.split(', ')[0]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

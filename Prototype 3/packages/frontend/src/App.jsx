@@ -492,17 +492,37 @@ function App() {
       );
     }
 
+    const immersiveTabs = [
+      'home',
+      'mess',
+      'materials',
+      'calendar',
+      'notices',
+      'skillgigs',
+      'canteen',
+      'canteen_cart',
+      'student_dashboard',
+      'timetable',
+      'peerchat',
+    ];
+    const isImmersiveTab = immersiveTabs.includes(activeTab);
+
     // Otherwise show main dashboard
     return (
-      <div className="campos-dashboard flex flex-col justify-between h-full moving-gradient-bg text-white relative font-sans overflow-hidden">
-        
-
-
-        <main className={`flex-1 min-h-0 scrollbar-none bg-transparent relative z-10 ${
-          (activeTab === 'materials' || activeTab === 'calendar' || activeTab === 'peerchat' || activeTab === 'student_dashboard' || activeTab === 'timetable') 
-            ? 'overflow-hidden flex flex-col' 
-            : 'overflow-y-auto'
-        }`}>
+      <div
+        className={`campos-dashboard flex flex-col justify-between h-full text-white relative font-sans overflow-hidden ${
+          activeTab === 'home'
+            ? 'campos-dashboard--home'
+            : isImmersiveTab
+              ? 'campos-dashboard--immersive'
+              : 'moving-gradient-bg'
+        }`}
+      >
+        <main
+          className={`flex-1 min-h-0 scrollbar-none bg-transparent relative z-10 ${
+            isImmersiveTab ? 'overflow-hidden flex flex-col p-0' : 'overflow-y-auto'
+          }`}
+        >
           {activeTab === 'home' && (
             <MetroStartScreen
               currentUser={currentUser}
@@ -588,17 +608,17 @@ function App() {
           )}
         </main>
 
-        {/* Floating Premium Circular Cart Button */}
+        {/* Floating Premium Cart FAB */}
         {activeTab === 'canteen' && canteenCart.length > 0 && (
           <button
             onClick={() => setActiveTab('canteen_cart')}
-            className={`absolute bottom-6 right-6 z-[999] bg-white/15 border-2 border-white/25 backdrop-blur-md text-white rounded-full w-14 h-14 shadow-2xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
-              isCartPopping ? '' : 'active:scale-90 hover:bg-white/25'
+            className={`absolute bottom-6 right-6 z-[999] bg-[#d0bcff] text-[#381e72] rounded-[20px] w-16 h-16 shadow-2xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
+              isCartPopping ? 'scale-110' : 'active:scale-90 hover:brightness-110'
             }`}
             type="button"
             title="View Cart"
           >
-            <ShoppingCart size={22} className="stroke-[2.5px] text-white" />
+            <ShoppingCart size={24} className="stroke-[2.5px]" />
           </button>
         )}
  

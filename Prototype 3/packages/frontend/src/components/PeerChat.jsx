@@ -7,7 +7,7 @@ import { API_BASE } from '../config/api';
 
 export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   // Available student peers list
-  const studentPeers = ['Kunal', 'Ripunjay', 'Krish', 'Dhruv', 'Abhinav', 'Ashmit', 'Sanya'];
+  const studentPeers = ['Kunal', 'Ripunjay', 'Krish', 'Student', 'Abhinav', 'Ashmit', 'Sanya'];
   
   // Sender name determination
   const senderName = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Sanya';

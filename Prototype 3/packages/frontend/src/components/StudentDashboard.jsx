@@ -1207,7 +1207,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 text-white font-sans h-full w-full select-none relative min-h-0 bg-transparent">
+    <div className="student-dashboard-shell flex flex-col gap-4 text-white font-sans h-full w-full select-none relative min-h-0 bg-transparent">
       
       {/* ─── Compact Glass Page Header ─── */}
       <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0 justify-between z-10">

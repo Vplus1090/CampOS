@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Download, ChevronDown } from 'lucide-react';
+import { Download, ChevronDown } from 'lucide-react';
+import M3ScreenHeader from './M3ScreenHeader';
 
 export default function StudyMaterials({ setActiveTab, initialBranch, initialSemester }) {
   const [shelfBranch, setShelfBranch] = useState(initialBranch || 'All Branches');
@@ -16,26 +17,11 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
   }, [initialSemester]);
 
   // Scroll dynamics minimize states
-  const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
-  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleScroll = (e) => {
     const currentScrollTop = e.target.scrollTop;
-    
-    if (currentScrollTop <= 5) {
-      setIsHeaderMinimized(false);
-      setLastScrollTop(0);
-      return;
-    }
-    
-    if (Math.abs(currentScrollTop - lastScrollTop) < 8) return;
-
-    if (currentScrollTop > lastScrollTop) {
-      setIsHeaderMinimized(true);
-    } else {
-      setIsHeaderMinimized(false);
-    }
-    setLastScrollTop(currentScrollTop);
+    setIsScrolled(currentScrollTop > 10);
   };
 
   // Next Upcoming Exam Countdown states
@@ -133,169 +119,137 @@ export default function StudyMaterials({ setActiveTab, initialBranch, initialSem
     }, 1500);
   };
 
-  return (
-    <div className="study-materials-dashboard flex flex-col gap-4 text-white font-sans h-full max-h-full pb-4 relative select-none overflow-hidden">
-      
-      {/* Collapsible Area */}
-      <div 
-        className={`transition-all duration-500 ease-in-out overflow-hidden flex flex-col gap-4 shrink-0 ${
-          isHeaderMinimized 
-            ? 'max-h-0 opacity-0 scale-95 pointer-events-none mb-0 mt-0 pb-0' 
-            : 'max-h-[500px] opacity-100 scale-100 mb-1'
-        }`}
-      >
-        {/* Header title */}
-        <header className="flex items-center w-full mt-6 border-b border-white/10 pb-3 shrink-0">
-          <div className="flex items-center gap-3.5">
-            <button
-              onClick={() => setActiveTab && setActiveTab('home')}
-              className="w-11 h-11 bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md cursor-pointer shrink-0"
-              type="button"
-            >
-              <span className="text-xl font-bold">&larr;</span>
-            </button>
-            <h2 className="text-[22px] italic font-normal text-white leading-none flex items-center gap-2 translate-y-[2px] tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Study Shelf
-            </h2>
-          </div>
-        </header>
+  const goBack = () => setActiveTab && setActiveTab('home');
 
-        {/* Nearest upcoming exam clock widget placed cleanly at the top */}
+  return (
+    <div className="m3-screen study-materials-dashboard">
+      <M3ScreenHeader
+        title="Study Shelf"
+        subtitle="Books, tutorials & PYQs"
+        isScrolled={isScrolled}
+        onBack={goBack}
+      />
+
+      <div onScroll={handleScroll} className="m3-screen__scroll" style={{ paddingBottom: 32 }}>
         {nextExam && (
-          <div className="bg-[#1c2436]/40 border border-white/10 backdrop-blur-md rounded-2xl px-5 py-3 flex items-center gap-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] w-full justify-between shrink-0">
+          <div className="bg-[var(--m3-primary)] text-[var(--m3-on-primary)] shrink-0 flex items-center justify-between gap-3 rounded-[20px] p-4 shadow-sm">
             <div className="flex flex-col text-left">
-              <span className="text-[9px] font-black text-white/60 uppercase tracking-widest font-mono leading-none">Upcoming Exam: {nextExam.name}</span>
-              <span className="text-base font-black font-mono tracking-wider text-white mt-1.5 font-semibold">
+              <span className="text-[11px] font-bold uppercase tracking-widest opacity-85">Upcoming: {nextExam.name}</span>
+              <span className="text-[18px] font-bold mt-0.5">
                 {nextExamCountdown}
               </span>
             </div>
             <span className="relative flex w-2 h-2">
-              <span className="absolute inline-flex w-full h-full bg-white/40 rounded-full opacity-75"></span>
-              <span className="relative inline-flex w-2 h-2 bg-white/50 rounded-full"></span>
+              <span className="absolute inline-flex w-full h-full bg-[var(--m3-on-primary)]/40 rounded-full opacity-75 animate-ping" />
+              <span className="relative inline-flex w-2 h-2 bg-[var(--m3-on-primary)]" />
             </span>
           </div>
         )}
 
-        {/* Dropdown Filters Row */}
         <div className="grid grid-cols-2 gap-4 shrink-0">
           <div className="flex flex-col gap-1.5 text-left">
-            <span className="text-white/30 text-[9px] font-black uppercase tracking-[0.15em] font-sans pl-1">Branch</span>
-            <div className="relative w-full">
+            <span className="m3-body-small font-medium uppercase tracking-wider pl-1">Branch</span>
+            <div className="m3-select-wrap">
               <select
                 value={shelfBranch}
                 onChange={(e) => setShelfBranch(e.target.value)}
-                className="w-full bg-white/10 hover:bg-white/[0.15] border border-white/15 hover:border-white/25 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-white/35 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl"
+                className="m3-select"
               >
-                <option className="bg-[#141a27]" value="All Branches">All Branches</option>
-                <option className="bg-[#141a27]" value="Computer Science">Computer Science</option>
-                <option className="bg-[#141a27]" value="Electronics & Communication">Electronics & Communication</option>
-                <option className="bg-[#141a27]" value="Information Technology">Information Technology</option>
-                <option className="bg-[#141a27]" value="Biotechnology">Biotechnology</option>
+                <option value="All Branches">All Branches</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Electronics & Communication">Electronics & Communication</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Biotechnology">Biotechnology</option>
               </select>
-              <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-4 top-1/2">
+              <div className="absolute -translate-y-1/2 pointer-events-none text-m3-primary right-4 top-1/2">
                 <ChevronDown size={14} />
               </div>
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
-            <span className="text-white/30 text-[9px] font-black uppercase tracking-[0.15em] font-sans pl-1">Semester</span>
-            <div className="relative w-full">
+            <span className="m3-body-small font-medium uppercase tracking-wider pl-1">Semester</span>
+            <div className="m3-select-wrap">
               <select
                 value={shelfSemester}
                 onChange={(e) => setShelfSemester(e.target.value)}
-                className="w-full bg-white/10 hover:bg-white/[0.15] border border-white/15 hover:border-white/25 rounded-2xl px-4 py-3.5 text-xs text-white font-semibold outline-none focus:border-white/35 cursor-pointer appearance-none transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-3xl"
+                className="m3-select"
               >
-                <option className="bg-[#141a27]" value="All Semesters">All Semesters</option>
+                <option value="All Semesters">All Semesters</option>
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <option className="bg-[#141a27]" key={i} value={`Semester ${i + 1}`}>Semester {i + 1}</option>
+                  <option key={i} value={`Semester ${i + 1}`}>Semester {i + 1}</option>
                 ))}
               </select>
-              <div className="absolute -translate-y-1/2 pointer-events-none text-white/40 right-4 top-1/2">
+              <div className="absolute -translate-y-1/2 pointer-events-none text-m3-primary right-4 top-1/2">
                 <ChevronDown size={14} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Category Pills Tab bar */}
-        <div className="flex flex-wrap gap-2 py-1 shrink-0">
+        <div className="m3-segmented-chips justify-center flex-wrap py-1 shrink-0">
           {['All', 'Notes', 'Tutorials', 'PYQs', 'Books'].map((cat) => {
             const isActive = shelfCategory === cat;
             return (
               <button
                 key={cat}
+                type="button"
                 onClick={() => setShelfCategory(cat)}
-                className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-300 border ${
-                  isActive
-                    ? 'bg-white/[0.12] border-white/25 text-white shadow-md backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] font-extrabold'
-                    : 'bg-white/[0.06] hover:bg-white/[0.12] text-white border-white/15 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] cursor-pointer'
-                }`}
+                className={`m3-segmented-chip m3-segmented-chip--sm ${isActive ? 'm3-segmented-chip--selected' : ''}`}
               >
                 {cat}
               </button>
             );
           })}
         </div>
-      </div>
 
-      {/* Document Listing Grid - dynamically fills space, scrolls independently */}
-      <div 
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto scrollbar-none pr-1 space-y-4 pt-5 pb-4"
-      >
+        {/* Document Listing Grid */}
+        <div className="flex flex-col gap-4 shrink-0">
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((course) => {
               const isDownloading = downloadingId === course.code;
               return (
-                <div
+                <article
                   key={course.code}
-                  className="bg-white/[0.06] border border-white/15 hover:border-white/35 hover:bg-white/[0.12] backdrop-blur-3xl rounded-2xl p-5 flex items-center justify-between transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] group"
+                  className="m3-surface-card flex items-center justify-between gap-3"
                 >
-                  <div className="flex flex-col gap-1 pr-4 text-left items-start">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-white/10 border border-white/15 text-white/70 text-[9px] px-2 py-0.5 rounded font-mono uppercase font-black tracking-wider">
-                        {course.code}
-                      </span>
-                      <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
-                        {course.type}
-                      </span>
+                  <div className="flex flex-col gap-1 pr-4 text-left items-start min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="m3-assist-chip text-[10px] py-0.5">{course.code}</span>
+                      <span className="m3-body-small font-bold uppercase tracking-widest opacity-70">{course.type}</span>
                     </div>
-                    <span className="text-base font-extrabold text-white leading-snug mt-1 group-hover:text-white/80 transition-colors duration-300">
-                      {course.name}
-                    </span>
-                    <span className="text-xs text-white/40 font-mono mt-0.5">
+                    <span className="m3-title-medium leading-snug mt-1">{course.name}</span>
+                    <span className="m3-body-small mt-1 opacity-80">
                       {course.branch} • {course.semester} • {course.size}
                     </span>
                   </div>
 
-                  {/* Interactive download button */}
                   <button
+                    type="button"
                     onClick={() => handleDownload(course)}
                     disabled={isDownloading}
-                    className={`p-3 rounded-xl border transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 ${
-                      isDownloading
-                        ? 'bg-white/10 border-white/20 text-white/70'
-                        : 'bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 text-white active:scale-90'
-                    }`}
+                    className="m3-icon-button"
+                    aria-label={`Download ${course.code}`}
                   >
                     {isDownloading ? (
-                      <div className="w-5 h-5 border-2 rounded-full border-white border-t-transparent animate-spin" />
+                      <div className="w-5 h-5 border-2 rounded-full border-m3-primary border-t-transparent animate-spin" />
                     ) : (
                       <Download size={18} />
                     )}
                   </button>
-                </div>
+                </article>
               );
             })
           ) : (
-            <div className="bg-white/[0.06] border border-white/15 backdrop-blur-3xl rounded-[32px] p-12 text-center flex flex-col items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-              <span className="mb-3 text-4xl text-white/20">🔍</span>
-              <h3 className="text-lg font-extrabold text-white">No materials found</h3>
-              <p className="mt-1 text-sm text-white/40">Try adjusting your filters or search query.</p>
+            <div className="m3-surface-card p-12 text-center flex flex-col items-center justify-center shrink-0">
+              <span className="mb-3 text-4xl opacity-40">🔍</span>
+              <h3 className="m3-title-medium">No materials found</h3>
+              <p className="m3-body-small mt-1">Try adjusting your filters.</p>
             </div>
           )}
         </div>
+
       </div>
+    </div>
   );
 }
