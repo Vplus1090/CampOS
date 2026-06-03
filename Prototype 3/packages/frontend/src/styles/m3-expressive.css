@@ -166,7 +166,6 @@
   padding: 26px 20px 0;
   height: 152px;
   background: transparent;
-  overflow: hidden;
   transition:
     height var(--m3-duration-medium) var(--m3-ease-emphasized),
     background-color var(--m3-duration-medium) var(--m3-ease-standard),
@@ -181,9 +180,11 @@
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .m3-top-app-bar--collapsed {
-    background: color-mix(in srgb, var(--m3-surface-container-high) 80%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(41, 32, 53, 0.8) !important;
+    background: color-mix(in srgb, var(--m3-surface-container-high) 80%, transparent) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    will-change: backdrop-filter;
   }
 }
 
