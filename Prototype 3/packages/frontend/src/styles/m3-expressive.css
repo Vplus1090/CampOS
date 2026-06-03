@@ -136,7 +136,7 @@
   flex-direction: column;
   height: 100%;
   max-height: 100%;
-  overflow: hidden;
+  overflow: clip; /* clip instead of hidden — avoids creating a stacking context that blocks backdrop-filter */
   font-family: var(--m3-font);
   color: var(--m3-on-surface);
   background: var(--m3-surface);
@@ -174,18 +174,10 @@
 
 .m3-top-app-bar--collapsed {
   height: 96px;
-  background: var(--m3-surface-container-high);
+  background: rgba(41, 32, 53, 0.72);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
   box-shadow: var(--m3-elevation-1);
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .m3-top-app-bar--collapsed {
-    background: rgba(41, 32, 53, 0.8) !important;
-    background: color-mix(in srgb, var(--m3-surface-container-high) 80%, transparent) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    will-change: backdrop-filter;
-  }
 }
 
 .m3-top-app-bar__row {

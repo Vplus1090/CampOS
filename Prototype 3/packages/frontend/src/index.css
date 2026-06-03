@@ -388,11 +388,11 @@ body {
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.05);
   border: 8.5px solid var(--m3-surface-container-highest);
-  overflow: hidden;
+  overflow: clip; /* clip instead of hidden — avoids stacking context that blocks backdrop-filter in descendants */
   position: relative;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: border-radius 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
 }
 
 /* Ensure absolute viewport fills on small screens */
@@ -534,9 +534,9 @@ textarea,
   /* Removed animation to prevent compositor layer contexts from breaking backdrop-filter */
 }
 
-/* Fade in scrollable inner contents to keep smooth transitions without clashing with absolute headers */
+/* Fade in scrollable inner contents — DISABLED: animation creates compositor layer that breaks backdrop-filter on the header */
 .m3-screen__scroll {
-  animation: m3-fade-in 0.35s ease-out both;
+  /* animation removed to fix backdrop-filter blur */
 }
 
 /* Immersive overlay screen entrances (Payment, QR Pass, Success) */
