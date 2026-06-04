@@ -1767,6 +1767,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   </div>
                 ) : (
                   attendanceList.map((item, idx) => {
+                    const stat = getBunkStatus(item.attended, item.held);
                     const cardBgShadow = stat.status === 'danger'
                       ? 'bg-m3-surfaceContainer'
                       : 'bg-m3-surfaceContainerHigh';

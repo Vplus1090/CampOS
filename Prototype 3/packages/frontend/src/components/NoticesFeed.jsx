@@ -19,7 +19,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
   const [postedBy, setPostedBy] = useState(currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : '');
   const [submitting, setSubmitting] = useState(false);
 
-  const isSuperAdmin = currentUser?.role === 'admin';
+  const isSuperAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
 
   const handleScroll = (e) => {
     const currentScrollTop = e.target.scrollTop;
@@ -176,7 +176,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                 >
                   <div 
                     className="flex justify-between items-center w-full pb-3.5"
-                    style={{ borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 35%, transparent)' }}
+                    style={{ borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 70%, transparent)' }}
                   >
                     <div className="flex items-center gap-3">
                       <div className="m3-icon-badge">
@@ -202,7 +202,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                   
                   <div 
                     className="flex justify-between items-center w-full pt-3.5"
-                    style={{ borderTop: '1px solid color-mix(in srgb, var(--m3-outline-variant) 20%, transparent)' }}
+                    style={{ borderTop: '1px solid color-mix(in srgb, var(--m3-outline-variant) 60%, transparent)' }}
                   >
                     <span className="text-[11px] font-medium m3-text-variant flex items-center gap-1.5">
                       <User size={12} className="text-m3-primary" /> {notice.PostedBy}
@@ -231,7 +231,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
       {isSuperAdmin && (
         <button
           onClick={() => setShowModal(true)}
-          className="absolute bottom-6 right-6 z-30 bg-m3-primary text-m3-on-primary rounded-[16px] px-5 h-14 flex items-center gap-2.5 font-bold shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          className="absolute bottom-6 right-6 z-30 bg-m3-primary text-m3-onPrimary rounded-[16px] px-5 h-14 flex items-center gap-2.5 font-bold shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
           type="button"
         >
           <Plus size={20} strokeWidth={2.5} />
@@ -246,7 +246,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 z-[99999] flex items-end justify-center"
+            className="absolute inset-0 bg-black/50 backdrop-blur-md z-[99999] flex items-end justify-center"
             onClick={() => setShowModal(false)}
           >
             <motion.div 

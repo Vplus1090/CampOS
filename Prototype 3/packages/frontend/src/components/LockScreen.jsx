@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Utensils, Calendar, BookOpen, KeyRound, X, QrCode, SmartphoneNfc, CreditCard, Eye, EyeOff, Lock, Palette, Sun, Moon } from 'lucide-react';
+import { Utensils, Calendar, BookOpen, KeyRound, X, QrCode, SmartphoneNfc, CreditCard, Eye, EyeOff, Lock, Palette, Sun, Moon, SunMoon } from 'lucide-react';
+import { applyThemeMode, initGeolocation } from '../utils/theme';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -67,13 +68,17 @@ export default function LockScreen({ onLoginSuccess }) {
   const applyMode = (modeId) => {
     setCurrentMode(modeId);
     localStorage.setItem('campos-mode', modeId);
-    document.body.classList.remove('mode-light', 'mode-dark');
-    document.body.classList.add(`mode-${modeId}`);
+    applyThemeMode(modeId);
+    if (modeId === 'auto') {
+      initGeolocation(() => {
+        applyThemeMode('auto');
+      });
+    }
   };
 
   useEffect(() => {
     applyTheme(currentTheme);
-    applyMode(currentMode);
+    applyThemeMode(currentMode);
   }, [currentTheme, currentMode]);
 
   // Additional Guest State Hooks
@@ -444,7 +449,7 @@ export default function LockScreen({ onLoginSuccess }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 z-[99999] flex items-end justify-center" 
+            className="absolute inset-0 bg-black/50 backdrop-blur-md z-[99999] flex items-end justify-center" 
             onClick={() => setShowDemoProfiles(false)}
           >
             <motion.div 
@@ -469,7 +474,8 @@ export default function LockScreen({ onLoginSuccess }) {
                 {[
                   { label: 'Student (Demo)', user: 'student', pass: 'Student@123', color: 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface' },
                   { label: 'Canteen Admin', user: 'canteen', pass: 'Canteen@123', color: 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface' },
-                  { label: 'Super Admin', user: 'admin', pass: 'CampOS@Admin123', color: 'bg-m3-primaryContainer hover:bg-m3-primaryContainer/90 text-m3-onPrimaryContainer' },
+                  { label: 'Admin', user: 'admin', pass: 'CampOS@Admin123', color: 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface' },
+                  { label: 'Super Admin', user: 'superadmin', pass: 'CampOS@SuperAdmin123', color: 'bg-m3-primaryContainer hover:bg-m3-primaryContainer/90 text-m3-onPrimaryContainer' },
                 ].map((profile) => (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
@@ -500,7 +506,7 @@ export default function LockScreen({ onLoginSuccess }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 z-[99999] flex items-end justify-center" 
+            className="absolute inset-0 bg-black/50 backdrop-blur-md z-[99999] flex items-end justify-center" 
             onClick={() => setShowShelfSetup(false)}
           >
             <motion.div 
@@ -574,7 +580,7 @@ export default function LockScreen({ onLoginSuccess }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 z-[99999] flex items-end justify-center" 
+            className="absolute inset-0 bg-black/50 backdrop-blur-md z-[99999] flex items-end justify-center" 
             onClick={() => setShowThemeSelector(false)}
           >
             <motion.div 
@@ -628,24 +634,35 @@ export default function LockScreen({ onLoginSuccess }) {
                     <button
                       type="button"
                       onClick={() => applyMode('light')}
-                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-2 py-2.5 text-xs font-bold transition-all duration-300 !rounded-full ${
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-1 py-2 text-xs font-bold transition-all duration-300 !rounded-full ${
                         currentMode === 'light'
                           ? 'm3-segmented-chip--selected'
                           : '!bg-transparent !border-none !shadow-none'
                       }`}
                     >
-                      <Sun size={15} /> Light Mode
+                      <Sun size={14} /> Light
                     </button>
                     <button
                       type="button"
                       onClick={() => applyMode('dark')}
-                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-2 py-2.5 text-xs font-bold transition-all duration-300 !rounded-full ${
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-1 py-2 text-xs font-bold transition-all duration-300 !rounded-full ${
                         currentMode === 'dark'
                           ? 'm3-segmented-chip--selected'
                           : '!bg-transparent !border-none !shadow-none'
                       }`}
                     >
-                      <Moon size={15} /> Dark Mode
+                      <Moon size={14} /> Dark
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyMode('auto')}
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-1 py-2 text-xs font-bold transition-all duration-300 !rounded-full ${
+                        currentMode === 'auto'
+                          ? 'm3-segmented-chip--selected'
+                          : '!bg-transparent !border-none !shadow-none'
+                      }`}
+                    >
+                      <SunMoon size={14} /> Auto
                     </button>
                   </div>
                 </div>

@@ -46,7 +46,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
   const [skillWanted, setSkillWanted] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const isSuperAdmin = currentUser?.role === 'admin';
+  const isSuperAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
   const isStudent = currentUser?.role === 'student';
 
   const fetchGigs = async (searchVal = '') => {
@@ -215,24 +215,26 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
       <div onScroll={handleScroll} className="m3-screen__scroll">
         
         {/* Segmented Chips Switcher */}
-        <div className="flex justify-center w-full py-1 shrink-0 select-none">
-          <div className="m3-segmented-chips">
-            <button
-              onClick={() => setViewTab('listings')}
-              className={`m3-segmented-chip ${viewTab === 'listings' ? 'm3-segmented-chip--selected' : ''}`}
-              type="button"
-            >
-              Listings
-            </button>
-            <button
-              onClick={() => setViewTab('ongoing')}
-              className={`m3-segmented-chip ${viewTab === 'ongoing' ? 'm3-segmented-chip--selected' : ''}`}
-              type="button"
-            >
-              Chats
-            </button>
+        {!isSuperAdmin && (
+          <div className="flex justify-center w-full py-1 shrink-0 select-none">
+            <div className="m3-segmented-chips">
+              <button
+                onClick={() => setViewTab('listings')}
+                className={`m3-segmented-chip ${viewTab === 'listings' ? 'm3-segmented-chip--selected' : ''}`}
+                type="button"
+              >
+                Listings
+              </button>
+              <button
+                onClick={() => setViewTab('ongoing')}
+                className={`m3-segmented-chip ${viewTab === 'ongoing' ? 'm3-segmented-chip--selected' : ''}`}
+                type="button"
+              >
+                Chats
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Offer a Skill Form Panel */}
         {viewTab === 'listings' && isStudent && (
@@ -374,9 +376,9 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                   </div>
 
                   {/* Looking for Wanted Skill Pill */}
-                  <div className="bg-m3-surfaceContainerHigh p-3.5 rounded-2xl w-full text-left">
+                  <div className="bg-m3-surfaceContainerLow p-3.5 rounded-2xl w-full text-left">
                     <p className="m3-body-small text-m3-onSurfaceVariant">
-                      Looking for: <span className="text-m3-onPrimaryContainer font-bold ml-1">{gig.SkillWanted}</span>
+                      Looking for: <span className="text-m3-primary font-bold ml-1">{gig.SkillWanted}</span>
                     </p>
                   </div>
 
@@ -385,7 +387,8 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                     {isSuperAdmin ? (
                       <button
                         onClick={() => handleDelete(gig.id || gig._id)}
-                        className="m3-filled-button bg-m3-errorContainer text-m3-onErrorContainer hover:brightness-110 !min-h-[44px]"
+                        className="m3-filled-button hover:brightness-110 !min-h-[44px]"
+                        style={{ backgroundColor: 'color-mix(in srgb, var(--m3-error) 15%, transparent)', color: 'var(--m3-error)' }}
                         type="button"
                       >
                         <Trash2 size={16} /> Moderate (Delete Listing)
@@ -393,7 +396,8 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                     ) : isOwnListing ? (
                       <button
                         onClick={() => handleDelete(gig.id || gig._id)}
-                        className="m3-filled-button !bg-m3-errorContainer !text-m3-onErrorContainer hover:brightness-110 !min-h-[44px]"
+                        className="m3-filled-button hover:brightness-110 !min-h-[44px]"
+                        style={{ backgroundColor: 'color-mix(in srgb, var(--m3-error) 15%, transparent)', color: 'var(--m3-error)' }}
                         type="button"
                       >
                         <Trash2 size={16} /> Delete Post
@@ -447,7 +451,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
 
       {/* Custom Confirm Dialog */}
       {confirmDialog && (
-        <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
+        <div className="absolute inset-0 z-[1000] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
           <div className="m3-surface-card p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in">
             <h3 className="m3-title-medium text-m3-onSurface">Confirm Action</h3>
             <p className="m3-body-small text-m3-onSurfaceVariant">{confirmDialog.message}</p>
@@ -476,7 +480,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
 
       {/* Custom Prompt Dialog */}
       {promptDialog && (
-        <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
+        <div className="absolute inset-0 z-[1000] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
           <div className="m3-surface-card backdrop-blur-md p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in">
             <h3 className="m3-title-medium text-m3-onSurface">{promptDialog.title}</h3>
             <p className="m3-body-small text-m3-onSurfaceVariant">{promptDialog.message}</p>

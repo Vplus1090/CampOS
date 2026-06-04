@@ -3,7 +3,7 @@ import { Trash2, Search, Plus, RefreshCw } from 'lucide-react';
 import M3ScreenHeader from './M3ScreenHeader';
 import { API_BASE } from '../config/api';
 
-export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, triggerPayment, cart = [], setCart, isCartCheckout = false }) {
+export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, triggerPayment, cart = [], setCart, isCartCheckout = false, initialAdminSubTab }) {
   const [menu, setMenu] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +31,21 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
   };
 
   // Administrative Role checks
-  const isCanteenAdmin = currentUser?.role === 'canteen_admin';
+  const isCanteenAdmin = currentUser?.role === 'canteen_admin' || currentUser?.role === 'super_admin';
   const isStudent = currentUser?.role === 'student';
+  const canManageOrders = currentUser?.role === 'canteen_admin';
+
+  // Admin Sub-tab Selection: 'menu' | 'orders'
+  const [adminSubTab, setAdminSubTab] = useState(() => {
+    if (currentUser?.role === 'super_admin') return 'menu';
+    return initialAdminSubTab || 'menu';
+  });
+
+  useEffect(() => {
+    if (initialAdminSubTab) {
+      setAdminSubTab(currentUser?.role === 'super_admin' ? 'menu' : initialAdminSubTab);
+    }
+  }, [initialAdminSubTab, currentUser]);
 
   // Add Item Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -232,6 +245,27 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
     }
   };
 
+  // Canteen Admin: Mark order completed
+  const handleMarkCompleted = async (orderId) => {
+    if (!isCanteenAdmin) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/canteen/orders/${orderId}/complete`, {
+        method: 'PATCH',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to complete order');
+      }
+
+      await fetchMenuAndOrders();
+      if (onUpdate) onUpdate();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   // Student checkout order placements
   const handleCheckout = (e) => {
     e.preventDefault();
@@ -297,7 +331,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
             <div className="w-full flex flex-col gap-5">
               {/* Selected Items */}
               <div className="m3-surface-card p-5 flex flex-col gap-4 text-left">
-                <div className="flex justify-between items-center border-b pb-3" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>
+                <div className="flex justify-between items-center border-b pb-3" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}>
                   <h3 className="m3-title-medium">Selected Items</h3>
                   {cart.length > 0 && (
                     <span className="m3-badge">{cart.reduce((sum, ci) => sum + ci.quantity, 0)}</span>
@@ -355,7 +389,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                             </span>
                           )}
 
-                          <div className="flex justify-between items-center border-t pt-2.5" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 12%, transparent)' }}>
+                          <div className="flex justify-between items-center border-t pt-2.5" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 50%, transparent)' }}>
                             <span className="text-[10px] font-bold text-m3-onSurfaceVariant uppercase tracking-wider">Quantity</span>
                             <div className="flex items-center gap-2.5">
                               <button
@@ -385,7 +419,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               {/* Bill Summary */}
               {cart.length > 0 && (
                 <div className="m3-surface-card p-5 flex flex-col gap-3 text-left">
-                  <h3 className="m3-title-small text-m3-onSurfaceVariant uppercase tracking-widest text-[10px] border-b pb-2" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>Bill Details</h3>
+                  <h3 className="m3-title-small text-m3-onSurfaceVariant uppercase tracking-widest text-[10px] border-b pb-2" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}>Bill Details</h3>
                   <div className="flex justify-between items-center text-xs text-m3-onSurfaceVariant font-medium">
                     <span>Item Total</span>
                     <span className="font-bold text-m3-onSurface">₹{totalAmount}</span>
@@ -398,7 +432,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                     <span>Delivery & Handling</span>
                     <span>₹0</span>
                   </div>
-                  <div className="border-t pt-3 flex justify-between items-center" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>
+                  <div className="border-t pt-3 flex justify-between items-center" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}>
                     <span className="text-[10px] font-bold text-m3-onSurface uppercase tracking-widest">Grand Total</span>
                     <span className="text-base font-extrabold text-m3-primary">₹{totalAmount}</span>
                   </div>
@@ -436,7 +470,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               {/* Recent Orders log */}
               {orders.length > 0 && (
                 <div className="m3-surface-card p-5 flex flex-col gap-4 text-left">
-                  <h3 className="m3-title-small text-m3-onSurfaceVariant uppercase tracking-widest text-[10px] border-b pb-2" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>Orders Log</h3>
+                  <h3 className="m3-title-small text-m3-onSurfaceVariant uppercase tracking-widest text-[10px] border-b pb-2" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}>Orders Log</h3>
                   <div className="flex flex-col gap-3">
                     {orders.map((order) => (
                       <div key={order._id || order.id} className="rounded-[var(--m3-shape-xl)] bg-m3-surfaceContainerHigh p-4 flex flex-col gap-2.5 text-left">
@@ -447,7 +481,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                         <span className="text-xs font-semibold text-m3-onSurface leading-snug">
                           {order.ItemsArray.map(i => `${i.Name} ×${i.Quantity}`).join(', ')}
                         </span>
-                        <div className="flex justify-between items-center border-t pt-2 text-[10px]" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 12%, transparent)' }}>
+                        <div className="flex justify-between items-center border-t pt-2 text-[10px]" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 50%, transparent)' }}>
                           <span className="font-medium text-m3-onSurfaceVariant">Reg: {order.StudentId}</span>
                           <span className="font-extrabold text-m3-primary">₹{order.TotalAmount}</span>
                         </div>
@@ -474,8 +508,30 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
       />
 
       <div onScroll={handleScroll} className="m3-screen__scroll">
+        {/* Admin Sub-tab Switcher */}
+        {isCanteenAdmin && canManageOrders && (
+          <div className="flex justify-center w-full mb-4 shrink-0">
+            <div className="m3-segmented w-full max-w-[320px]">
+              <button
+                className={`m3-segmented__option flex-1 text-center ${adminSubTab === 'menu' ? 'm3-segmented__option--selected' : ''}`}
+                onClick={() => setAdminSubTab('menu')}
+                type="button"
+              >
+                Menu Catalog
+              </button>
+              <button
+                className={`m3-segmented__option flex-1 text-center ${adminSubTab === 'orders' ? 'm3-segmented__option--selected' : ''}`}
+                onClick={() => setAdminSubTab('orders')}
+                type="button"
+              >
+                Student Orders
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Admin "Add Item" button */}
-        {isCanteenAdmin && (
+        {isCanteenAdmin && adminSubTab === 'menu' && (
           <div className="flex justify-end items-center w-full px-1 mb-2 shrink-0">
             <button
               onClick={() => setShowAddModal(true)}
@@ -489,7 +545,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         )}
 
         {/* Category Chips */}
-        {!loading && !error && categories.length > 1 && (
+        {!loading && !error && (!isCanteenAdmin || adminSubTab === 'menu') && categories.length > 1 && (
           <div className="flex flex-col gap-2 shrink-0 mb-2">
             <div className="m3-segmented-chips flex-wrap gap-y-2">
               {categories.map((cat) => {
@@ -512,7 +568,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         )}
 
         {/* Search Field */}
-        {!loading && !error && (
+        {!loading && !error && (!isCanteenAdmin || adminSubTab === 'menu') && (
           <div className="relative w-full shrink-0 mb-1">
             <span className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-m3-outline z-10">
               <Search size={16} />
@@ -544,7 +600,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         )}
 
         {/* Menu Items */}
-        {!loading && !error && (
+        {!loading && !error && (!isCanteenAdmin || adminSubTab === 'menu') && (
           <div className="w-full flex flex-col gap-4">
             {filteredMenu.length === 0 ? (
               <div className="m3-surface-card p-8 flex flex-col items-center justify-center gap-3 text-center select-none">
@@ -623,7 +679,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                     {/* Actions Row */}
                     <div className="w-full mt-0.5">
                       {isCanteenAdmin ? (
-                        <div className="flex justify-between items-center border-t pt-3" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>
+                        <div className="flex justify-between items-center border-t pt-3" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}>
                           <button
                             className="flex items-center gap-1.5 text-[10px] font-bold text-m3-error/60 hover:text-m3-error transition cursor-pointer uppercase tracking-wider"
                             onClick={() => handleDeleteItem(item._id)}
@@ -666,6 +722,109 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
             )}
           </div>
         )}
+
+        {/* Student Orders */}
+        {!loading && !error && isCanteenAdmin && canManageOrders && adminSubTab === 'orders' && (
+          <div className="w-full flex flex-col gap-4">
+            {orders.length === 0 ? (
+              <div className="m3-surface-card p-8 flex flex-col items-center justify-center gap-3 text-center select-none">
+                <div className="w-12 h-12 rounded-2xl bg-m3-primaryContainer/30 flex items-center justify-center text-m3-primary shadow-md">
+                  <Search size={22} />
+                </div>
+                <h4 className="text-sm text-m3-onSurface font-extrabold uppercase tracking-widest">No student orders</h4>
+                <span className="text-xs text-slate-400 font-medium leading-relaxed max-w-[240px]">
+                  There are no orders submitted by students yet.
+                </span>
+              </div>
+            ) : (
+              orders.map((order) => {
+                const isCompleted = order.OrderStatus === 'Completed';
+                return (
+                  <div
+                    key={order._id || order.id}
+                    className="m3-surface-card p-5 flex flex-col gap-4 text-left shadow-sm transition-all bg-m3-surfaceContainer"
+                  >
+                    {/* Header: ID, timestamp, and status */}
+                    <div className="flex justify-between items-center">
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-bold text-m3-onSurfaceVariant">
+                          ORDER #{String(order._id || order.id).substring(18).toUpperCase()}
+                        </span>
+                        <span className="text-[10px] text-m3-outline mt-0.5">
+                          {new Date(order.Timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                      
+                      {/* Status Chip */}
+                      <span
+                        className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
+                        style={{
+                          background: isCompleted
+                            ? 'color-mix(in srgb, var(--m3-primary) 15%, transparent)'
+                            : 'color-mix(in srgb, var(--m3-error) 15%, transparent)',
+                          color: isCompleted
+                            ? 'var(--m3-primary)'
+                            : 'var(--m3-error)',
+                        }}
+                      >
+                        {order.OrderStatus}
+                      </span>
+                    </div>
+
+                    {/* Student Info */}
+                    <div className="flex flex-col gap-0.5 pb-2.5 border-b" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 50%, transparent)' }}>
+                      <span className="text-xs font-bold text-m3-onSurface">Student Details</span>
+                      <div className="flex gap-2 text-xs text-m3-onSurfaceVariant">
+                        <span>{order.StudentName}</span>
+                        <span className="text-m3-outline">•</span>
+                        <span>Reg ID: {order.StudentId}</span>
+                      </div>
+                    </div>
+
+                    {/* Order Items */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-[10px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest">Items ({order.ItemsArray.reduce((sum, item) => sum + item.Quantity, 0)})</span>
+                      <div className="flex flex-col gap-1.5">
+                        {order.ItemsArray.map((item, idx) => (
+                          <div key={idx} className="flex justify-between items-center text-xs">
+                            <span className="text-m3-onSurface font-medium">
+                              <span className="font-extrabold text-m3-primary mr-1">{item.Quantity}x</span>
+                              {item.Name}
+                            </span>
+                            <span className="text-m3-onSurfaceVariant">₹{item.Price * item.Quantity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Footer: PIN, Total & Actions */}
+                    <div className="flex justify-between items-center border-t pt-3.5 mt-1" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 50%, transparent)' }}>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-m3-outline uppercase tracking-widest">Pickup PIN</span>
+                        <span className="text-sm font-extrabold text-m3-primary font-mono tracking-wider">{order.PickupPIN || 'N/A'}</span>
+                      </div>
+                      
+                      <div className="flex flex-col items-end">
+                        <span className="text-[9px] font-bold text-m3-outline uppercase tracking-widest">Total Amount</span>
+                        <span className="text-base font-black text-m3-onSurface">₹{order.TotalAmount}</span>
+                      </div>
+                    </div>
+
+                    {/* Completed Button */}
+                    {!isCompleted && (
+                      <button
+                        className="w-full mt-2 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer bg-m3-primary text-m3-onPrimary hover:brightness-110 active:scale-[0.98] shadow-md flex items-center justify-center gap-1.5"
+                        onClick={() => handleMarkCompleted(order._id || order.id)}
+                      >
+                        Mark Completed
+                      </button>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
       </div>
 
       {/* Canteen Admin: Add Item Modal */}
@@ -675,7 +834,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
             className="w-full max-w-sm rounded-[var(--m3-shape-2xl)] bg-m3-surfaceContainer border border-transparent p-6 shadow-2xl flex flex-col gap-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b pb-3" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>
+            <div className="flex items-center justify-between border-b pb-3" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}>
               <h3 className="m3-title-medium">Add Menu Item</h3>
               <button className="w-8 h-8 rounded-full hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant flex items-center justify-center transition cursor-pointer font-bold" onClick={() => setShowAddModal(false)}>✕</button>
             </div>

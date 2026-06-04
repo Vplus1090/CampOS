@@ -18,7 +18,11 @@ import {
   X,
   Sun,
   Moon,
+  SunMoon,
+  ClipboardList,
+  Users,
 } from 'lucide-react';
+import { applyThemeMode, initGeolocation } from '../utils/theme';
 
 function PillLabel({ icon: Icon, children, badge }) {
   return (
@@ -87,8 +91,12 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   const applyMode = (modeId) => {
     setCurrentMode(modeId);
     localStorage.setItem('campos-mode', modeId);
-    document.body.classList.remove('mode-light', 'mode-dark');
-    document.body.classList.add(`mode-${modeId}`);
+    applyThemeMode(modeId);
+    if (modeId === 'auto') {
+      initGeolocation(() => {
+        applyThemeMode('auto');
+      });
+    }
   };
 
   useEffect(() => {
@@ -142,7 +150,8 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   }, [currentUser]);
 
   const isStudent = currentUser?.role === 'student';
-  const isSuperAdmin = currentUser?.role === 'admin';
+  const isAdmin = currentUser?.role === 'admin';
+  const isSuperAdmin = currentUser?.role === 'super_admin';
   const isCanteenAdmin = currentUser?.role === 'canteen_admin';
 
   const displayName = useMemo(() => {
@@ -171,6 +180,8 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   }, []);
 
   const openCanteen = () => onTileClick('canteen');
+  const openCanteenOrders = () => onTileClick('canteen_orders');
+  const openCanteenMenu = () => onTileClick('canteen_menu');
 
   const isSquished = !!(activePass || activeOrder);
 
@@ -303,6 +314,76 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
     </div>
   );
 
+  const superAdminGrid = (
+    <div className="home-screen__grid home-screen__grid--rows-5">
+      {/* Notices: full width (4 cols) */}
+      <button
+        type="button"
+        className={`home-pill home-pill--c4 home-pill--shape-pill home-pill--align-center ${hasUnreadNotices ? 'home-pill--notices-unread' : ''}`}
+        onClick={() => onTileClick('notices')}
+        title="Notices"
+      >
+        <PillLabel icon={Megaphone} badge={hasUnreadNotices}>Notices Board</PillLabel>
+      </button>
+
+      {/* Row 2: Mess Menu (span 2), Skill Swap (span 2) */}
+      <button
+        type="button"
+        className="home-pill home-pill--c2 home-pill--shape-oval home-pill--tile-vertical"
+        onClick={() => onTileClick('mess')}
+        title="Mess Menu"
+      >
+        <VerticalPill icon={Utensils} stacked={['Mess', 'Menu']} />
+      </button>
+      <button
+        type="button"
+        className="home-pill home-pill--c2 home-pill--shape-oval home-pill--tile-vertical"
+        onClick={() => onTileClick('skillgigs')}
+        title="Skill Swap"
+      >
+        <VerticalPill icon={Handshake} stacked={['Skill', 'Swap']} />
+      </button>
+
+      {/* Row 3: Study Shelf (span 2), Calendar (span 2) */}
+      <button
+        type="button"
+        className="home-pill home-pill--c2 home-pill--shape-soft home-pill--tile-vertical"
+        onClick={() => onTileClick('materials')}
+        title="Shelf"
+      >
+        <VerticalPill icon={Library}>Shelf</VerticalPill>
+      </button>
+      <button
+        type="button"
+        className="home-pill home-pill--c2 home-pill--shape-soft home-pill--tile-vertical"
+        onClick={() => onTileClick('calendar')}
+        title="Calendar"
+      >
+        <VerticalPill icon={Calendar}>Calendar</VerticalPill>
+      </button>
+
+      {/* Row 4: Edit Menu (span 4) */}
+      <button
+        type="button"
+        className="home-pill home-pill--c4 home-pill--shape-round home-pill--align-center"
+        onClick={openCanteenMenu}
+        title="Edit Menu"
+      >
+        <PillLabel icon={Coffee}>Edit Canteen Menu</PillLabel>
+      </button>
+
+      {/* Row 5: Manage Users (span 4) */}
+      <button
+        type="button"
+        className="home-pill home-pill--c4 home-pill--shape-round home-pill--align-center"
+        onClick={() => onTileClick('users')}
+        title="User Management"
+      >
+        <PillLabel icon={Users}>Manage Users</PillLabel>
+      </button>
+    </div>
+  );
+
   return (
     <div className="home-screen text-m3-onSurface font-sans select-none relative z-10">
       <header className="home-screen__header">
@@ -379,19 +460,29 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
       {isStudent && studentGrid}
 
       {isCanteenAdmin && (
-        <div className="home-screen__grid home-screen__grid--rows-1">
+        <div className="home-screen__grid home-screen__grid--rows-2">
           <button
             type="button"
             className="home-pill home-pill--c4 home-pill--shape-round home-pill--align-center"
-            onClick={openCanteen}
-            title="Canteen Admin"
+            onClick={openCanteenOrders}
+            title="Student Orders"
           >
-            <PillLabel icon={Coffee}>Canteen Admin</PillLabel>
+            <PillLabel icon={ClipboardList}>Student Orders</PillLabel>
+          </button>
+          <button
+            type="button"
+            className="home-pill home-pill--c4 home-pill--shape-round home-pill--align-center"
+            onClick={openCanteenMenu}
+            title="Edit Menu"
+          >
+            <PillLabel icon={Coffee}>Edit Menu</PillLabel>
           </button>
         </div>
       )}
 
-      {isSuperAdmin && adminGrid}
+      {isAdmin && adminGrid}
+
+      {isSuperAdmin && superAdminGrid}
 
       {/* 🎨 Theme Selector Popup Overlay */}
       <AnimatePresence>
@@ -400,7 +491,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 z-[99999] flex items-end justify-center" 
+            className="absolute inset-0 bg-black/50 backdrop-blur-md z-[99999] flex items-end justify-center" 
             onClick={() => setShowThemeSelector(false)}
           >
             <motion.div 
@@ -454,24 +545,35 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                     <button
                       type="button"
                       onClick={() => applyMode('light')}
-                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-2 py-2.5 text-xs font-bold transition-all duration-300 !rounded-full ${
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-1 py-2 text-xs font-bold transition-all duration-300 !rounded-full ${
                         currentMode === 'light'
                           ? 'm3-segmented-chip--selected'
                           : '!bg-transparent !border-none !shadow-none'
                       }`}
                     >
-                      <Sun size={15} /> Light Mode
+                      <Sun size={14} /> Light
                     </button>
                     <button
                       type="button"
                       onClick={() => applyMode('dark')}
-                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-2 py-2.5 text-xs font-bold transition-all duration-300 !rounded-full ${
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-1 py-2 text-xs font-bold transition-all duration-300 !rounded-full ${
                         currentMode === 'dark'
                           ? 'm3-segmented-chip--selected'
                           : '!bg-transparent !border-none !shadow-none'
                       }`}
                     >
-                      <Moon size={15} /> Dark Mode
+                      <Moon size={14} /> Dark
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyMode('auto')}
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-1 py-2 text-xs font-bold transition-all duration-300 !rounded-full ${
+                        currentMode === 'auto'
+                          ? 'm3-segmented-chip--selected'
+                          : '!bg-transparent !border-none !shadow-none'
+                      }`}
+                    >
+                      <SunMoon size={14} /> Auto
                     </button>
                   </div>
                 </div>

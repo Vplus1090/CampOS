@@ -674,7 +674,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
 
       {/* Custom Confirm Dialog */}
       {confirmDialog && (
-        <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
+        <div className="absolute inset-0 z-[1000] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
           <div className="m3-surface-card p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in animate-none">
             <h3 className="m3-title-medium text-m3-onSurface">Confirm Action</h3>
             <p className="m3-body-small text-m3-onSurfaceVariant">{confirmDialog.message}</p>

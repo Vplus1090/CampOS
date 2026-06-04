@@ -8,6 +8,10 @@
  */
 
 const PERMISSIONS = {
+  super_admin: [
+    '*',                   // wildcard — super admins can do everything
+  ],
+
   admin: [
     '*',                   // wildcard — admins can do everything
     'manage:users',

@@ -8,6 +8,8 @@ import canteenRouter from './canteen.js';
 import messagesRouter from './messages.js';
 import messRouter from './mess.js';
 import webportalRouter from './webportal.js';
+import calendarRouter from './calendar.js';
+import timetableRouter from './timetable.js';
 
 const router = Router();
 
@@ -21,5 +23,7 @@ router.use('/canteen', canteenRouter);
 router.use('/messages', messagesRouter);
 router.use('/mess', messRouter);
 router.use('/webportal', webportalRouter);
+router.use('/calendar', calendarRouter);
+router.use('/timetable', timetableRouter);
 
 export default router;

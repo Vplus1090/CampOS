@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Clock, QrCode, Check, X, Smartphone, SmartphoneNfc, CreditCard, ArrowLeft, Ticket, Home, Coffee, Utensils, BookOpen, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, QrCode, Check, X, Smartphone, SmartphoneNfc, CreditCard, ArrowLeft, Ticket, Home, Coffee, Utensils, BookOpen, ShoppingCart, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import NoticesFeed from './components/NoticesFeed';
 import SkillSwapGrid from './components/SkillSwapGrid';
 import CanteenOrder from './components/CanteenOrder';
@@ -11,8 +11,10 @@ import MetroStartScreen from './components/MetroStartScreen';
 import LockScreen from './components/LockScreen';
 import PeerChat from './components/PeerChat';
 import StudentDashboard from './components/StudentDashboard';
+import UserManagement from './components/UserManagement';
 import { API_BASE } from './config/api';
 import { parseJsonResponse } from './utils/parseJsonResponse';
+import { applyThemeMode, initGeolocation } from './utils/theme';
 import './App.css';
 
 function App() {
@@ -27,10 +29,26 @@ function App() {
     document.body.classList.add(`theme-${savedTheme}`);
     
     const savedMode = localStorage.getItem('campos-mode') || 'dark';
-    document.body.classList.remove('mode-light', 'mode-dark');
-    document.body.classList.add(`mode-${savedMode}`);
+    applyThemeMode(savedMode);
+
+    if (savedMode === 'auto') {
+      initGeolocation(() => {
+        applyThemeMode('auto');
+      });
+    }
+
+    // Set up a 1-minute interval loop to re-evaluate auto mode transitions dynamically
+    const timer = setInterval(() => {
+      const currentMode = localStorage.getItem('campos-mode') || 'dark';
+      if (currentMode === 'auto') {
+        applyThemeMode('auto');
+      }
+    }, 60000);
+
+    return () => clearInterval(timer);
   }, []);
   const [canteenCart, setCanteenCart] = useState([]);
+  const [canteenAdminTab, setCanteenAdminTab] = useState('menu');
   const [isCartPopping, setIsCartPopping] = useState(false);
   const [showCanteenTicketModal, setShowCanteenTicketModal] = useState(false);
   const [activeChatPeer, setActiveChatPeer] = useState(null);
@@ -191,6 +209,18 @@ function App() {
       return [
         { id: 'home', label: 'Start Screen', icon: '🏠' },
         { id: 'canteen', label: 'Canteen Menu', icon: '🍔' }
+      ];
+    }
+    if (currentUser.role === 'super_admin') {
+      return [
+        { id: 'home', label: 'Start Screen', icon: '🏠' },
+        { id: 'notices', label: 'Notice Board', icon: '📢' },
+        { id: 'skillgigs', label: 'Skill Exchange', icon: '🤝' },
+        { id: 'canteen', label: 'Canteen Menu', icon: '🍔' },
+        { id: 'mess', label: 'Mess Menu', icon: '🍱' },
+        { id: 'materials', label: 'Study Material', icon: '📚' },
+        { id: 'calendar', label: 'Academic Calendar', icon: '📅' },
+        { id: 'users', label: 'Users', icon: '👥' }
       ];
     }
     if (currentUser.role === 'admin') {
@@ -542,6 +572,7 @@ function App() {
       'student_dashboard',
       'timetable',
       'peerchat',
+      'users',
     ];
     const isImmersiveTab = immersiveTabs.includes(activeTab);
 
@@ -568,6 +599,12 @@ function App() {
               onTileClick={(tabId) => {
                 if (tabId === 'SUCCESS') {
                   setShowCanteenTicketModal(true);
+                } else if (tabId === 'canteen_orders') {
+                  setCanteenAdminTab('orders');
+                  setActiveTab('canteen');
+                } else if (tabId === 'canteen_menu') {
+                  setCanteenAdminTab('menu');
+                  setActiveTab('canteen');
                 } else {
                   setActiveTab(tabId);
                 }
@@ -610,6 +647,7 @@ function App() {
               triggerPayment={triggerPayment}
               cart={canteenCart}
               setCart={setCanteenCart}
+              initialAdminSubTab={canteenAdminTab}
             />
           )}
           {activeTab === 'canteen_cart' && allowedTabs.includes('canteen') && (
@@ -623,6 +661,12 @@ function App() {
               isCartCheckout={true}
             />
           )}
+          {activeTab === 'users' && allowedTabs.includes('users') && (
+            <UserManagement 
+              currentUser={currentUser}
+              setActiveTab={setActiveTab}
+            />
+          )}
           {activeTab === 'mess' && allowedTabs.includes('mess') && (
             <MessMenu currentUser={currentUser} setActiveTab={setActiveTab} triggerPayment={triggerPayment} />
           )}
@@ -630,7 +674,7 @@ function App() {
             <StudyMaterials setActiveTab={setActiveTab} />
           )}
           {activeTab === 'calendar' && allowedTabs.includes('calendar') && (
-            <AcademicCalendar setActiveTab={setActiveTab} />
+            <AcademicCalendar currentUser={currentUser} setActiveTab={setActiveTab} />
           )}
           {activeTab === 'timetable' && (
             <Timetable 
@@ -691,6 +735,7 @@ function App() {
       case 'canteen': return <Coffee size={20} className="stroke-[2.5px]" />;
       case 'mess': return <Utensils size={20} className="stroke-[2.5px]" />;
       case 'skillgigs': return <BookOpen size={20} className="stroke-[2.5px]" />;
+      case 'users': return <Users size={20} className="stroke-[2.5px]" />;
       default: return null;
     }
   };
@@ -736,7 +781,7 @@ function CanteenTicketModal({ order, onClose }) {
   }, [order]);
 
   return (
-    <div className="absolute inset-0 bg-black/60 z-[9999] flex items-center justify-center p-6" onClick={onClose}>
+    <div className="absolute inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-6" onClick={onClose}>
       <div 
         className="w-full max-w-[320px] m3-surface-card backdrop-blur-md border border-transparent shadow-2xl py-6 px-5 flex flex-col items-center relative overflow-hidden select-none animate-fade-in"
         onClick={(e) => e.stopPropagation()}
@@ -745,7 +790,7 @@ function CanteenTicketModal({ order, onClose }) {
         {/* Header with Title and Ticket Icon */}
         <div 
           className="flex items-center justify-between w-full pb-3 mb-4"
-          style={{ borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}
+          style={{ borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}
         >
           <span className="text-m3-primary font-bold uppercase tracking-wider text-[10px]">Canteen Slip</span>
           <Ticket size={18} className="text-m3-primary/70" />
@@ -758,15 +803,15 @@ function CanteenTicketModal({ order, onClose }) {
         </div>
 
         <span className="text-m3-onSurfaceVariant text-[10px] font-bold uppercase tracking-widest mt-1">Pickup PIN</span>
-        <div className="my-4 text-5xl font-black tracking-widest text-white select-all">
+        <div className="my-4 text-5xl font-black tracking-widest text-m3-onSurface select-all">
           {order.PickupPIN}
         </div>
 
         {/* Order Items List */}
-        <div className="w-full mt-1 mb-2 py-3 text-left flex flex-col gap-2 max-h-[140px] overflow-y-auto scrollbar-none font-sans" style={{ borderTop: '1px solid color-mix(in srgb, var(--m3-outline-variant) 12%, transparent)', borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 12%, transparent)' }}>
+        <div className="w-full mt-1 mb-2 py-3 text-left flex flex-col gap-2 max-h-[140px] overflow-y-auto scrollbar-none font-sans" style={{ borderTop: '1px solid color-mix(in srgb, var(--m3-outline-variant) 50%, transparent)', borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 50%, transparent)' }}>
           <span className="text-m3-onSurfaceVariant text-[8px] font-bold uppercase tracking-wider block mb-1">Order Items</span>
           {order.ItemsArray && order.ItemsArray.map((item, idx) => (
-            <div key={idx} className="flex justify-between items-center text-[10px] text-white/95 font-medium">
+            <div key={idx} className="flex justify-between items-center text-[10px] text-m3-onSurfaceVariant font-medium">
               <span className="pr-2 truncate">{item.Name}</span>
               <span className="font-bold text-m3-primary shrink-0">x{item.Quantity}</span>
             </div>
@@ -776,7 +821,7 @@ function CanteenTicketModal({ order, onClose }) {
         <div className="w-full mt-1 flex flex-col gap-2.5 text-left font-sans">
           <div className="flex justify-between items-center text-[10px] font-bold text-m3-onSurfaceVariant">
             <span>Customer:</span>
-            <span className="font-bold text-white">{order.StudentName || 'Student'}</span>
+            <span className="font-bold text-m3-onSurface">{order.StudentName || 'Student'}</span>
           </div>
           <div className="flex justify-between items-center text-[10px] font-bold text-m3-onSurfaceVariant">
             <span>Total Amount:</span>

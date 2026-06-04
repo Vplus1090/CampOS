@@ -6,7 +6,7 @@ const router = Router();
 
 // All routes require admin authentication
 router.use(authenticate);
-router.use(requireRole('admin'));
+router.use(requireRole('super_admin'));
 
 // ─── GET /api/users — List all users (paginated, filterable) ────────────────────
 
@@ -22,7 +22,7 @@ router.get('/', requirePermission('manage:users'), async (req, res, next) => {
 
     const filter = {};
 
-    if (role && ['student', 'educator', 'admin'].includes(role)) {
+    if (role && ['student', 'educator', 'admin', 'canteen_admin', 'super_admin'].includes(role)) {
       filter.role = role;
     }
 
@@ -108,8 +108,8 @@ router.post('/', requirePermission('manage:users'), async (req, res, next) => {
       return next(error);
     }
 
-    if (!['student', 'educator', 'admin'].includes(role)) {
-      const error = new Error('Role must be one of: student, educator, admin.');
+    if (!['student', 'educator', 'admin', 'canteen_admin', 'super_admin'].includes(role)) {
+      const error = new Error('Role must be one of: student, educator, admin, canteen_admin, super_admin.');
       error.statusCode = 400;
       return next(error);
     }
@@ -202,8 +202,8 @@ router.patch('/:id/role', requirePermission('assign:roles'), async (req, res, ne
   try {
     const { role } = req.body;
 
-    if (!role || !['student', 'educator', 'admin'].includes(role)) {
-      const error = new Error('Role must be one of: student, educator, admin.');
+    if (!role || !['student', 'educator', 'admin', 'canteen_admin', 'super_admin'].includes(role)) {
+      const error = new Error('Role must be one of: student, educator, admin, canteen_admin, super_admin.');
       error.statusCode = 400;
       return next(error);
     }

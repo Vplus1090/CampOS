@@ -24,7 +24,7 @@ router.get('/menu', async (req, res, next) => {
  * @desc    Create a new menu item
  * @access  Authenticated (Requires canteen_admin role)
  */
-router.post('/menu', authenticate, requireRole('canteen_admin'), async (req, res, next) => {
+router.post('/menu', authenticate, requireRole('canteen_admin', 'super_admin'), async (req, res, next) => {
   try {
     const { Name, Price, Category, IsAvailable } = req.body;
 
@@ -46,7 +46,7 @@ router.post('/menu', authenticate, requireRole('canteen_admin'), async (req, res
  * @desc    Update menu item price, name, or category
  * @access  Authenticated (Requires canteen_admin role)
  */
-router.put('/menu/:id', authenticate, requireRole('canteen_admin'), async (req, res, next) => {
+router.put('/menu/:id', authenticate, requireRole('canteen_admin', 'super_admin'), async (req, res, next) => {
   try {
     const { Name, Price, Category, IsAvailable } = req.body;
 
@@ -74,7 +74,7 @@ router.put('/menu/:id', authenticate, requireRole('canteen_admin'), async (req, 
  * @desc    Delete a menu item from the catalog
  * @access  Authenticated (Requires canteen_admin role)
  */
-router.delete('/menu/:id', authenticate, requireRole('canteen_admin'), async (req, res, next) => {
+router.delete('/menu/:id', authenticate, requireRole('canteen_admin', 'super_admin'), async (req, res, next) => {
   try {
     const item = await MenuItem.findByIdAndDelete(req.params.id);
     if (!item) {
@@ -94,7 +94,7 @@ router.delete('/menu/:id', authenticate, requireRole('canteen_admin'), async (re
  * @desc    Admin endpoint to toggle a menu item's IsAvailable availability status
  * @access  Authenticated (Requires canteen_admin role)
  */
-router.patch('/menu/:id/toggle', authenticate, requireRole('canteen_admin'), async (req, res, next) => {
+router.patch('/menu/:id/toggle', authenticate, requireRole('canteen_admin', 'super_admin'), async (req, res, next) => {
   try {
     const item = await MenuItem.findById(req.params.id);
 
@@ -205,6 +205,33 @@ router.get('/orders', async (req, res, next) => {
   try {
     const orders = await Order.find({}).sort({ Timestamp: -1 }).limit(10);
     res.json(orders);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * @route   PATCH /api/canteen/orders/:id/complete
+ * @desc    Mark a canteen order as completed
+ * @access  Authenticated (Requires canteen_admin role)
+ */
+router.patch('/orders/:id/complete', authenticate, requireRole('canteen_admin', 'super_admin'), async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      const error = new Error('Order not found');
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    order.OrderStatus = 'Completed';
+    await order.save();
+
+    res.json({
+      message: `Successfully completed order ${order._id}`,
+      order,
+    });
   } catch (err) {
     next(err);
   }
