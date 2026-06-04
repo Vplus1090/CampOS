@@ -20,11 +20,15 @@ function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [stats, setStats] = useState({ notices: 0, skillgigs: 0, canteen: 0 });
 
-  // Synchronize theme on load
+  // Synchronize theme and mode on load
   useEffect(() => {
     const savedTheme = localStorage.getItem('campos-theme') || 'lavender';
     document.body.classList.remove('theme-lavender', 'theme-blue', 'theme-green', 'theme-orange', 'theme-yellow');
     document.body.classList.add(`theme-${savedTheme}`);
+    
+    const savedMode = localStorage.getItem('campos-mode') || 'dark';
+    document.body.classList.remove('mode-light', 'mode-dark');
+    document.body.classList.add(`mode-${savedMode}`);
   }, []);
   const [canteenCart, setCanteenCart] = useState([]);
   const [isCartPopping, setIsCartPopping] = useState(false);

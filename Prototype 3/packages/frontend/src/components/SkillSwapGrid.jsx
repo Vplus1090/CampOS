@@ -351,7 +351,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                         </span>
                       </div>
                       <div>
-                        <h4 className="m3-title-medium text-white leading-tight">
+                        <h4 className="m3-title-medium text-m3-onSurface leading-tight">
                           {gig.SkillOffered}
                         </h4>
                         <span className="text-[10px] font-bold text-m3-onSurfaceVariant font-mono tracking-widest uppercase block mt-1">
@@ -449,7 +449,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
       {confirmDialog && (
         <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
           <div className="m3-surface-card p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in">
-            <h3 className="m3-title-medium text-white">Confirm Action</h3>
+            <h3 className="m3-title-medium text-m3-onSurface">Confirm Action</h3>
             <p className="m3-body-small text-m3-onSurfaceVariant">{confirmDialog.message}</p>
             <div className="flex justify-end gap-2.5 mt-2">
               <button
@@ -478,7 +478,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
       {promptDialog && (
         <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
           <div className="m3-surface-card backdrop-blur-md p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in">
-            <h3 className="m3-title-medium text-white">{promptDialog.title}</h3>
+            <h3 className="m3-title-medium text-m3-onSurface">{promptDialog.title}</h3>
             <p className="m3-body-small text-m3-onSurfaceVariant">{promptDialog.message}</p>
             <input
               type="text"

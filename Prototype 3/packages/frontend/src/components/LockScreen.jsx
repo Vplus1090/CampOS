@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Utensils, Calendar, BookOpen, KeyRound, X, QrCode, SmartphoneNfc, CreditCard, Eye, EyeOff, Lock, Palette } from 'lucide-react';
+import { Utensils, Calendar, BookOpen, KeyRound, X, QrCode, SmartphoneNfc, CreditCard, Eye, EyeOff, Lock, Palette, Sun, Moon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -53,6 +53,9 @@ export default function LockScreen({ onLoginSuccess }) {
   const [currentTheme, setCurrentTheme] = useState(() => {
     return localStorage.getItem('campos-theme') || 'lavender';
   });
+  const [currentMode, setCurrentMode] = useState(() => {
+    return localStorage.getItem('campos-mode') || 'dark';
+  });
 
   const applyTheme = (themeId) => {
     setCurrentTheme(themeId);
@@ -61,9 +64,17 @@ export default function LockScreen({ onLoginSuccess }) {
     document.body.classList.add(`theme-${themeId}`);
   };
 
+  const applyMode = (modeId) => {
+    setCurrentMode(modeId);
+    localStorage.setItem('campos-mode', modeId);
+    document.body.classList.remove('mode-light', 'mode-dark');
+    document.body.classList.add(`mode-${modeId}`);
+  };
+
   useEffect(() => {
     applyTheme(currentTheme);
-  }, [currentTheme]);
+    applyMode(currentMode);
+  }, [currentTheme, currentMode]);
 
   // Additional Guest State Hooks
   const [showGuestQr, setShowGuestQr] = useState(false);
@@ -584,31 +595,60 @@ export default function LockScreen({ onLoginSuccess }) {
                 </button>
               </div>
 
-              <div className="flex items-center justify-center gap-5 py-4 w-full">
-                {[
-                  { id: 'lavender', hex: '#d0bcff', name: 'Lavender' },
-                  { id: 'blue', hex: '#a8c7ff', name: 'Sapphire Blue' },
-                  { id: 'green', hex: '#85d996', name: 'Emerald Green' },
-                  { id: 'orange', hex: '#ffb77c', name: 'Sunset Orange' },
-                  { id: 'yellow', hex: '#e6c449', name: 'Amber Yellow' },
-                ].map((theme) => {
-                  const isActive = currentTheme === theme.id;
-                  return (
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      whileHover={{ scale: 1.15 }}
-                      key={theme.id}
-                      onClick={() => applyTheme(theme.id)}
-                      className={`w-12 h-12 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none ${
-                        isActive 
-                          ? 'ring-4 ring-m3-primary ring-offset-4 ring-offset-m3-surfaceContainer'
-                          : 'hover:ring-2 hover:ring-m3-outlineVariant/50'
+              <div className="flex flex-col gap-5 py-2 w-full">
+                <div className="flex items-center justify-center gap-5 w-full">
+                  {[
+                    { id: 'lavender', hex: '#d0bcff', name: 'Lavender' },
+                    { id: 'blue', hex: '#a8c7ff', name: 'Sapphire Blue' },
+                    { id: 'green', hex: '#85d996', name: 'Emerald Green' },
+                    { id: 'orange', hex: '#ffb77c', name: 'Sunset Orange' },
+                    { id: 'yellow', hex: '#e6c449', name: 'Amber Yellow' },
+                  ].map((theme) => {
+                    const isActive = currentTheme === theme.id;
+                    return (
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        whileHover={{ scale: 1.15 }}
+                        key={theme.id}
+                        onClick={() => applyTheme(theme.id)}
+                        className={`w-12 h-12 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none ${
+                          isActive 
+                            ? 'ring-4 ring-m3-primary ring-offset-4 ring-offset-m3-surfaceContainer'
+                            : 'hover:ring-2 hover:ring-m3-outlineVariant/50'
+                        }`}
+                        style={{ backgroundColor: theme.hex }}
+                        title={`${theme.name} Theme`}
+                      />
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-center w-full px-2 mt-2">
+                  <div className="m3-segmented-chips w-full max-w-xs justify-between bg-m3-surfaceContainerLow p-1 rounded-full border border-m3-outlineVariant/30">
+                    <button
+                      type="button"
+                      onClick={() => applyMode('light')}
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-2 py-2.5 text-xs font-bold transition-all duration-300 !rounded-full ${
+                        currentMode === 'light'
+                          ? 'm3-segmented-chip--selected'
+                          : '!bg-transparent !border-none !shadow-none'
                       }`}
-                      style={{ backgroundColor: theme.hex }}
-                      title={`${theme.name} Theme`}
-                    />
-                  );
-                })}
+                    >
+                      <Sun size={15} /> Light Mode
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyMode('dark')}
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-2 py-2.5 text-xs font-bold transition-all duration-300 !rounded-full ${
+                        currentMode === 'dark'
+                          ? 'm3-segmented-chip--selected'
+                          : '!bg-transparent !border-none !shadow-none'
+                      }`}
+                    >
+                      <Moon size={15} /> Dark Mode
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </motion.div>

@@ -16,6 +16,8 @@ import {
   WifiOff,
   Palette,
   X,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 function PillLabel({ icon: Icon, children, badge }) {
@@ -71,12 +73,22 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   const [currentTheme, setCurrentTheme] = useState(() => {
     return localStorage.getItem('campos-theme') || 'lavender';
   });
+  const [currentMode, setCurrentMode] = useState(() => {
+    return localStorage.getItem('campos-mode') || 'dark';
+  });
 
   const applyTheme = (themeId) => {
     setCurrentTheme(themeId);
     localStorage.setItem('campos-theme', themeId);
     document.body.classList.remove('theme-lavender', 'theme-blue', 'theme-green', 'theme-orange', 'theme-yellow');
     document.body.classList.add(`theme-${themeId}`);
+  };
+
+  const applyMode = (modeId) => {
+    setCurrentMode(modeId);
+    localStorage.setItem('campos-mode', modeId);
+    document.body.classList.remove('mode-light', 'mode-dark');
+    document.body.classList.add(`mode-${modeId}`);
   };
 
   useEffect(() => {
@@ -292,7 +304,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   );
 
   return (
-    <div className="home-screen text-white font-sans select-none relative z-10">
+    <div className="home-screen text-m3-onSurface font-sans select-none relative z-10">
       <header className="home-screen__header">
         <button type="button" className="home-screen__logout" onClick={onLogout} title="Log out">
           <ChevronLeft className="home-screen__logout-icon" strokeWidth={2.75} aria-hidden />
@@ -320,8 +332,8 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               className="w-full rounded-[28px] bg-m3-surfaceContainerHigh border-none px-6 py-5 flex items-center justify-between text-left active:scale-[0.99] transition-all duration-300 shadow-xl cursor-pointer"
             >
               <div className="flex flex-col gap-1.5">
-                <h4 className="text-lg font-bold text-white tracking-tight">Mess Access</h4>
-                <p className="text-sm font-bold text-white leading-tight">
+                <h4 className="text-lg font-bold text-m3-onSurface tracking-tight">Mess Access</h4>
+                <p className="text-sm font-bold text-m3-onSurface leading-tight">
                   Pass active • {remainingMinutes} min left
                 </p>
                 <div className="flex items-center gap-1.5 text-xs text-m3-onSurfaceVariant/85 mt-1 font-medium select-none">
@@ -344,7 +356,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               className="w-full rounded-[28px] bg-m3-surfaceContainerHigh border-none px-6 py-5 flex items-center justify-between text-left active:scale-[0.99] transition-all duration-300 shadow-xl cursor-pointer"
             >
               <div className="flex flex-col gap-1.5">
-                <h4 className="text-lg font-bold text-white tracking-tight">Canteen Order</h4>
+                <h4 className="text-lg font-bold text-m3-onSurface tracking-tight">Canteen Order</h4>
                 <p className="text-sm font-semibold text-m3-onSurface">
                   Pickup PIN • <span className="text-m3-tertiary font-black">{activeOrder.PickupPIN}</span>
                 </p>
@@ -409,31 +421,60 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                 </button>
               </div>
 
-              <div className="flex items-center justify-center gap-5 py-4 w-full">
-                {[
-                  { id: 'lavender', hex: '#d0bcff', name: 'Lavender' },
-                  { id: 'blue', hex: '#a8c7ff', name: 'Sapphire Blue' },
-                  { id: 'green', hex: '#85d996', name: 'Emerald Green' },
-                  { id: 'orange', hex: '#ffb77c', name: 'Sunset Orange' },
-                  { id: 'yellow', hex: '#e6c449', name: 'Amber Yellow' },
-                ].map((theme) => {
-                  const isActive = currentTheme === theme.id;
-                  return (
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      whileHover={{ scale: 1.15 }}
-                      key={theme.id}
-                      onClick={() => applyTheme(theme.id)}
-                      className={`w-12 h-12 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none ${
-                        isActive 
-                          ? 'ring-4 ring-m3-primary ring-offset-4 ring-offset-m3-surfaceContainer'
-                          : 'hover:ring-2 hover:ring-m3-outlineVariant/50'
+              <div className="flex flex-col gap-5 py-2 w-full">
+                <div className="flex items-center justify-center gap-5 w-full">
+                  {[
+                    { id: 'lavender', hex: '#d0bcff', name: 'Lavender' },
+                    { id: 'blue', hex: '#a8c7ff', name: 'Sapphire Blue' },
+                    { id: 'green', hex: '#85d996', name: 'Emerald Green' },
+                    { id: 'orange', hex: '#ffb77c', name: 'Sunset Orange' },
+                    { id: 'yellow', hex: '#e6c449', name: 'Amber Yellow' },
+                  ].map((theme) => {
+                    const isActive = currentTheme === theme.id;
+                    return (
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        whileHover={{ scale: 1.15 }}
+                        key={theme.id}
+                        onClick={() => applyTheme(theme.id)}
+                        className={`w-12 h-12 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none ${
+                          isActive 
+                            ? 'ring-4 ring-m3-primary ring-offset-4 ring-offset-m3-surfaceContainer'
+                            : 'hover:ring-2 hover:ring-m3-outlineVariant/50'
+                        }`}
+                        style={{ backgroundColor: theme.hex }}
+                        title={`${theme.name} Theme`}
+                      />
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-center w-full px-2 mt-2">
+                  <div className="m3-segmented-chips w-full max-w-xs justify-between bg-m3-surfaceContainerLow p-1 rounded-full border border-m3-outlineVariant/30">
+                    <button
+                      type="button"
+                      onClick={() => applyMode('light')}
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-2 py-2.5 text-xs font-bold transition-all duration-300 !rounded-full ${
+                        currentMode === 'light'
+                          ? 'm3-segmented-chip--selected'
+                          : '!bg-transparent !border-none !shadow-none'
                       }`}
-                      style={{ backgroundColor: theme.hex }}
-                      title={`${theme.name} Theme`}
-                    />
-                  );
-                })}
+                    >
+                      <Sun size={15} /> Light Mode
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyMode('dark')}
+                      className={`flex-grow m3-segmented-chip flex items-center justify-center gap-2 py-2.5 text-xs font-bold transition-all duration-300 !rounded-full ${
+                        currentMode === 'dark'
+                          ? 'm3-segmented-chip--selected'
+                          : '!bg-transparent !border-none !shadow-none'
+                      }`}
+                    >
+                      <Moon size={15} /> Dark Mode
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </motion.div>

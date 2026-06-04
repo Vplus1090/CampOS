@@ -577,7 +577,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                     </div>
 
                     {/* Item Name */}
-                    <h4 className="text-base font-extrabold text-white tracking-wide leading-snug">
+                    <h4 className="text-base font-extrabold text-m3-onSurface tracking-wide leading-snug">
                       {item.Name}
                     </h4>
 

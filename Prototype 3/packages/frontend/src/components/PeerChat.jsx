@@ -466,7 +466,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
               <ChevronLeft size={22} strokeWidth={2.5} />
             </button>
             
-            <h4 className="m3-title-medium text-white leading-none pl-1">{activePeer}</h4>
+            <h4 className="m3-title-medium text-m3-onSurface leading-none pl-1">{activePeer}</h4>
           </div>
           
           <div className="flex items-center text-slate-300">
@@ -676,7 +676,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
       {confirmDialog && (
         <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
           <div className="m3-surface-card p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in animate-none">
-            <h3 className="m3-title-medium text-white">Confirm Action</h3>
+            <h3 className="m3-title-medium text-m3-onSurface">Confirm Action</h3>
             <p className="m3-body-small text-m3-onSurfaceVariant">{confirmDialog.message}</p>
             <div className="flex justify-end gap-2.5 mt-2">
               <button

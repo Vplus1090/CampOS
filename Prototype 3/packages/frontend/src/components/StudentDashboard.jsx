@@ -1767,10 +1767,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   </div>
                 ) : (
                   attendanceList.map((item, idx) => {
-                    const stat = getBunkStatus(item.attended, item.held);
                     const cardBgShadow = stat.status === 'danger'
-                      ? 'bg-white/[0.04]'
-                      : 'bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)]';
+                      ? 'bg-m3-surfaceContainer'
+                      : 'bg-m3-surfaceContainerHigh';
 
                     return (
                       <div 
@@ -1780,9 +1779,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         <div className="flex flex-col w-full text-left">
                           <span className="text-[8px] font-black text-slate-400 tracking-wider font-sans block uppercase mb-1">{item.code} • {item.type}</span>
                           <div className="flex justify-between items-center w-full gap-3">
-                            <h4 className="text-sm font-bold text-white font-sans break-words leading-snug flex-1">{item.name}</h4>
+                            <h4 className="text-sm font-bold text-m3-onSurface font-sans break-words leading-snug flex-1">{item.name}</h4>
                             <div className="flex flex-col items-end shrink-0 text-right">
-                              <span className={`text-base font-black font-sans leading-none ${stat.status === 'danger' ? 'text-white/60' : 'text-white/80'}`}>
+                              <span className={`text-base font-black font-sans leading-none ${stat.status === 'danger' ? 'text-m3-onSurfaceVariant/80' : 'text-m3-onSurface'}`}>
                                 {item.percentage}%
                               </span>
                               <span className="text-[9px] font-bold text-slate-400 mt-1 font-sans uppercase tracking-wide">
@@ -1797,25 +1796,25 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           const activeCols = [item.hasLecture, item.hasTutorial, item.hasPractical].filter(Boolean).length;
                           const gridClass = activeCols === 3 ? 'grid-cols-3' : activeCols === 2 ? 'grid-cols-2' : 'grid-cols-1';
                           return (
-                            <div className={`grid ${gridClass} gap-2 w-full mt-1 py-2.5 px-3 bg-white/[0.02] rounded-2xl text-[10px] font-sans shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]`}>
+                            <div className={`grid ${gridClass} gap-2 w-full mt-1 py-2.5 px-3 bg-m3-surfaceContainerLow/60 rounded-2xl text-[10px] font-sans shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]`}>
                               {item.hasLecture && (
                                 <div className="flex flex-col gap-0.5 text-left pr-2">
                                   <span className="text-[8px] font-extrabold text-slate-400 uppercase font-sans tracking-wider">Lecture</span>
-                                  <span className="font-black text-white/70 text-xs mt-0.5">{item.lecturePct}%</span>
+                                  <span className="font-black text-m3-onSurfaceVariant text-xs mt-0.5">{item.lecturePct}%</span>
                                   <span className="text-[9px] font-sans text-slate-400 mt-0.5 font-bold">{item.lectureAttended}/{item.lectureHeld} Classes</span>
                                 </div>
                               )}
                               {item.hasTutorial && (
-                                <div className={`flex flex-col gap-0.5 text-left ${activeCols > 1 ? 'border-l border-white/5 pl-2.5' : ''}`}>
+                                <div className={`flex flex-col gap-0.5 text-left ${activeCols > 1 ? 'border-l border-m3-outlineVariant/20 pl-2.5' : ''}`}>
                                   <span className="text-[8px] font-extrabold text-slate-400 uppercase font-sans tracking-wider">Tutorial</span>
-                                  <span className="font-black text-white/70 text-xs mt-0.5">{item.tutorialPct}%</span>
+                                  <span className="font-black text-m3-onSurfaceVariant text-xs mt-0.5">{item.tutorialPct}%</span>
                                   <span className="text-[9px] font-sans text-slate-400 mt-0.5 font-bold">{item.tutorialAttended}/{item.tutorialHeld} Classes</span>
                                 </div>
                               )}
                               {item.hasPractical && (
-                                <div className={`flex flex-col gap-0.5 text-left ${activeCols > 1 ? 'border-l border-white/5 pl-2.5' : ''}`}>
+                                <div className={`flex flex-col gap-0.5 text-left ${activeCols > 1 ? 'border-l border-m3-outlineVariant/20 pl-2.5' : ''}`}>
                                   <span className="text-[8px] font-extrabold text-slate-400 uppercase font-sans tracking-wider">Practical</span>
-                                  <span className="font-black text-white/70 text-xs mt-0.5">{item.practicalPct}%</span>
+                                  <span className="font-black text-m3-onSurfaceVariant text-xs mt-0.5">{item.practicalPct}%</span>
                                   <span className="text-[9px] font-sans text-slate-400 mt-0.5 font-bold">{item.practicalAttended}/{item.practicalHeld} Classes</span>
                                 </div>
                               )}
@@ -1824,14 +1823,14 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         })()}
 
                         {/* Forecaster bunk pill details */}
-                        <div className="w-full pt-3.5 border-t border-white/5 flex items-center justify-between">
+                        <div className="w-full pt-3.5 border-t border-m3-outlineVariant/20 flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {stat.status === 'danger' ? (
-                              <AlertTriangle size={14} className="text-white/50" />
+                              <AlertTriangle size={14} className="text-m3-error" />
                             ) : (
-                              <CheckCircle2 size={14} className="text-white/70" />
+                              <CheckCircle2 size={14} className="text-m3-primary" />
                             )}
-                            <span className="text-[10px] font-semibold text-slate-200 text-left leading-none font-sans">
+                            <span className="text-[10px] font-semibold text-m3-onSurface text-left leading-none font-sans">
                               {stat.status === 'danger' 
                                 ? `Must attend ${stat.count} class${stat.count > 1 ? 'es' : ''} consecutively` 
                                 : stat.count > 0 
@@ -1840,7 +1839,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             </span>
                           </div>
                           
-                          <span className={`text-[8px] font-black uppercase tracking-widest font-sans ${stat.status === 'danger' ? 'text-white/60 font-bold' : 'text-white/70 font-semibold'}`}>
+                          <span className={`text-[8px] font-black uppercase tracking-widest font-sans ${stat.status === 'danger' ? 'text-m3-error font-bold' : 'text-m3-primary font-semibold'}`}>
                             {stat.status === 'danger' ? '⚠️ SHORTAGE' : '🟢 SECURE'}
                           </span>
                         </div>
@@ -1889,9 +1888,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     <div className={`${obsidianCardClass} flex items-center justify-between p-5`}>
                       <div className="text-left">
                         <span className="text-[8px] font-black text-slate-400 tracking-wider uppercase block font-sans">Academic Trend</span>
-                        <h4 className="text-sm font-bold text-white font-sans mt-0.5 uppercase tracking-wide">Cumulative Index (CGPA)</h4>
+                        <h4 className="text-sm font-bold text-m3-onSurface font-sans mt-0.5 uppercase tracking-wide">Cumulative Index (CGPA)</h4>
                       </div>
-                      <div className="flex items-center gap-1.5 text-white/80 bg-white/10 px-3 py-1.5 rounded-xl text-xs font-sans font-bold shadow-sm">
+                      <div className="flex items-center gap-1.5 text-m3-onSurface bg-m3-surfaceContainerHighest px-3 py-1.5 rounded-xl text-xs font-sans font-bold shadow-sm">
                         <TrendingUp size={14} />
                         <span>
                           {gpaData?.cgpa ?? (Array.isArray(gpaData?.semesterList) && gpaData.semesterList.length > 0 
@@ -1903,7 +1902,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
                     {/* Vector progress graph (signature glassmorphism) */}
                     <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 text-center`}>
-                      <span className="text-[8px] font-black text-slate-400 tracking-widest uppercase font-sans text-left block border-b border-white/5 pb-2">
+                      <span className="text-[8px] font-black text-slate-400 tracking-widest uppercase font-sans text-left block border-b border-m3-outlineVariant/20 pb-2">
                         Grade Progression Vector
                       </span>
                       <GpaLineChart semesterList={gpaData?.semesterList || []} />
@@ -1925,14 +1924,14 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                 GP: {Number(sem.earnedgradepoints || 0).toFixed(1)}/{Number(sem.totalcoursecredit || 0) * 10}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2 justify-between mt-1 pt-2 border-t border-white/5">
+                            <div className="flex items-center gap-2 justify-between mt-1 pt-2 border-t border-m3-outlineVariant/20">
                               <div className="flex flex-col">
                                 <span className="text-[7px] font-black text-slate-500 tracking-widest font-sans uppercase leading-none">SGPA</span>
-                                <span className="text-base font-black font-sans text-white/80 leading-none mt-1">{Number(sem.sgpa || 0).toFixed(2)}</span>
+                                <span className="text-base font-black font-sans text-m3-onSurface leading-none mt-1">{Number(sem.sgpa || 0).toFixed(2)}</span>
                               </div>
                               <div className="flex flex-col items-end">
                                 <span className="text-[7px] font-black text-slate-500 tracking-widest font-sans uppercase leading-none">CGPA</span>
-                                <span className="text-base font-black font-sans text-white/60 leading-none mt-1">{Number(sem.cgpa || 0).toFixed(2)}</span>
+                                <span className="text-base font-black font-sans text-m3-onSurfaceVariant leading-none mt-1">{Number(sem.cgpa || 0).toFixed(2)}</span>
                               </div>
                             </div>
                           </div>
@@ -1967,7 +1966,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         type="button"
                         onClick={() => handleDownloadMarksPdf(selectedMarksSem)}
                         disabled={isDownloading || !selectedMarksSem}
-                        className="h-[45px] px-4 rounded-2xl flex items-center justify-center gap-2 bg-white/[0.05] hover:bg-white/[0.09] text-white/80 shadow-sm transition-all duration-300 cursor-pointer disabled:opacity-50 text-[10px] font-black uppercase tracking-wider shrink-0 active:scale-95 leading-none"
+                        className="h-[45px] px-4 rounded-2xl flex items-center justify-center gap-2 bg-m3-surfaceContainerHighest hover:brightness-95 text-m3-onSurface shadow-sm transition-all duration-300 cursor-pointer disabled:opacity-50 text-[10px] font-black uppercase tracking-wider shrink-0 active:scale-95 leading-none"
                       >
                         {isDownloading ? <RefreshCw className="animate-spin" size={12} /> : <Download size={12} />}
                         <span>Statement</span>
@@ -2042,17 +2041,17 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                 <h4 className="text-sm font-black text-m3-primary font-sans break-words leading-tight">
                                   {course.name}
                                 </h4>
-                                <span className="text-[9px] font-black text-slate-300 bg-white/[0.04] border border-white/10 px-2 py-0.5 rounded-[6px] tracking-wider font-sans uppercase">
+                                <span className="text-[9px] font-black text-m3-onSurfaceVariant bg-m3-surfaceContainerHighest border border-m3-outlineVariant/20 px-2 py-0.5 rounded-[6px] tracking-wider font-sans uppercase">
                                   {course.code}
                                 </span>
                               </div>
 
                               {/* Grade Card statistics banner (only shown if grades are available) */}
                               {hasGrade ? (
-                                <div className="grid grid-cols-3 bg-white/[0.02] rounded-[16px] py-3.5 px-2 text-center select-none divide-x divide-white/10">
+                                <div className="grid grid-cols-3 bg-m3-surfaceContainerLow/60 rounded-[16px] py-3.5 px-2 text-center select-none divide-x divide-m3-outlineVariant/20">
                                   <div className="flex flex-col items-center justify-center">
                                     <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Grade</span>
-                                    <span className="text-[20px] font-black text-white mt-1.5 leading-none">
+                                    <span className="text-[20px] font-black text-m3-onSurface mt-1.5 leading-none">
                                       {matchingGrade.grade}
                                     </span>
                                   </div>
@@ -2064,15 +2063,15 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                   </div>
                                   <div className="flex flex-col items-center justify-center">
                                     <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Total Marks</span>
-                                    <span className="text-[16px] font-black text-white mt-2 leading-none">
+                                    <span className="text-[16px] font-black text-m3-onSurface mt-2 leading-none">
                                       {courseTotal.full > 0 ? `${courseTotal.obtained}/${courseTotal.full}` : '—'}
                                     </span>
                                   </div>
                                 </div>
                               ) : (
                                 /* Purple score fallback pill (aligned to start) */
-                                <div className="bg-white/[0.04] rounded-full py-1.5 px-4 flex items-center shadow-inner self-start select-none">
-                                  <span className="text-[10px] font-black text-white/70 font-sans tracking-wide">
+                                <div className="bg-m3-surfaceContainer rounded-full py-1.5 px-4 flex items-center shadow-inner self-start select-none">
+                                  <span className="text-[10px] font-black text-m3-onSurfaceVariant font-sans tracking-wide">
                                     Score: {courseTotal.obtained}/{courseTotal.full}
                                   </span>
                                 </div>
@@ -2255,28 +2254,28 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             return (
                               <div 
                                 key={idx}
-                                className={`${obsidianCardClass} !p-0 overflow-hidden transition-all duration-300 ${isExpanded ? 'bg-white/[0.04]' : ''}`}
+                                className={`${obsidianCardClass} !p-0 overflow-hidden transition-all duration-300 ${isExpanded ? 'bg-m3-surfaceContainer' : ''}`}
                               >
                                 <div 
                                   onClick={() => setExpandedSubject(isExpanded ? null : idx)}
-                                  className="p-5 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.01] transition-colors"
+                                  className="p-5 flex items-center justify-between cursor-pointer hover:bg-m3-surfaceContainerHighest/40 active:bg-m3-surfaceContainerHighest/60 transition-colors"
                                 >
                                   <div className="text-left flex-1 min-w-0 pr-3 flex flex-col gap-1">
                                     <span className="text-[8px] font-black text-slate-400 tracking-wider font-sans uppercase block">
                                       {item.name} • {item.coursecreditpoint || 0} Credit{item.coursecreditpoint !== 1 ? 's' : ''}
                                     </span>
-                                    <h4 className="text-sm font-bold text-white font-sans break-words leading-snug">{item.desc}</h4>
+                                    <h4 className="text-sm font-bold text-m3-onSurface font-sans break-words leading-snug">{item.desc}</h4>
                                   </div>
 
                                   <div className="flex items-center gap-3 shrink-0">
                                     <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-sans font-black text-xs shadow-inner transition-colors ${
                                       item.grade === 'A+' || item.grade === 'A'
-                                        ? 'bg-white/15 border-white/25 text-white shadow-sm'
+                                        ? 'bg-m3-primaryContainer border-m3-primary/20 text-m3-onPrimaryContainer shadow-sm'
                                         : item.grade === 'B+' || item.grade === 'B'
-                                          ? 'bg-white/10 border-white/20 text-white/80 shadow-sm'
+                                          ? 'bg-m3-secondaryContainer border-m3-secondary/20 text-m3-onSecondaryContainer shadow-sm'
                                           : item.grade === 'C+' || item.grade === 'C'
-                                            ? 'bg-white/[0.06] border-white/15 text-white/60 shadow-sm'
-                                            : 'bg-white/[0.03] border-white/10 text-white/40 shadow-sm'
+                                            ? 'bg-m3-surfaceContainerHighest border-m3-outlineVariant/30 text-m3-onSurface shadow-sm'
+                                            : 'bg-m3-surfaceContainer border-m3-outlineVariant/20 text-m3-onSurfaceVariant shadow-sm'
                                     }`}>
                                       {item.grade}
                                     </div>
@@ -2285,10 +2284,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                 </div>
 
                                 {isExpanded && (
-                                  <div className="px-5 pb-5 pt-3.5 border-t border-white/5 bg-white/[0.01] flex flex-col gap-3 font-sans">
+                                  <div className="px-5 pb-5 pt-3.5 border-t border-m3-outlineVariant/20 bg-m3-surfaceContainerLow/30 flex flex-col gap-3 font-sans">
                                     {!hasRealtimeMarks ? (
-                                      <div className="w-full flex flex-col items-center justify-center p-4 bg-white/[0.02] border border-transparent rounded-2xl gap-2 text-center select-none shadow-inner">
-                                        <AlertTriangle size={14} className="text-amber-400" />
+                                      <div className="w-full flex flex-col items-center justify-center p-4 bg-m3-surfaceContainerLow border border-m3-outlineVariant/10 rounded-2xl gap-2 text-center select-none shadow-inner">
+                                        <AlertTriangle size={14} className="text-amber-500" />
                                         <span className="text-[10px] text-slate-400 font-semibold">Component Marks not linked for this term.</span>
                                         <button
                                           type="button"
@@ -2301,34 +2300,34 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                             }
                                             setGradesSubTab('marks');
                                           }}
-                                          className="px-3 py-1.5 bg-white/10 hover:bg-white/15 active:scale-95 text-white/85 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm flex items-center gap-1 leading-none mt-1"
+                                          className="px-3 py-1.5 bg-m3-secondaryContainer hover:brightness-95 active:scale-95 text-m3-onSecondaryContainer rounded-xl text-[9px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm flex items-center gap-1 leading-none mt-1"
                                         >
                                           <span>⚡ Sync Marks Registry</span>
                                         </button>
                                       </div>
                                     ) : (
                                       <div className="w-full flex flex-col gap-3">
-                                        <div className="grid grid-cols-4 gap-2 text-left bg-white/[0.02] border border-transparent rounded-2xl p-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
+                                        <div className="grid grid-cols-4 gap-2 text-left bg-m3-surfaceContainerLow/80 border border-transparent rounded-2xl p-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">T1</span>
-                                            <span className="text-xs font-sans font-black text-white/80">{getExamScore('t1')}</span>
+                                            <span className="text-xs font-sans font-black text-m3-onSurface">{getExamScore('t1')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">T2</span>
-                                            <span className="text-xs font-sans font-black text-white/60">{getExamScore('t2')}</span>
+                                            <span className="text-xs font-sans font-black text-m3-onSurfaceVariant">{getExamScore('t2')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">T3</span>
-                                            <span className="text-xs font-sans font-black text-white/80">{getExamScore('t3')}</span>
+                                            <span className="text-xs font-sans font-black text-m3-onSurface">{getExamScore('t3')}</span>
                                           </div>
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">Internal</span>
-                                            <span className="text-xs font-sans font-black text-white/70">{getExamScore('internal')}</span>
+                                            <span className="text-xs font-sans font-black text-m3-onSurfaceVariant">{getExamScore('internal')}</span>
                                           </div>
                                         </div>
-                                        <div className="w-full flex items-center justify-between border-t border-white/5 pt-2.5 select-none leading-none">
-                                          <span className="text-[8.5px] font-black text-white/70 flex items-center gap-1.5 uppercase tracking-wider">
-                                            <CheckCircle2 size={11} /> Registry Synced
+                                        <div className="w-full flex items-center justify-between border-t border-m3-outlineVariant/20 pt-2.5 select-none leading-none">
+                                          <span className="text-[8.5px] font-black text-m3-onSurfaceVariant flex items-center gap-1.5 uppercase tracking-wider">
+                                            <CheckCircle2 size={11} className="text-m3-primary" /> Registry Synced
                                           </span>
                                           <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-widest font-sans">Real-time Verified</span>
                                         </div>

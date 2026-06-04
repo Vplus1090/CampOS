@@ -22,6 +22,14 @@ body {
   --text-h: var(--m3-on-surface);
 }
 
+body.mode-light {
+  --text-primary: var(--m3-on-surface);
+  --text-secondary: var(--m3-on-surface-variant);
+  --text-h: var(--m3-on-surface);
+  --accent-bg: color-mix(in srgb, var(--m3-primary) 8%, transparent);
+  --accent-border: color-mix(in srgb, var(--m3-primary) 15%, transparent);
+}
+
 
 /* ─── Global Dashboard Container ────────────────────────────────────────────────── */
 
@@ -2905,5 +2913,10 @@ input:checked + .slider:before {
   letter-spacing: 0.5px;
 }
 
-
-
+/* 🚫 Global shadow removal reset */
+*, ::before, ::after {
+  --tw-shadow: 0 0 #0000 !important;
+  --tw-shadow-colored: 0 0 #0000 !important;
+  --tw-drop-shadow: drop-shadow(0 0 #0000) !important;
+  box-shadow: none !important;
+}

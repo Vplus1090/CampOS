@@ -16,6 +16,8 @@
       (function() {
         const theme = localStorage.getItem('campos-theme') || 'lavender';
         document.body.classList.add('theme-' + theme);
+        const mode = localStorage.getItem('campos-mode') || 'dark';
+        document.body.classList.add('mode-' + mode);
       })();
     </script>
     <div id="root"></div>

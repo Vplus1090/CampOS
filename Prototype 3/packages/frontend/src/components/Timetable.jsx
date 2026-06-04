@@ -381,7 +381,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
                   </div>
 
                   {/* Subject Name */}
-                  <h4 className="text-base font-extrabold text-white tracking-wide leading-snug">
+                  <h4 className="text-base font-extrabold text-m3-onSurface tracking-wide leading-snug">
                     {item.subject}
                   </h4>
 
