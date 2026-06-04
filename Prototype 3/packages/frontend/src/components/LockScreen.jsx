@@ -354,7 +354,7 @@ export default function LockScreen({ onLoginSuccess }) {
           >
             {submitting ? (
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 border-2 border-[#381e72] border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-m3-onPrimary border-t-transparent rounded-full animate-spin" />
                 <span>Signing in...</span>
               </div>
             ) : (
@@ -441,7 +441,8 @@ export default function LockScreen({ onLoginSuccess }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              className="bg-m3-surfaceContainer/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              className="backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              style={{ backgroundColor: 'color-mix(in srgb, var(--m3-surface-container) 75%, transparent)' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -496,7 +497,8 @@ export default function LockScreen({ onLoginSuccess }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              className="bg-m3-surfaceContainer/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              className="backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              style={{ backgroundColor: 'color-mix(in srgb, var(--m3-surface-container) 75%, transparent)' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -569,7 +571,8 @@ export default function LockScreen({ onLoginSuccess }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              className="bg-m3-surfaceContainer/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              className="backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              style={{ backgroundColor: 'color-mix(in srgb, var(--m3-surface-container) 75%, transparent)' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -581,46 +584,29 @@ export default function LockScreen({ onLoginSuccess }) {
                 </button>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-center gap-5 py-4 w-full">
                 {[
-                  { id: 'lavender', label: 'Lavender Theme', desc: 'Default expressive purple dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
-                  { id: 'blue', label: 'Sapphire Blue', desc: 'Premium cool tech blue dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
-                  { id: 'green', label: 'Emerald Green', desc: 'Natural forest green dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
-                  { id: 'orange', label: 'Sunset Orange', desc: 'Vibrant organic orange dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
-                  { id: 'yellow', label: 'Amber Yellow', desc: 'Warm bright yellow dark mode', color: 'bg-m3-primaryContainer/30 border border-m3-primary/30 text-m3-primary' },
+                  { id: 'lavender', hex: '#d0bcff', name: 'Lavender' },
+                  { id: 'blue', hex: '#a8c7ff', name: 'Sapphire Blue' },
+                  { id: 'green', hex: '#85d996', name: 'Emerald Green' },
+                  { id: 'orange', hex: '#ffb77c', name: 'Sunset Orange' },
+                  { id: 'yellow', hex: '#e6c449', name: 'Amber Yellow' },
                 ].map((theme) => {
                   const isActive = currentTheme === theme.id;
-                  
-                  // Compute theme-specific preview indicator colors manually
-                  const previewColorClass = 
-                    theme.id === 'lavender' ? 'bg-[#d0bcff]' :
-                    theme.id === 'blue' ? 'bg-[#a8c7ff]' :
-                    theme.id === 'green' ? 'bg-[#85d996]' :
-                    theme.id === 'orange' ? 'bg-[#ffb77c]' :
-                    'bg-[#e6c449]';
-
                   return (
                     <motion.button
-                      whileTap={{ scale: 0.97 }}
+                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.15 }}
                       key={theme.id}
-                      onClick={() => {
-                        applyTheme(theme.id);
-                        setShowThemeSelector(false);
-                      }}
-                      className={`w-full rounded-[20px] p-4 flex flex-col transition-all text-left ${
+                      onClick={() => applyTheme(theme.id)}
+                      className={`w-12 h-12 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none ${
                         isActive 
-                          ? theme.color 
-                          : 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface border border-transparent'
+                          ? 'ring-4 ring-m3-primary ring-offset-4 ring-offset-m3-surfaceContainer'
+                          : 'hover:ring-2 hover:ring-m3-outlineVariant/50'
                       }`}
-                    >
-                      <span className="text-base font-bold leading-tight flex items-center gap-2">
-                        <span className={`w-3.5 h-3.5 rounded-full ${previewColorClass}`} />
-                        {theme.label}
-                      </span>
-                      <span className="text-xs mt-1 opacity-70">
-                        {theme.desc}
-                      </span>
-                    </motion.button>
+                      style={{ backgroundColor: theme.hex }}
+                      title={`${theme.name} Theme`}
+                    />
                   );
                 })}
               </div>

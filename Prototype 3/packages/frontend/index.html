@@ -12,6 +12,12 @@
     <title>CampOS</title>
   </head>
   <body>
+    <script>
+      (function() {
+        const theme = localStorage.getItem('campos-theme') || 'lavender';
+        document.body.classList.add('theme-' + theme);
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx?cb=1779822562"></script>
   </body>

@@ -1031,19 +1031,19 @@ export default function StudentDashboard({ currentUser, onClose }) {
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto select-none overflow-visible">
           <defs>
             <linearGradient id="sgpaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#d0bcff" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#d0bcff" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="var(--m3-primary)" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="var(--m3-primary)" stopOpacity="0.0" />
             </linearGradient>
             <linearGradient id="cgpaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#efb8c8" stopOpacity="0.16" />
-              <stop offset="100%" stopColor="#efb8c8" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="var(--m3-tertiary)" stopOpacity="0.16" />
+              <stop offset="100%" stopColor="var(--m3-tertiary)" stopOpacity="0.0" />
             </linearGradient>
             
             <filter id="glowSgpa" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#d0bcff" floodOpacity="0.28" />
+              <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="var(--m3-primary)" floodOpacity="0.28" />
             </filter>
             <filter id="glowCgpa" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#efb8c8" floodOpacity="0.22" />
+              <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="var(--m3-tertiary)" floodOpacity="0.22" />
             </filter>
           </defs>
 
@@ -1090,7 +1090,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
             <path 
               d={sgpaPath} 
               fill="none" 
-              stroke="#d0bcff" 
+              stroke="var(--m3-primary)" 
               strokeWidth="4" 
               strokeLinecap="round" 
               strokeLinejoin="round"
@@ -1101,7 +1101,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
             <path 
               d={cgpaPath} 
               fill="none" 
-              stroke="#efb8c8" 
+              stroke="var(--m3-tertiary)" 
               strokeWidth="4" 
               strokeLinecap="round" 
               strokeLinejoin="round"
@@ -1165,7 +1165,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   cy={ySgpa} 
                   r="8.5" 
                   fill="none" 
-                  stroke="#d0bcff" 
+                  stroke="var(--m3-primary)" 
                   strokeWidth="1.5" 
                   strokeOpacity="0.25"
                 />
@@ -1174,7 +1174,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   cy={ySgpa} 
                   r="4.5" 
                   fill="var(--m3-surface-container)" 
-                  stroke="#d0bcff" 
+                  stroke="var(--m3-primary)" 
                   strokeWidth="2.5" 
                 />
 
@@ -1201,7 +1201,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   cy={yCgpa} 
                   r="8.5" 
                   fill="none" 
-                  stroke="#efb8c8" 
+                  stroke="var(--m3-tertiary)" 
                   strokeWidth="1.5" 
                   strokeOpacity="0.25"
                 />
@@ -1210,7 +1210,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   cy={yCgpa} 
                   r="4.5" 
                   fill="var(--m3-surface-container)" 
-                  stroke="#efb8c8" 
+                  stroke="var(--m3-tertiary)" 
                   strokeWidth="2.5" 
                 />
               </g>
@@ -1221,11 +1221,11 @@ export default function StudentDashboard({ currentUser, onClose }) {
         {/* Mini Legend */}
         <div className="flex items-center justify-center gap-6 mt-4 select-none">
           <div className="flex items-center gap-2.5 text-xs font-bold tracking-wider text-white/90 font-sans">
-            <span className="w-3 h-3 rounded-full bg-[#d0bcff] shadow-[0_0_8px_rgba(208,188,255,0.4)]"></span>
+            <span className="w-3 h-3 rounded-full bg-m3-primary shadow-[0_0_8px_color-mix(in srgb,var(--m3-primary)_40%,transparent)]"></span>
             <span>SGPA</span>
           </div>
           <div className="flex items-center gap-2.5 text-xs font-bold tracking-wider text-white/90 font-sans">
-            <span className="w-3 h-3 rounded-full bg-[#efb8c8] shadow-[0_0_8px_rgba(239,184,200,0.4)]"></span>
+            <span className="w-3 h-3 rounded-full bg-m3-tertiary shadow-[0_0_8px_color-mix(in srgb,var(--m3-tertiary)_40%,transparent)]"></span>
             <span>CGPA</span>
           </div>
         </div>
@@ -1536,7 +1536,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
   };
 
   return (
-    <div className="m3-screen student-dashboard-shell bg-[#181125]">
+    <div className="m3-screen student-dashboard-shell bg-m3-surface">
       
       {/* ─── M3 Collapsing Top App Bar ─── */}
       <header className={`m3-top-app-bar ${isScrolled ? 'm3-top-app-bar--collapsed' : ''}`}>
@@ -1569,7 +1569,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
         <div className="m3-top-app-bar__headline">
           <h1 className="m3-display-small font-sans !font-black tracking-tight">Student Dashboard</h1>
-          <p className="m3-body-small font-sans mt-0.5 text-[#cac4d0]">
+          <p className="m3-body-small font-sans mt-0.5 text-m3-onSurfaceVariant">
             {isAuthenticated && studentProfile ? `${studentProfile.name || 'Student'} • Sem ${studentProfile.semester || 'Active'}` : 'Sync with college registry'}
           </p>
         </div>
@@ -1582,7 +1582,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
             <div className={`${obsidianCardClass} text-center flex flex-col gap-6 py-8 px-6`}>
               
               {/* Morphing visual lock circle */}
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#4f378b]/20 border border-[#483c5e]/30 text-[#d0bcff] mx-auto shadow-lg">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-m3-primaryContainer/20 border border-transparent text-m3-primary mx-auto shadow-lg">
                 <Lock size={26} />
               </div>
 
@@ -1602,7 +1602,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     placeholder="2501200031"
                     value={enrollmentNo}
                     onChange={(e) => setEnrollmentNo(e.target.value)}
-                    className="w-full bg-[#292035] border border-[#483c5e]/40 hover:border-[#d0bcff]/50 focus:border-[#d0bcff] focus:ring-1 focus:ring-[#d0bcff] rounded-xl px-5 py-3.5 text-sm font-semibold text-white outline-none transition duration-300"
+                    className="w-full bg-m3-surfaceContainer border border-m3-outlineVariant/40 hover:border-m3-primary/50 focus:border-m3-primary focus:ring-1 focus:ring-m3-primary rounded-xl px-5 py-3.5 text-sm font-semibold text-white outline-none transition duration-300"
                   />
                 </div>
 
@@ -1615,12 +1615,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       placeholder="•••••••••••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-[#292035] border border-[#483c5e]/40 hover:border-[#d0bcff]/50 focus:border-[#d0bcff] focus:ring-1 focus:ring-[#d0bcff] rounded-xl px-5 py-3.5 pr-12 text-sm font-semibold text-white outline-none transition duration-300"
+                      className="w-full bg-m3-surfaceContainer border border-m3-outlineVariant/40 hover:border-m3-primary/50 focus:border-m3-primary focus:ring-1 focus:ring-m3-primary rounded-xl px-5 py-3.5 pr-12 text-sm font-semibold text-white outline-none transition duration-300"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#cac4d0] hover:text-[#d0bcff] transition"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant hover:text-m3-primary transition"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -1632,7 +1632,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
               <button
                 onClick={() => handlePortalSync(enrollmentNo, password)}
                 disabled={isSyncing || !enrollmentNo || !password}
-                className="w-full py-4 bg-[#d0bcff] text-[#381e72] font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl active:scale-95 hover:brightness-110 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-sans"
+                className="w-full py-4 bg-m3-primary text-m3-onPrimary font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl active:scale-95 hover:brightness-110 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-sans"
               >
                 {isSyncing ? (
                   <span className="flex items-center justify-center gap-2">
@@ -1643,8 +1643,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
               {/* Errors alert container */}
               {error && (
-                <div className="p-3.5 bg-[#ba1a1a]/10 border border-[#ba1a1a]/30 text-[#ffb4ab] rounded-xl text-xs font-semibold flex items-center gap-2 text-left leading-normal font-sans">
-                  <AlertTriangle className="shrink-0 text-[#ffb4ab]" size={16} />
+                <div className="p-3.5 bg-m3-errorContainer/10 border text-m3-error rounded-xl text-xs font-semibold flex items-center gap-2 text-left leading-normal font-sans" style={{ borderColor: 'color-mix(in srgb, var(--m3-error) 25%, transparent)' }}>
+                  <AlertTriangle className="shrink-0 text-m3-error" size={16} />
                   <span>{error}</span>
                 </div>
               )}
@@ -1658,7 +1658,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
         const portalTarget = document.querySelector('.mobile-screen-viewport');
         if (!portalTarget) return null;
         return createPortal(
-          <div className="absolute inset-0 bg-[#181125]/80 backdrop-blur-2xl z-[99999] flex flex-col items-center justify-center p-6 select-none">
+          <div className="absolute inset-0 bg-m3-surface/80 backdrop-blur-2xl z-[99999] flex flex-col items-center justify-center p-6 select-none">
             {/* Back button */}
             <button
               onClick={onClose}
@@ -1668,9 +1668,9 @@ export default function StudentDashboard({ currentUser, onClose }) {
               <ChevronLeft size={20} />
             </button>
             <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 border-4 border-[#d0bcff] rounded-full border-t-transparent animate-spin"></div>
+              <div className="w-14 h-14 border-4 border-m3-primary rounded-full border-t-transparent animate-spin"></div>
               <h3 className="mt-6 font-sans text-lg font-black tracking-tight text-white drop-shadow-md">Scraping Registry Database</h3>
-              <p className="mt-2.5 font-sans text-[9px] font-bold tracking-widest uppercase text-[#d0bcff] drop-shadow-md">
+              <p className="mt-2.5 font-sans text-[9px] font-bold tracking-widest uppercase text-m3-primary drop-shadow-md">
                 {syncPhase === 'authenticating' && 'Securing Webkiosk Tunnel...'}
                 {syncPhase === 'fetching_profile' && 'Extracting Student Credentials...'}
                 {syncPhase === 'fetching_meta' && 'Mapping Academic Registry...'}
@@ -1688,20 +1688,21 @@ export default function StudentDashboard({ currentUser, onClose }) {
         <>
           <div onScroll={handleScroll} className="m3-screen__scroll pb-32">
           {error && (
-            <div className="mx-1 mb-4 p-4 bg-[#ba1a1a]/10 border border-[#ba1a1a]/30 rounded-[24px] flex flex-col gap-3 text-left font-sans">
+            <div className="mx-1 mb-4 p-4 bg-m3-errorContainer/10 border rounded-[24px] flex flex-col gap-3 text-left font-sans" style={{ borderColor: 'color-mix(in srgb, var(--m3-error) 25%, transparent)' }}>
               <div className="flex items-start gap-3">
-                <AlertTriangle className="text-[#ffb4ab] shrink-0 mt-0.5" size={16} />
+                <AlertTriangle className="text-m3-error shrink-0 mt-0.5" size={16} />
                 <div className="flex flex-col gap-0.5 flex-1">
-                  <span className="text-[9px] font-black text-[#ffb4ab] tracking-widest uppercase">Registry Connection Failed</span>
-                  <p className="text-xs font-semibold text-[#ffb4ab]/85 leading-relaxed">{error}</p>
+                  <span className="text-[9px] font-black text-m3-error tracking-widest uppercase">Registry Connection Failed</span>
+                  <p className="text-xs font-semibold text-m3-error/85 leading-relaxed">{error}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 pt-2 border-t border-[#ba1a1a]/20 justify-between">
-                <span className="text-[9px] font-bold text-[#ffb4ab]/70 uppercase">Displaying cached offline data</span>
+              <div className="flex items-center gap-2 pt-2 border-t justify-between" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-error) 15%, transparent)' }}>
+                <span className="text-[9px] font-bold text-m3-error/70 uppercase">Displaying cached offline data</span>
                 <button
                   onClick={() => handlePortalSync(enrollmentNo, password, true)}
                   disabled={isSyncing}
-                  className="px-3.5 py-1.5 bg-[#ba1a1a]/20 border border-[#ba1a1a]/30 hover:bg-[#ba1a1a]/30 active:scale-95 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                  className="px-3.5 py-1.5 bg-m3-errorContainer/20 border hover:bg-m3-errorContainer/30 active:scale-95 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                  style={{ borderColor: 'color-mix(in srgb, var(--m3-error) 30%, transparent)' }}
                   type="button"
                 >
                   {isSyncing ? <RefreshCw className="animate-spin" size={10} /> : <RefreshCw size={10} />} Retry Sync
@@ -1729,7 +1730,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       className="bg-transparent text-slate-200 text-[13px] font-black w-full outline-none cursor-pointer font-sans border-none p-0 pl-0 ml-[-3px] focus:ring-0"
                     >
                       {Array.isArray(semestersList) && semestersList.map((sem, sidx) => (
-                        <option key={sidx} value={sem.registrationid} className="bg-[#121620] text-slate-200 font-sans">
+                        <option key={sidx} value={sem.registrationid} className="bg-m3-surfaceContainer text-slate-200 font-sans">
                           {sem.label}
                         </option>
                       ))}
@@ -1870,7 +1871,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         className={`flex-1 m3-segmented-chip flex items-center justify-center gap-1.5 py-2.5 transition-all duration-300 ${
                           gradesSubTab === sub.id
                             ? 'm3-segmented-chip--selected'
-                            : 'text-[#cac4d0] hover:text-white'
+                            : 'text-m3-onSurfaceVariant hover:text-m3-onSurface'
                         }`}
                       >
                         {sub.icon}
@@ -1955,7 +1956,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           className="bg-transparent text-slate-200 text-xs font-black w-full outline-none cursor-pointer font-sans border-none p-0 focus:ring-0 truncate"
                         >
                           {marksSemesters.map((sem, sidx) => (
-                            <option key={sidx} value={sem.registrationid || sem.registration_id} className="bg-[#121620] text-slate-200 font-sans">
+                            <option key={sidx} value={sem.registrationid || sem.registration_id} className="bg-m3-surfaceContainer text-slate-200 font-sans">
                               {sem.registrationcode || sem.registration_code}
                             </option>
                           ))}
@@ -2038,7 +2039,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                               
                               {/* Subject header */}
                               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 w-full">
-                                <h4 className="text-sm font-black text-[#d0bcff] font-sans break-words leading-tight">
+                                <h4 className="text-sm font-black text-m3-primary font-sans break-words leading-tight">
                                   {course.name}
                                 </h4>
                                 <span className="text-[9px] font-black text-slate-300 bg-white/[0.04] border border-white/10 px-2 py-0.5 rounded-[6px] tracking-wider font-sans uppercase">
@@ -2057,7 +2058,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                   </div>
                                   <div className="flex flex-col items-center justify-center">
                                     <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Credits</span>
-                                    <span className="text-[20px] font-black text-[#d0bcff] mt-1.5 leading-none">
+                                    <span className="text-[20px] font-black text-m3-primary mt-1.5 leading-none">
                                       {matchingGrade.coursecreditpoint || 0}
                                     </span>
                                   </div>
@@ -2108,16 +2109,16 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                       {/* Material 3 Linear Progress Indicator */}
                                       <div className="relative w-full h-2 flex items-center select-none">
                                         {/* Inactive Track */}
-                                        <div className="absolute left-0 right-0 h-1 bg-[#4f378b]/20 rounded-full" />
+                                        <div className="absolute left-0 right-0 h-1 bg-m3-primaryContainer/20 rounded-full" />
                                         
                                         {/* Active Indicator */}
                                         <div 
-                                          className="absolute left-0 h-2 bg-[#d0bcff] rounded-full transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                                          className="absolute left-0 h-2 bg-m3-primary rounded-full transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
                                           style={{ width: `${percentage}%` }}
                                         />
                                         
                                         {/* End Marker Dot */}
-                                        <div className="absolute right-0 w-1.5 h-1.5 rounded-full bg-[#d0bcff]" />
+                                        <div className="absolute right-0 w-1.5 h-1.5 rounded-full bg-m3-primary" />
                                       </div>
                                     </div>
                                   );
@@ -2146,7 +2147,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                           className="bg-transparent text-slate-200 text-xs font-black w-full outline-none cursor-pointer font-sans border-none p-0 focus:ring-0 truncate"
                         >
                           {gradeCardSemesters.map((sem, sidx) => (
-                            <option key={sidx} value={sem.registrationid || sem.registration_id} className="bg-[#121620] text-slate-200 font-sans">
+                            <option key={sidx} value={sem.registrationid || sem.registration_id} className="bg-m3-surfaceContainer text-slate-200 font-sans">
                               {sem.registrationcode || sem.registration_code}
                             </option>
                           ))}
@@ -2286,7 +2287,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                 {isExpanded && (
                                   <div className="px-5 pb-5 pt-3.5 border-t border-white/5 bg-white/[0.01] flex flex-col gap-3 font-sans">
                                     {!hasRealtimeMarks ? (
-                                      <div className="w-full flex flex-col items-center justify-center p-4 bg-white/[0.02] border border-white/5 rounded-2xl gap-2 text-center select-none shadow-inner">
+                                      <div className="w-full flex flex-col items-center justify-center p-4 bg-white/[0.02] border border-transparent rounded-2xl gap-2 text-center select-none shadow-inner">
                                         <AlertTriangle size={14} className="text-amber-400" />
                                         <span className="text-[10px] text-slate-400 font-semibold">Component Marks not linked for this term.</span>
                                         <button
@@ -2307,7 +2308,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                       </div>
                                     ) : (
                                       <div className="w-full flex flex-col gap-3">
-                                        <div className="grid grid-cols-4 gap-2 text-left bg-white/[0.02] border border-white/5 rounded-2xl p-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
+                                        <div className="grid grid-cols-4 gap-2 text-left bg-white/[0.02] border border-transparent rounded-2xl p-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">T1</span>
                                             <span className="text-xs font-sans font-black text-white/80">{getExamScore('t1')}</span>
@@ -2479,7 +2480,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       className="bg-transparent text-slate-200 text-[13px] font-black w-full outline-none cursor-pointer font-sans border-none p-0 pl-0 ml-[-3px] focus:ring-0"
                     >
                       {Array.isArray(semestersList) && semestersList.map((sem, sidx) => (
-                        <option key={sidx} value={sem.registrationid} className="bg-[#121620] text-slate-200 font-sans">
+                        <option key={sidx} value={sem.registrationid} className="bg-m3-surfaceContainer text-slate-200 font-sans">
                           {sem.label}
                         </option>
                       ))}
@@ -2513,7 +2514,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     <p className="text-slate-300 font-medium mb-4">{subjectsError}</p>
                     <button
                       onClick={() => handleSubjectsSemesterChange(selectedSubjectsSem)}
-                      className="px-5 py-2.5 rounded-full bg-[#d0bcff] text-[#381e72] font-black text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer shadow-md hover:bg-[#d0bcff]/90"
+                      className="px-5 py-2.5 rounded-full bg-m3-primary text-m3-onPrimary font-black text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer shadow-md hover:brightness-110"
                     >
                       Try Again
                     </button>
@@ -2529,16 +2530,16 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       <div key={idx} className={`${obsidianCardClass} flex flex-col justify-between h-full group hover:translate-y-[-2px] hover:bg-white/[0.04] transition-all duration-300`}>
                         <div>
                           <div className="flex justify-between items-start mb-2.5">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-purple-300 uppercase tracking-wider font-mono">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-m3-primary uppercase tracking-wider font-mono">
                               {sub.subjectcode}
                             </span>
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                              isLabSubject(sub) ? 'bg-[#381e72]/50 text-[#d0bcff]' : 'bg-[#0053da]/30 text-blue-300'
+                              isLabSubject(sub) ? 'bg-m3-primaryContainer/50 text-m3-primary' : 'bg-blue-600/30 text-blue-300'
                             }`}>
                               {isLabSubject(sub) ? 'Lab' : 'Theory'}
                             </span>
                           </div>
-                          <h3 className="text-slate-100 font-bold text-sm leading-snug mb-3 group-hover:text-purple-300 transition-colors duration-200 text-left">
+                          <h3 className="text-slate-100 font-bold text-sm leading-snug mb-3 group-hover:text-m3-primary transition-colors duration-200 text-left">
                             {sub.subjectdesc || 'Unnamed Subject'}
                           </h3>
                         </div>
@@ -2577,7 +2578,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         className={`flex-1 m3-segmented-chip flex items-center justify-center gap-1.5 py-2.5 transition-all duration-300 ${
                           calcMode === sub.id
                             ? 'm3-segmented-chip--selected'
-                            : 'text-[#cac4d0] hover:text-white'
+                            : 'text-m3-onSurfaceVariant hover:text-m3-onSurface'
                         }`}
                       >
                         {sub.icon}
@@ -2588,12 +2589,12 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 </div>
 
                 {/* Result Card */}
-                <div className={`${obsidianCardClass} p-5 flex flex-col items-center justify-center text-center bg-gradient-to-br from-[#4f378b]/30 to-[#381e72]/10 border border-[#d0bcff]/20`}>
+                <div className={`${obsidianCardClass} p-5 flex flex-col items-center justify-center text-center bg-gradient-to-br from-m3-primaryContainer/30 to-m3-primary/10 border`} style={{ borderColor: 'color-mix(in srgb, var(--m3-primary) 20%, transparent)' }}>
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-sans mb-1">
                     {calcMode === 'sgpa' ? 'Simulated SGPA' : 'Projected CGPA'}
                   </span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-[#d0bcff] font-sans tracking-tight">
+                    <span className="text-4xl font-black text-m3-primary font-sans tracking-tight">
                       {calcMode === 'sgpa' ? calculatedSgpaResult.sgpa : calculatedCgpaResult}
                     </span>
                     <span className="text-xs text-slate-400 font-bold">/ 10.00</span>
@@ -2625,7 +2626,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                             className="bg-transparent text-slate-200 text-xs font-black outline-none cursor-pointer font-sans border-none p-0 focus:ring-0 w-full"
                           >
                             {Array.isArray(semestersList) && semestersList.map((sem, sidx) => (
-                              <option key={sidx} value={sem.registrationid} className="bg-[#121620] text-slate-200 font-sans">
+                              <option key={sidx} value={sem.registrationid} className="bg-m3-surfaceContainer text-slate-200 font-sans">
                                 {sem.label}
                               </option>
                             ))}
@@ -2642,7 +2643,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         </button>
                         <button
                           onClick={addCustomCalcSubject}
-                          className="flex-1 sm:flex-none px-4 py-2.5 bg-[#d0bcff] hover:bg-[#d0bcff]/90 text-[#381e72] rounded-xl text-xs font-black uppercase tracking-wider transition duration-200 active:scale-95 shadow-md cursor-pointer"
+                          className="flex-1 sm:flex-none px-4 py-2.5 bg-m3-primary hover:brightness-110 text-m3-onPrimary rounded-xl text-xs font-black uppercase tracking-wider transition duration-200 active:scale-95 shadow-md cursor-pointer"
                         >
                           Add Course
                         </button>
@@ -2676,7 +2677,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                                     type="number"
                                     value={sub.credits}
                                     onChange={(e) => updateCalcSubjectCredits(sub.id, e.target.value)}
-                                    className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded px-1.5 py-0.5 text-[9px] font-black w-10 text-center focus:outline-none focus:border-purple-400"
+                                    className="bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded px-1.5 py-0.5 text-[9px] font-black w-10 text-center focus:outline-none focus:border-m3-primary"
                                     min="1"
                                     max="8"
                                   />
@@ -2689,11 +2690,11 @@ export default function StudentDashboard({ currentUser, onClose }) {
                               <select
                                 value={sub.selectedGrade}
                                 onChange={(e) => updateCalcSubjectGrade(sub.id, e.target.value)}
-                                className="bg-[#211a30]/80 text-[#d0bcff] text-xs font-black border border-[#483c5e]/40 rounded-xl px-2 py-1 focus:outline-none focus:border-[#d0bcff] cursor-pointer"
+                                className="bg-m3-surfaceContainer/80 text-m3-primary text-xs font-black border border-m3-outlineVariant/40 rounded-xl px-2 py-1 focus:outline-none focus:border-m3-primary cursor-pointer"
                               >
-                                <option value="" className="bg-[#121620] text-slate-400">Grade</option>
+                                <option value="" className="bg-m3-surfaceContainer text-slate-400">Grade</option>
                                 {Object.keys(gradePointMap).map((g) => (
-                                  <option key={g} value={g} className="bg-[#121620] text-slate-200">{g} ({gradePointMap[g]} Pts)</option>
+                                  <option key={g} value={g} className="bg-m3-surfaceContainer text-slate-200">{g} ({gradePointMap[g]} Pts)</option>
                                 ))}
                               </select>
 
@@ -2762,8 +2763,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         </span>
                       </div>
                       <div className="border-t border-white/10 pt-2.5 flex justify-between items-center w-full">
-                        <span className="text-[#d0bcff] font-bold">Projected CGPA</span>
-                        <span className="text-[#d0bcff] font-black text-sm">
+                        <span className="text-m3-primary font-bold">Projected CGPA</span>
+                        <span className="text-m3-primary font-black text-sm">
                           {calculatedCgpaResult}
                         </span>
                       </div>
@@ -2883,7 +2884,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
           </div>
 
           {/* ─── Glass Pill Navigation (icons only) ─── */}
-          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-[#211a30]/75 border border-[#483c5e]/30 backdrop-blur-2xl shadow-2xl z-[100] select-none m3-nav-entrance">
+          <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 -translate-y-1 flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-m3-surfaceContainerHigh backdrop-blur-2xl shadow-2xl z-[100] select-none m3-nav-entrance">
             {[
               { id: 'attendance', icon: <Percent size={17} className="stroke-[2.5px]" />, label: 'Attendance' },
               { id: 'grades',     icon: <Award    size={17} className="stroke-[2.5px]" />, label: 'Grades' },
@@ -2900,8 +2901,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 onClick={() => setActiveTab(id)}
                 className={`w-[38px] h-[38px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${
                   activeTab === id
-                    ? 'bg-[#d0bcff] text-[#381e72] border-none shadow-md'
-                    : 'text-[#cac4d0] hover:text-white hover:bg-[#4f378b]/20 border border-transparent'
+                    ? 'bg-m3-primary text-m3-onPrimary border-none shadow-md'
+                    : 'text-m3-onSurfaceVariant hover:text-m3-onSurface hover:bg-m3-primaryContainer/20 border border-transparent'
                 }`}
               >
                 {icon}

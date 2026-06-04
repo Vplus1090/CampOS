@@ -109,7 +109,8 @@ body {
   color: var(--m3-on-surface);
 }
 
-.home-screen__logout {
+.home-screen__logout,
+.home-screen__theme-btn {
   flex-shrink: 0;
   width: 48px;
   height: 48px;
@@ -129,16 +130,19 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.home-screen__logout:hover {
+.home-screen__logout:hover,
+.home-screen__theme-btn:hover {
   background: var(--home-pill-hover);
 }
 
-.home-screen__logout:active {
+.home-screen__logout:active,
+.home-screen__theme-btn:active {
   background: var(--home-pill-active);
   transform: scale(0.96);
 }
 
-.home-screen__logout-icon {
+.home-screen__logout-icon,
+.home-screen__theme-btn-icon {
   width: 26px;
   height: 26px;
 }

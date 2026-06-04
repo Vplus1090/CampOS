@@ -44,10 +44,10 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
   // Helper to color circles dynamically using Material 3 container palette
   const getAvatarBg = (name) => {
     const letter = name.charAt(0).toUpperCase();
-    if (letter === 'V' || letter === 'S') return 'bg-[#4f378b]/40 text-[#eaddff]';
-    if (letter === 'K' || letter === 'R') return 'bg-[#352a48] text-[#d0bcff]';
-    if (letter === 'D' || letter === 'A') return 'bg-[#633b48]/40 text-[#ffd8e4]';
-    return 'bg-[#4a4458] text-[#e8def8]';
+    if (letter === 'V' || letter === 'S') return 'bg-m3-primaryContainer text-m3-onPrimaryContainer';
+    if (letter === 'K' || letter === 'R') return 'bg-m3-surfaceContainerHighest text-m3-primary';
+    if (letter === 'D' || letter === 'A') return 'bg-m3-tertiaryContainer text-m3-onTertiaryContainer';
+    return 'bg-m3-secondaryContainer text-m3-onSecondaryContainer';
   };
 
   const fetchChatHistory = async (peerName) => {
@@ -391,7 +391,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
         <div className="py-1">
           <img 
             src={content} 
-            className="rounded-xl max-w-[200px] max-h-[200px] object-cover border border-[#cac4d0]/20 shadow-sm" 
+            className="rounded-xl max-w-[200px] max-h-[200px] object-cover border border-m3-onSurfaceVariant/20 shadow-sm" 
             alt="Sent attachment" 
           />
         </div>
@@ -414,7 +414,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
         <a 
           href={content} 
           download="attachment" 
-          className="flex items-center gap-2 text-[#d0bcff] hover:text-[#eaddff] underline font-bold text-xs py-1"
+          className="flex items-center gap-2 text-m3-primary hover:text-m3-onPrimaryContainer underline font-bold text-xs py-1"
         >
           <FileText size={16} />
           <span>Download Document</span>
@@ -427,7 +427,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
           href={content} 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="flex items-center gap-2 text-[#d0bcff] hover:text-[#eaddff] underline font-bold text-xs py-1"
+          className="flex items-center gap-2 text-m3-primary hover:text-m3-onPrimaryContainer underline font-bold text-xs py-1"
         >
           <MapPin size={16} />
           <span>View Shared Location</span>
@@ -435,14 +435,14 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
       );
     }
     return (
-      <p className={`m3-body-medium ${isSentByMe ? '!text-white' : '!text-[#e6e1e5]'} leading-relaxed break-words pr-1`}>
+      <p className={`m3-body-medium ${isSentByMe ? '!text-white' : '!text-m3-onSurface'} leading-relaxed break-words pr-1`}>
         {content}
       </p>
     );
   };
 
   return (
-    <div className="m3-screen peer-chat-container !h-full !max-h-full !border-none !rounded-none flex flex-col justify-between relative overflow-hidden bg-[#181125]">
+    <div className="m3-screen peer-chat-container !h-full !max-h-full !border-none !rounded-none flex flex-col justify-between relative overflow-hidden !bg-m3-surface">
       
       {/* Hidden file input for attachments */}
       <input 
@@ -473,7 +473,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
             {isLister && (
               <button
                 onClick={handleRemoveListing}
-                className="bg-[#ba1a1a] text-[#ffb4ab] hover:brightness-110 active:scale-95 font-bold px-3 py-1.5 rounded-full text-[9px] uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm shrink-0"
+                className="bg-m3-errorContainer text-m3-onErrorContainer hover:brightness-110 active:scale-95 font-bold px-3 py-1.5 rounded-full text-[9px] uppercase tracking-wider transition-all duration-300 cursor-pointer shadow-sm shrink-0"
               >
                 Remove Listing ✕
               </button>
@@ -494,21 +494,24 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
       >
         {loading ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
-            <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+            <RefreshCw className="animate-spin text-m3-primary" size={28} />
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Syncing messages...</span>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex-grow flex flex-col items-center justify-center gap-3 text-center select-none py-16">
-            <div className="w-16 h-16 rounded-3xl bg-[#4f378b]/30 flex items-center justify-center text-4xl shadow-md">
+            <div 
+              className="w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-md"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--m3-primary-container) 30%, transparent)' }}
+            >
               🤝
             </div>
-            <h4 className="m3-title-medium text-[#e6e1e5] mt-2">Start a conversation with {activePeer}!</h4>
-            <p className="m3-body-small text-[#cac4d0] max-w-[240px]">Say hello to begin sharing peer skills on CampOS.</p>
+            <h4 className="m3-title-medium text-m3-onSurface mt-2">Start a conversation with {activePeer}!</h4>
+            <p className="m3-body-small text-m3-onSurfaceVariant max-w-[240px]">Say hello to begin sharing peer skills on CampOS.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex justify-center my-2">
-              <span className="m3-badge bg-[#292035] text-[#cac4d0] text-[9px] uppercase tracking-wider">
+              <span className="m3-badge bg-m3-surfaceContainerHigh text-m3-onSurfaceVariant text-[9px] uppercase tracking-wider">
                 Today
               </span>
             </div>
@@ -521,17 +524,17 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
                   className={`flex w-full ${isSentByMe ? 'justify-end' : 'justify-start'} my-0.5`}
                 >
                   {isSentByMe ? (
-                    <div className="max-w-[75%] bg-[#4f378b] text-[#eaddff] rounded-[20px] rounded-tr-none px-4 py-2.5 text-left flex flex-col shadow-sm relative pr-14 min-w-[70px]">
+                    <div className="max-w-[75%] bg-m3-primaryContainer text-m3-onPrimaryContainer rounded-[20px] rounded-tr-none px-4 py-2.5 text-left flex flex-col shadow-sm relative pr-14 min-w-[70px]">
                       {renderMessageContent(msg.Content, true)}
-                      <div className="flex items-center justify-end gap-0.5 text-[9px] text-[#eaddff]/60 select-none absolute bottom-1 right-3">
+                      <div className="flex items-center justify-end gap-0.5 text-[9px] text-m3-onPrimaryContainer/60 select-none absolute bottom-1 right-3">
                         <span>{formatTime(msg.Timestamp || msg.createdAt)}</span>
-                        <CheckCheck size={12} className="text-[#eaddff]/80" />
+                        <CheckCheck size={12} className="text-m3-onPrimaryContainer/80" />
                       </div>
                     </div>
                   ) : (
-                    <div className="max-w-[75%] bg-[#292035] text-[#e6e1e5] rounded-[20px] rounded-tl-none px-4 py-2.5 text-left flex flex-col shadow-sm relative pr-12 min-w-[70px]">
+                    <div className="max-w-[75%] bg-m3-surfaceContainer text-m3-onSurface rounded-[20px] rounded-tl-none px-4 py-2.5 text-left flex flex-col shadow-sm relative pr-12 min-w-[70px]">
                       {renderMessageContent(msg.Content, false)}
-                      <span className="text-[9px] text-[#cac4d0]/60 font-sans text-right select-none absolute bottom-1 right-3">
+                      <span className="text-[9px] text-m3-onSurfaceVariant/60 font-sans text-right select-none absolute bottom-1 right-3">
                         {formatTime(msg.Timestamp || msg.createdAt)}
                       </span>
                     </div>
@@ -546,13 +549,13 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
 
       {/* Emoji Picker Overlay */}
       {showEmojiPicker && (
-        <div className="absolute bottom-16 left-4 z-50 p-3 rounded-[24px] bg-[#292035] border border-[#483c5e]/40 shadow-lg max-w-[260px] grid grid-cols-6 gap-2">
+        <div className="absolute bottom-16 left-4 z-50 p-3 rounded-[24px] bg-m3-surfaceContainer border border-transparent shadow-lg max-w-[260px] grid grid-cols-6 gap-2">
           {commonEmojis.map(emoji => (
             <button
               key={emoji}
               type="button"
               onClick={() => handleEmojiClick(emoji)}
-              className="w-8 h-8 rounded-lg hover:bg-[#352a48] active:scale-90 flex items-center justify-center text-lg transition-all cursor-pointer"
+              className="w-8 h-8 rounded-lg hover:bg-m3-surfaceContainerHighest active:scale-90 flex items-center justify-center text-lg transition-all cursor-pointer"
             >
               {emoji}
             </button>
@@ -562,57 +565,58 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
 
       {/* Attachment Menu Overlay */}
       {showAttachmentMenu && (
-        <div className="absolute bottom-16 left-12 z-50 p-2 rounded-[24px] bg-[#292035] border border-[#483c5e]/40 shadow-lg flex flex-col gap-1 min-w-[150px]">
+        <div className="absolute bottom-16 left-12 z-50 p-2 rounded-[24px] bg-m3-surfaceContainer border border-transparent shadow-lg flex flex-col gap-1 min-w-[150px]">
           <button
             type="button"
             onClick={() => triggerFileSelect('image/*')}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#352a48] active:scale-95 text-left text-xs font-semibold text-[#e6e1e5] transition-all cursor-pointer"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-m3-surfaceContainerHighest active:scale-95 text-left text-xs font-semibold text-m3-onSurface transition-all cursor-pointer"
           >
-            <Image size={15} className="text-[#d0bcff]" />
+            <Image size={15} className="text-m3-primary" />
             <span>Photo / Image</span>
           </button>
           <button
             type="button"
             onClick={() => triggerFileSelect('application/pdf,text/plain')}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#352a48] active:scale-95 text-left text-xs font-semibold text-[#e6e1e5] transition-all cursor-pointer"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-m3-surfaceContainerHighest active:scale-95 text-left text-xs font-semibold text-m3-onSurface transition-all cursor-pointer"
           >
-            <FileText size={15} className="text-[#d0bcff]" />
+            <FileText size={15} className="text-m3-primary" />
             <span>Document</span>
           </button>
           <button
             type="button"
             onClick={sendLocation}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#352a48] active:scale-95 text-left text-xs font-semibold text-[#e6e1e5] transition-all cursor-pointer"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-m3-surfaceContainerHighest active:scale-95 text-left text-xs font-semibold text-m3-onSurface transition-all cursor-pointer"
           >
-            <MapPin size={15} className="text-[#d0bcff]" />
+            <MapPin size={15} className="text-m3-primary" />
             <span>Location</span>
           </button>
         </div>
       )}
 
       {/* Message input field bar */}
-      <form onSubmit={handleSendMessage} className="absolute bottom-0 left-0 right-0 flex items-center gap-2.5 py-4 px-4 bg-[#181125]/95 border-t border-[#483c5e]/30 z-10 shrink-0">
+      <form onSubmit={handleSendMessage} className="absolute bottom-0 left-0 right-0 flex items-center gap-2.5 py-4 px-4 z-10 shrink-0" style={{ backgroundColor: 'var(--m3-surface)', borderTop: '1px solid var(--m3-surface-container-highest)' }}>
         {isRecording ? (
-          <div className="flex-1 flex items-center justify-between bg-[#292035] rounded-full h-[48px] px-4">
-            <div className="flex items-center gap-2 text-[#f2b8b5]">
+          <div className="flex-1 flex items-center justify-between bg-m3-surfaceContainer rounded-full h-[48px] px-4">
+            <div className="flex items-center gap-2 text-m3-error">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shrink-0" />
               <span className="text-xs font-bold font-mono">Recording: {formatRecordingTime(recordingTime)}</span>
             </div>
             
             {/* Audio wave visualizer simulation */}
             <div className="flex items-center gap-0.5 pr-2">
-              <div className="w-0.5 h-2 bg-[#d0bcff] rounded-full animate-pulse" />
-              <div className="w-0.5 h-4 bg-[#d0bcff] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-              <div className="w-0.5 h-3 bg-[#d0bcff] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
-              <div className="w-0.5 h-5 bg-[#d0bcff] rounded-full animate-pulse" style={{ animationDelay: '0.1s' }} />
-              <div className="w-0.5 h-2 bg-[#d0bcff] rounded-full animate-pulse" style={{ animationDelay: '0.3s' }} />
+              <div className="w-0.5 h-2 bg-m3-primary rounded-full animate-pulse" />
+              <div className="w-0.5 h-4 bg-m3-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+              <div className="w-0.5 h-3 bg-m3-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+              <div className="w-0.5 h-5 bg-m3-primary rounded-full animate-pulse" style={{ animationDelay: '0.1s' }} />
+              <div className="w-0.5 h-2 bg-m3-primary rounded-full animate-pulse" style={{ animationDelay: '0.3s' }} />
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={cancelRecording}
-                className="w-8 h-8 rounded-full bg-[#ba1a1a]/20 text-[#ffb4ab] hover:bg-[#ba1a1a]/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+                className="w-8 h-8 rounded-full text-m3-error active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--m3-error-container) 20%, transparent)' }}
                 title="Cancel Recording"
               >
                 <Trash2 size={15} />
@@ -620,7 +624,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
               <button
                 type="button"
                 onClick={stopAndSendRecording}
-                className="w-8 h-8 rounded-full bg-[#d0bcff] text-[#381e72] hover:brightness-110 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+                className="w-8 h-8 rounded-full bg-m3-primary text-m3-onPrimary hover:brightness-110 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
                 title="Send Voice Note"
               >
                 <Send size={14} className="translate-x-[0.5px]" />
@@ -632,14 +636,14 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
             <button
               type="button"
               onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowAttachmentMenu(false); }}
-              className={`text-[#cac4d0] hover:text-white p-1 transition-colors cursor-pointer shrink-0 ${showEmojiPicker ? 'text-[#d0bcff]' : ''}`}
+              className={`text-m3-onSurfaceVariant hover:text-m3-onSurface p-1 transition-colors cursor-pointer shrink-0 ${showEmojiPicker ? 'text-m3-primary' : ''}`}
             >
               <Smile size={22} />
             </button>
             <button
               type="button"
               onClick={() => { setShowAttachmentMenu(!showAttachmentMenu); setShowEmojiPicker(false); }}
-              className={`text-[#cac4d0] hover:text-white p-1 transition-colors cursor-pointer shrink-0 ${showAttachmentMenu ? 'text-[#d0bcff]' : ''}`}
+              className={`text-m3-onSurfaceVariant hover:text-m3-onSurface p-1 transition-colors cursor-pointer shrink-0 ${showAttachmentMenu ? 'text-m3-primary' : ''}`}
             >
               <Paperclip size={20} />
             </button>
@@ -656,7 +660,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
             <button 
               type="button"
               onClick={handleMicClick}
-              className="w-12 h-12 rounded-full bg-[#d0bcff] text-[#381e72] hover:brightness-110 active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0"
+              className="w-12 h-12 rounded-full bg-m3-primary text-m3-onPrimary hover:brightness-110 active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0"
             >
               {inputText.trim() ? (
                 <Send size={18} className="translate-x-[1px]" />
@@ -673,11 +677,11 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
         <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
           <div className="m3-surface-card p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in animate-none">
             <h3 className="m3-title-medium text-white">Confirm Action</h3>
-            <p className="m3-body-small text-[#cac4d0]">{confirmDialog.message}</p>
+            <p className="m3-body-small text-m3-onSurfaceVariant">{confirmDialog.message}</p>
             <div className="flex justify-end gap-2.5 mt-2">
               <button
                 onClick={() => setConfirmDialog(null)}
-                className="m3-filled-button bg-[#483c5e] text-[#e6e1e5] !min-h-[36px] text-xs !py-1 px-3 w-auto"
+                className="m3-filled-button bg-m3-surfaceVariant text-m3-onSurfaceVariant !min-h-[36px] text-xs !py-1 px-3 w-auto"
                 type="button"
               >
                 Cancel
@@ -687,7 +691,7 @@ export default function PeerChat({ currentUser, initialActivePeer, onClose }) {
                   confirmDialog.onConfirm();
                   setConfirmDialog(null);
                 }}
-                className="m3-filled-button bg-[#d0bcff] text-[#381e72] !min-h-[36px] text-xs !py-1 px-3 w-auto"
+                className="m3-filled-button bg-m3-primary text-m3-onPrimary !min-h-[36px] text-xs !py-1 px-3 w-auto"
                 type="button"
               >
                 Confirm

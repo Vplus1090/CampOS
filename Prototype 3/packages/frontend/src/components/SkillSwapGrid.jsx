@@ -191,9 +191,9 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
   // Helper to color circles dynamically using Material 3 containers
   const getAvatarBg = (name) => {
     const letter = name.charAt(0).toUpperCase();
-    if (letter === 'V' || letter === 'S') return 'bg-m3-primaryContainer/40 text-m3-onPrimaryContainer';
+    if (letter === 'V' || letter === 'S') return 'bg-m3-primaryContainer text-m3-onPrimaryContainer';
     if (letter === 'K' || letter === 'R') return 'bg-m3-surfaceContainerHighest text-m3-primary';
-    if (letter === 'D' || letter === 'A') return 'bg-m3-tertiaryContainer/40 text-m3-onTertiaryContainer';
+    if (letter === 'D' || letter === 'A') return 'bg-m3-tertiaryContainer text-m3-onTertiaryContainer';
     return 'bg-m3-secondaryContainer text-m3-onSecondaryContainer';
   };
 
@@ -237,9 +237,9 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
         {/* Offer a Skill Form Panel */}
         {viewTab === 'listings' && isStudent && (
           <div className="m3-surface-card p-5 flex flex-col gap-4 text-left shadow-sm">
-            <div className="flex items-center gap-2 border-b border-[#cac4d0]/10 pb-3">
-              <UserPlus size={18} className="text-[#cac4d0]" />
-              <h3 className="m3-title-small text-[#e6e1e5]">Offer a Skill</h3>
+            <div className="flex items-center gap-2 border-b border-m3-onSurfaceVariant/10 pb-3">
+              <UserPlus size={18} className="text-m3-onSurfaceVariant" />
+              <h3 className="m3-title-small text-m3-onSurface">Offer a Skill</h3>
             </div>
 
             <form onSubmit={handleCreateGig} className="flex flex-col gap-3">
@@ -278,7 +278,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
         {/* Search Input Filter */}
         {viewTab === 'listings' && (
           <div className="relative w-full shrink-0">
-            <span className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-[#948baf] z-10">
+            <span className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-m3-outline z-10">
               <Search size={16} />
             </span>
             <input
@@ -290,7 +290,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
             />
             {searchQuery && (
               <button 
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#cac4d0] hover:text-[#e6e1e5] cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant hover:text-m3-onSurface cursor-pointer"
                 onClick={() => setSearchQuery('')}
                 type="button"
               >
@@ -303,12 +303,12 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
         {/* Content Listings Feed */}
         {loading ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
-            <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+            <RefreshCw className="animate-spin text-m3-primary" size={28} />
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Loading board...</span>
           </div>
         ) : error ? (
           <div className="m3-surface-card p-6 flex flex-col items-center gap-3 text-center">
-            <p className="text-sm font-semibold text-[#e6e1e5]">⚠️ {error}</p>
+            <p className="text-sm font-semibold text-m3-onSurface">⚠️ {error}</p>
             <button 
               className="m3-filled-button" 
               style={{ maxWidth: 160 }} 
@@ -320,10 +320,13 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
           </div>
         ) : displayedGigs.length === 0 ? (
           <div className="m3-surface-card p-8 flex flex-col items-center justify-center gap-3 text-center select-none">
-            <div className="w-12 h-12 rounded-2xl bg-m3-primaryContainer/30 flex items-center justify-center text-m3-primary shadow-md">
+            <div 
+              className="w-12 h-12 rounded-2xl flex items-center justify-center text-m3-primary shadow-md"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--m3-primary-container) 30%, transparent)' }}
+            >
               <UserPlus size={22} />
             </div>
-            <p className="text-sm font-semibold text-[#e6e1e5]">
+            <p className="text-sm font-semibold text-m3-onSurface">
               {viewTab === 'listings' ? 'No active listings found.' : 'No ongoing chats found.'}
             </p>
           </div>
@@ -342,7 +345,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                   <div className="flex justify-between items-center w-full">
                     <div className="flex items-center gap-3">
                       {/* Avatar containing student initial */}
-                      <div className={`w-12 h-12 ${getAvatarBg(gig.StudentName)} rounded-full flex items-center justify-center shadow-inner border border-[#cac4d0]/10 shrink-0 min-w-[48px] min-h-[48px]`}>
+                      <div className={`w-12 h-12 ${getAvatarBg(gig.StudentName)} rounded-full flex items-center justify-center shadow-inner border border-m3-onSurfaceVariant/10 shrink-0 min-w-[48px] min-h-[48px]`}>
                         <span className="font-extrabold text-base tracking-tighter">
                           {gig.StudentName.charAt(0).toUpperCase()}
                         </span>
@@ -351,7 +354,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                         <h4 className="m3-title-medium text-white leading-tight">
                           {gig.SkillOffered}
                         </h4>
-                        <span className="text-[10px] font-bold text-[#cac4d0] font-mono tracking-widest uppercase block mt-1">
+                        <span className="text-[10px] font-bold text-m3-onSurfaceVariant font-mono tracking-widest uppercase block mt-1">
                           BY {gig.StudentName}
                         </span>
                       </div>
@@ -361,7 +364,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                     {!isOwnListing && !isSuperAdmin && (
                       <button
                         onClick={() => handleReport(gig.id || gig._id)}
-                        className="text-[#cac4d0] hover:text-[#efb8c8] p-1.5 transition-colors cursor-pointer animate-none"
+                        className="text-m3-onSurfaceVariant hover:text-m3-tertiary p-1.5 transition-colors cursor-pointer animate-none"
                         title="Report Listing"
                         type="button"
                       >
@@ -371,9 +374,9 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                   </div>
 
                   {/* Looking for Wanted Skill Pill */}
-                  <div className="bg-m3-surfaceContainerLow/60 border border-m3-outlineVariant/30 p-3.5 rounded-2xl w-full text-left">
-                    <p className="m3-body-small text-[#cac4d0]">
-                      Looking for: <span className="text-[#eaddff] font-bold ml-1">{gig.SkillWanted}</span>
+                  <div className="bg-m3-surfaceContainerHigh p-3.5 rounded-2xl w-full text-left">
+                    <p className="m3-body-small text-m3-onSurfaceVariant">
+                      Looking for: <span className="text-m3-onPrimaryContainer font-bold ml-1">{gig.SkillWanted}</span>
                     </p>
                   </div>
 
@@ -382,7 +385,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                     {isSuperAdmin ? (
                       <button
                         onClick={() => handleDelete(gig.id || gig._id)}
-                        className="m3-filled-button bg-[#8c1d18] text-[#f9dedc] hover:brightness-110 !min-h-[44px]"
+                        className="m3-filled-button bg-m3-errorContainer text-m3-onErrorContainer hover:brightness-110 !min-h-[44px]"
                         type="button"
                       >
                         <Trash2 size={16} /> Moderate (Delete Listing)
@@ -390,14 +393,14 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                     ) : isOwnListing ? (
                       <button
                         onClick={() => handleDelete(gig.id || gig._id)}
-                        className="m3-filled-button bg-[#483c5e] text-[#e6e1e5] hover:brightness-110 !min-h-[44px]"
+                        className="m3-filled-button !bg-m3-errorContainer !text-m3-onErrorContainer hover:brightness-110 !min-h-[44px]"
                         type="button"
                       >
                         <Trash2 size={16} /> Delete Post
                       </button>
                     ) : isAccepted ? (
-                      <div className="bg-m3-surfaceContainer border border-m3-outlineVariant/30 rounded-2xl p-4 flex flex-col items-center gap-3 w-full">
-                        <span className="text-[#cac4d0] font-bold text-[10px] uppercase tracking-widest block text-center font-mono">
+                      <div className="bg-m3-surfaceContainerHigh rounded-2xl p-4 flex flex-col items-center gap-3 w-full">
+                        <span className="text-m3-onSurfaceVariant font-bold text-[10px] uppercase tracking-widest block text-center font-mono">
                           {gig.Status === 'Completed' ? '✓ SWAP COMPLETED' : 'REQUEST ACCEPTED!'}
                         </span>
                         
@@ -416,7 +419,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
                             </button>
                             <button
                               onClick={() => handleMarkAsDone(gig.id || gig._id)}
-                              className="m3-filled-button bg-m3-surfaceVariant text-m3-onSurfaceVariant hover:brightness-110 !min-h-[40px] flex items-center justify-center gap-1.5 font-bold text-xs"
+                              className="m3-filled-button !bg-m3-secondaryContainer !text-m3-onSecondaryContainer hover:brightness-110 !min-h-[40px] flex items-center justify-center gap-1.5 font-bold text-xs"
                               type="button"
                             >
                               Mark as Done ✓
@@ -447,7 +450,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
         <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
           <div className="m3-surface-card p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in">
             <h3 className="m3-title-medium text-white">Confirm Action</h3>
-            <p className="m3-body-small text-[#cac4d0]">{confirmDialog.message}</p>
+            <p className="m3-body-small text-m3-onSurfaceVariant">{confirmDialog.message}</p>
             <div className="flex justify-end gap-2.5 mt-2">
               <button
                 onClick={() => setConfirmDialog(null)}
@@ -476,7 +479,7 @@ export default function SkillSwapGrid({ currentUser, onUpdate, setActiveTab, onS
         <div className="absolute inset-0 z-[1000] bg-black/60 flex items-center justify-center p-4">
           <div className="m3-surface-card backdrop-blur-md p-6 flex flex-col gap-4 text-left max-w-[280px] w-full shadow-2xl animate-fade-in">
             <h3 className="m3-title-medium text-white">{promptDialog.title}</h3>
-            <p className="m3-body-small text-[#cac4d0]">{promptDialog.message}</p>
+            <p className="m3-body-small text-m3-onSurfaceVariant">{promptDialog.message}</p>
             <input
               type="text"
               value={promptDialog.value}

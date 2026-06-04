@@ -208,8 +208,8 @@ export default function Timetable({ currentUser, setActiveTab }) {
               onClick={() => setShowFilters(!showFilters)}
               className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-1.5 shadow-sm cursor-pointer ${
                 showFilters
-                  ? 'bg-[#d0bcff] text-[#381e72]'
-                  : 'bg-[#292035] hover:bg-[#352a48] text-[#d0bcff]'
+                  ? 'bg-m3-primary text-m3-onPrimary'
+                  : 'bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-primary'
               }`}
               type="button"
             >
@@ -221,7 +221,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
 
         {/* Dynamic Filters Panel */}
         {showFilters && dbMeta && (
-          <div className="w-full bg-[#211a30]/55 border border-[#483c5e]/30 backdrop-blur-xl rounded-[28px] p-5 flex flex-col gap-4 shrink-0 text-left select-none shadow-lg">
+          <div className="w-full bg-m3-surfaceContainerHigh backdrop-blur-xl rounded-[28px] p-5 flex flex-col gap-4 shrink-0 text-left select-none shadow-lg">
             
             {/* 1. Day Selector */}
             <div className="flex flex-col gap-2">
@@ -322,12 +322,12 @@ export default function Timetable({ currentUser, setActiveTab }) {
                   className="m3-select"
                 >
                   {(dbMeta.batches[selectedCourse]?.[selectedSemester]?.[selectedPhase] || []).map((b) => (
-                    <option className="bg-[#1c1529] text-[#e6e1e5]" key={b.id} value={b.id}>
+                    <option className="bg-m3-surfaceContainerLow text-m3-onSurface" key={b.id} value={b.id}>
                       {b.name}
                     </option>
                   ))}
                 </select>
-                <div className="absolute -translate-y-1/2 pointer-events-none text-[#cac4d0] right-4 top-1/2">
+                <div className="absolute -translate-y-1/2 pointer-events-none text-m3-onSurfaceVariant right-4 top-1/2">
                   <ChevronDown size={16} />
                 </div>
               </div>
@@ -339,7 +339,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
         {/* Database Loading State */}
         {loadingDb && (
           <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
-            <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+            <RefreshCw className="animate-spin text-m3-primary" size={28} />
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Syncing Timetable DB...</span>
           </div>
         )}
@@ -350,7 +350,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
             <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-400">
               <Sparkles size={24} />
             </div>
-            <p className="text-sm font-semibold text-[#e6e1e5]">{dbError}</p>
+            <p className="text-sm font-semibold text-m3-onSurface">{dbError}</p>
           </div>
         )}
 
@@ -359,10 +359,10 @@ export default function Timetable({ currentUser, setActiveTab }) {
           <div className="w-full flex flex-col gap-4">
             {displayEvents.length === 0 ? (
               <div className="m3-surface-card p-8 flex flex-col items-center justify-center gap-3 text-center select-none">
-                <div className="w-12 h-12 rounded-2xl bg-[#4f378b]/30 flex items-center justify-center text-[#d0bcff] shadow-md">
+                <div className="w-12 h-12 rounded-2xl bg-m3-primaryContainer/30 flex items-center justify-center text-m3-primary shadow-md">
                   <Sparkles size={22} />
                 </div>
-                <h4 className="text-sm text-[#e6e1e5] font-extrabold uppercase tracking-widest">Free Day!</h4>
+                <h4 className="text-sm text-m3-onSurface font-extrabold uppercase tracking-widest">Free Day!</h4>
                 <span className="text-xs text-slate-400 font-medium leading-relaxed max-w-[240px]">
                   No classes scheduled for today. Explore other days or batches!
                 </span>
@@ -375,7 +375,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
                     <span className="m3-badge text-[11px] font-bold">
                       {item.time}
                     </span>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-[#d0bcff]">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-m3-primary">
                       {item.typeLabel}
                     </span>
                   </div>
@@ -389,20 +389,20 @@ export default function Timetable({ currentUser, setActiveTab }) {
                   <div className="flex flex-wrap gap-2 pt-1 w-full">
                     {/* Venue Room */}
                     <span className="m3-assist-chip">
-                      <MapPin size={11} className="mr-1 text-[#d0bcff] shrink-0" />
+                      <MapPin size={11} className="mr-1 text-m3-primary shrink-0" />
                       {item.room}
                     </span>
 
                     {/* Instructor */}
                     <span className="m3-assist-chip">
-                      <User size={11} className="mr-1 text-[#d0bcff] shrink-0" />
+                      <User size={11} className="mr-1 text-m3-primary shrink-0" />
                       {item.instructor}
                     </span>
 
                     {/* Batches */}
                     {item.batches && (
                       <span className="m3-assist-chip">
-                        <Users size={11} className="mr-1 text-[#d0bcff] shrink-0" />
+                        <Users size={11} className="mr-1 text-m3-primary shrink-0" />
                         {item.batches}
                       </span>
                     )}
@@ -416,16 +416,16 @@ export default function Timetable({ currentUser, setActiveTab }) {
         {/* Breaks in the Day Section */}
         {!loadingDb && !dbError && breaks.length > 0 && (
           <div className="w-full mt-2">
-            <div className="m3-surface-card p-5 flex flex-col gap-4 text-left border-dashed border-[#483c5e]/50 bg-transparent">
-              <h4 className="text-[11px] font-black uppercase tracking-wider text-[#d0bcff] border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
-                <Sparkles size={12} className="text-[#d0bcff]" /> Breaks in the Day
+            <div className="m3-surface-card p-5 flex flex-col gap-4 text-left border-dashed border bg-transparent" style={{ borderColor: 'color-mix(in srgb, var(--m3-outline-variant) 30%, transparent)' }}>
+              <h4 className="text-[11px] font-black uppercase tracking-wider text-m3-primary border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
+                <Sparkles size={12} className="text-m3-primary" /> Breaks in the Day
               </h4>
 
               <div className="grid grid-cols-2 gap-3">
                 {breaks.map((brk, bIdx) => (
-                  <div key={bIdx} className="bg-[#211a30]/35 border border-[#483c5e]/20 rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm text-left">
-                    <span className="text-[10px] font-bold text-[#e6e1e5] leading-none">{brk.timeRange}</span>
-                    <span className="text-[9px] font-black text-[#d0bcff] uppercase tracking-widest mt-0.5 leading-none">{brk.duration}</span>
+                  <div key={bIdx} className="bg-m3-surfaceContainerHigh rounded-2xl p-4 flex flex-col gap-1.5 shadow-sm text-left">
+                    <span className="text-[10px] font-bold text-m3-onSurface leading-none">{brk.timeRange}</span>
+                    <span className="text-[9px] font-black text-m3-primary uppercase tracking-widest mt-0.5 leading-none">{brk.duration}</span>
                   </div>
                 ))}
               </div>

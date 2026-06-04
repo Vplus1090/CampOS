@@ -1,42 +1,27 @@
 /* CampOS Custom Premium Dashboard Styles */
 
-:root {
+body {
   --primary-glow: conic-gradient(from 180deg at 50% 50%, #16abff33 0deg, #0885ff33 55deg, #54d6ff33 120deg, #0071ff33 225deg, #16abff33 360deg);
   --secondary-glow: radial-gradient(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
   
   --gradient-notice: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  --gradient-swap: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  --gradient-swap: linear-gradient(135deg, var(--m3-primary) 0%, var(--m3-primary-container) 100%);
   --gradient-card-offered: linear-gradient(135deg, #10b981 0%, #047857 100%);
   --gradient-card-wanted: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
 
-  --card-bg: rgba(255, 255, 255, 0.65);
-  --card-border: rgba(229, 228, 231, 0.6);
-  --input-bg: rgba(244, 243, 236, 0.7);
-  --text-primary: #1e1e24;
-  --text-secondary: #5c5c68;
+  /* Default to Dark Mode theme-integrated settings directly */
+  --card-bg: var(--m3-surface-container-high);
+  --card-border: color-mix(in srgb, var(--m3-outline-variant) 40%, transparent);
+  --input-bg: var(--m3-surface-container-low);
+  --text-primary: #f3f4f6;
+  --text-secondary: var(--m3-on-surface-variant);
   
-  /* Fallback and Light Mode support for undefined variables */
-  --accent: #6750a4;
-  --accent-bg: rgba(103, 80, 164, 0.12);
-  --accent-border: rgba(103, 80, 164, 0.2);
-  --text-h: #1e1e24;
+  --accent: var(--m3-primary);
+  --accent-bg: color-mix(in srgb, var(--m3-primary) 12%, transparent);
+  --accent-border: color-mix(in srgb, var(--m3-primary) 20%, transparent);
+  --text-h: var(--m3-on-surface);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --card-bg: color-mix(in srgb, var(--m3-surface-container) 75%, transparent);
-    --card-border: color-mix(in srgb, var(--m3-outline-variant) 40%, transparent);
-    --input-bg: color-mix(in srgb, var(--m3-surface-container-low) 70%, transparent);
-    --text-primary: #f3f4f6;
-    --text-secondary: #cac4d0;
-    
-    /* Dark Mode Theme-integrated settings */
-    --accent: var(--m3-primary);
-    --accent-bg: color-mix(in srgb, var(--m3-primary) 12%, transparent);
-    --accent-border: color-mix(in srgb, var(--m3-primary) 20%, transparent);
-    --text-h: #e6e1e5;
-  }
-}
 
 /* ─── Global Dashboard Container ────────────────────────────────────────────────── */
 
@@ -310,7 +295,7 @@
 
 .btn-accent:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--m3-primary) 35%, transparent);
 }
 
 .btn-secondary {

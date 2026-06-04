@@ -19,6 +19,13 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
   const [stats, setStats] = useState({ notices: 0, skillgigs: 0, canteen: 0 });
+
+  // Synchronize theme on load
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('campos-theme') || 'lavender';
+    document.body.classList.remove('theme-lavender', 'theme-blue', 'theme-green', 'theme-orange', 'theme-yellow');
+    document.body.classList.add(`theme-${savedTheme}`);
+  }, []);
   const [canteenCart, setCanteenCart] = useState([]);
   const [isCartPopping, setIsCartPopping] = useState(false);
   const [showCanteenTicketModal, setShowCanteenTicketModal] = useState(false);
@@ -307,14 +314,14 @@ function App() {
       const backTarget = paymentData?.source === 'MESS_GUEST' ? 'mess' : 'canteen';
 
       return (
-        <div className="absolute inset-0 bg-[#181125] flex flex-col z-[9999] overflow-hidden font-sans">
+        <div className="absolute inset-0 bg-m3-surface flex flex-col z-[9999] overflow-hidden font-sans">
           {/* M3 Header Top Bar */}
           <header className="m3-top-app-bar m3-top-app-bar--collapsed z-20 shrink-0" style={{ height: '96px', paddingTop: '26px' }}>
             <div className="m3-top-app-bar__row w-full justify-between pr-2">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setActiveTab(backTarget)}
-                  className="m3-icon-button text-[#e6e1e5] hover:bg-white/5"
+                  className="m3-icon-button text-m3-onSurface hover:bg-white/5"
                   type="button"
                   aria-label="Go back"
                 >
@@ -334,15 +341,15 @@ function App() {
             }}
           >
             {/* Centered Price Card */}
-            <div className="m3-surface-card w-full p-6 text-center shadow-lg relative overflow-hidden flex flex-col items-center gap-2 border border-[#483c5e]/30 animate-fade-in">
-              <span className="text-[10px] font-bold text-[#cac4d0] tracking-widest uppercase font-mono">
+            <div className="m3-surface-card w-full p-6 text-center shadow-lg relative overflow-hidden flex flex-col items-center gap-2 border border-transparent animate-fade-in">
+              <span className="text-[10px] font-bold text-m3-onSurfaceVariant tracking-widest uppercase font-mono">
                 Total Payable Amount
               </span>
-              <div className="text-5xl font-black tracking-tight text-[#eaddff] font-sans flex items-center justify-center gap-1.5 my-2">
+              <div className="text-5xl font-black tracking-tight text-m3-onPrimary font-sans flex items-center justify-center gap-1.5 my-2">
                 <span>₹</span>
                 <span className="text-white">{paymentData?.amount || 0}</span>
               </div>
-              <div className="text-[10px] text-[#cac4d0]/60 font-semibold tracking-wide uppercase font-mono">
+              <div className="text-[10px] text-m3-onSurfaceVariant/60 font-semibold tracking-wide uppercase font-mono">
                 Secure Checkout by CampOS
               </div>
             </div>
@@ -350,7 +357,7 @@ function App() {
             {/* Payment Methods */}
             <div className="flex flex-col w-full gap-4">
               <div className="text-left pl-1">
-                <span className="text-[10px] font-bold text-[#cac4d0] tracking-widest uppercase font-mono">
+                <span className="text-[10px] font-bold text-m3-onSurfaceVariant tracking-widest uppercase font-mono">
                   Select Payment Method
                 </span>
               </div>
@@ -358,47 +365,47 @@ function App() {
               {/* UPI / GPay */}
               <button
                 onClick={() => handlePay('UPI')}
-                className="w-full flex items-center justify-between p-5 rounded-[24px] bg-[#211a30] hover:bg-[#292035] active:scale-[0.98] transition-all duration-300 border border-[#483c5e]/30 group shadow-sm text-left cursor-pointer"
+                className="w-full flex items-center justify-between p-5 rounded-[24px] bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest active:scale-[0.98] transition-all duration-300 border border-transparent group shadow-sm text-left cursor-pointer"
                 type="button"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 rounded-[16px] bg-[#4f378b]/30 text-[#d0bcff] group-hover:bg-[#4f378b]/50 group-hover:text-white">
+                  <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 rounded-[16px] bg-m3-primaryContainer/30 text-m3-primary group-hover:bg-m3-primaryContainer/50 group-hover:text-m3-onPrimaryContainer">
                     <SmartphoneNfc size={20} />
                   </div>
                   <div>
-                    <h4 className="font-sans text-base font-bold text-white group-hover:text-[#eaddff]">UPI / GPay</h4>
-                    <p className="text-[#cac4d0]/70 text-xs mt-1 font-medium">Instant transfer using any UPI app</p>
+                    <h4 className="font-sans text-base font-bold text-white group-hover:text-m3-onPrimaryContainer">UPI / GPay</h4>
+                    <p className="text-m3-onSurfaceVariant/70 text-xs mt-1 font-medium">Instant transfer using any UPI app</p>
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-[#d0bcff] group-hover:text-white transition-colors duration-300 shrink-0" />
+                <ChevronRight size={18} className="text-m3-primary group-hover:text-white transition-colors duration-300 shrink-0" />
               </button>
 
               {/* Credit / Debit Card */}
               <button
                 onClick={() => handlePay('CARD')}
-                className="w-full flex items-center justify-between p-5 rounded-[24px] bg-[#211a30] hover:bg-[#292035] active:scale-[0.98] transition-all duration-300 border border-[#483c5e]/30 group shadow-sm text-left cursor-pointer"
+                className="w-full flex items-center justify-between p-5 rounded-[24px] bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest active:scale-[0.98] transition-all duration-300 border border-transparent group shadow-sm text-left cursor-pointer"
                 type="button"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 rounded-[16px] bg-[#4f378b]/30 text-[#d0bcff] group-hover:bg-[#4f378b]/50 group-hover:text-white">
+                  <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 rounded-[16px] bg-m3-primaryContainer/30 text-m3-primary group-hover:bg-m3-primaryContainer/50 group-hover:text-m3-onPrimaryContainer">
                     <CreditCard size={20} />
                   </div>
                   <div>
-                    <h4 className="font-sans text-base font-bold text-white group-hover:text-[#eaddff]">Card</h4>
-                    <p className="text-[#cac4d0]/70 text-xs mt-1 font-medium">Visa, Mastercard, RuPay, or Maestro</p>
+                    <h4 className="font-sans text-base font-bold text-white group-hover:text-m3-onPrimaryContainer">Card</h4>
+                    <p className="text-m3-onSurfaceVariant/70 text-xs mt-1 font-medium">Visa, Mastercard, RuPay, or Maestro</p>
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-[#d0bcff] group-hover:text-white transition-colors duration-300 shrink-0" />
+                <ChevronRight size={18} className="text-m3-primary group-hover:text-white transition-colors duration-300 shrink-0" />
               </button>
             </div>
           </div>
 
           {/* Full-screen loading overlay */}
           {processingPayment && (
-            <div className="absolute inset-0 bg-[#181125]/95 backdrop-blur-sm z-[99999] flex flex-col items-center justify-center p-6 select-none">
-              <div className="w-14 h-14 border-4 border-[#d0bcff] rounded-full border-t-transparent animate-spin"></div>
+            <div className="absolute inset-0 bg-m3-surface/95 backdrop-blur-sm z-[99999] flex flex-col items-center justify-center p-6 select-none">
+              <div className="w-14 h-14 border-4 border-m3-primary rounded-full border-t-transparent animate-spin"></div>
               <h3 className="mt-6 font-sans text-xl font-bold tracking-tight text-white">Processing Payment...</h3>
-              <p className="mt-2 text-[10px] font-bold tracking-widest uppercase text-[#d0bcff]">Securing connection to banker</p>
+              <p className="mt-2 text-[10px] font-bold tracking-widest uppercase text-m3-primary">Securing connection to banker</p>
             </div>
           )}
         </div>
@@ -419,11 +426,14 @@ function App() {
       }
 
       return (
-        <div className="absolute inset-0 bg-[#181125] text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans">
+        <div className="absolute inset-0 bg-m3-surface text-white flex flex-col items-center justify-center p-6 z-[9999] overflow-hidden font-sans">
           <div className="flex flex-col items-center w-full max-w-md text-center">
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-white select-none animate-fade-in">Guest Pass</h2>
             
-            <div className="flex items-center gap-2 mt-3.5 px-4 py-1.5 rounded-full bg-[#4f378b]/30 border border-[#483c5e]/50 text-[#d0bcff] select-none shadow-sm animate-fade-in">
+            <div 
+              className="flex items-center gap-2 mt-3.5 px-4 py-1.5 rounded-full text-m3-primary border-none select-none shadow-sm animate-fade-in"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--m3-primary-container) 30%, transparent)' }}
+            >
               <Clock size={16} />
               <span className="text-xs font-bold font-mono tracking-wider uppercase">
                 {remainingMinutes > 0 ? `Valid for ${remainingMinutes} Mins` : 'Expired'}
@@ -431,14 +441,14 @@ function App() {
             </div>
 
             {/* Massive white QR card with M3 surface style */}
-            <div className="w-full max-w-sm m3-surface-card p-8 rounded-[32px] border border-[#483c5e]/30 shadow-2xl mt-8 flex flex-col items-center justify-center transform hover:scale-[1.01] transition-transform duration-300 animate-fade-in">
+            <div className="w-full max-w-sm bg-m3-surfaceContainerHigh p-8 rounded-[32px] border-none shadow-2xl mt-8 flex flex-col items-center justify-center transform hover:scale-[1.01] transition-transform duration-300 animate-fade-in">
               <div className="p-3 bg-white rounded-[24px] shadow-inner flex items-center justify-center">
                 <QrCode size={220} className="text-black" />
               </div>
               
               <div className="mt-6 text-center w-full flex flex-col gap-2">
-                <p className="text-[10px] font-bold tracking-widest uppercase text-[#cac4d0]">Pass Verification Code</p>
-                <div className="mt-1 text-base font-bold tracking-wide text-white bg-[#1c1529]/60 border border-[#483c5e]/30 py-2.5 px-5 rounded-2xl inline-block mx-auto shadow-inner">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-m3-onSurfaceVariant">Pass Verification Code</p>
+                <div className="mt-1 text-base font-bold tracking-wide text-white bg-m3-surfaceContainerLow py-2.5 px-5 rounded-2xl inline-block mx-auto shadow-inner border-none">
                   {token ? `ID: #${String(token._id || token.id || '').substring(18).toUpperCase()}` : 'ACTIVE PASS'}
                 </div>
               </div>
@@ -447,7 +457,7 @@ function App() {
             {/* Light purple square close button */}
             <button
               onClick={() => setActiveTab('home')}
-              className="flex items-center justify-center mt-12 text-[#381e72] hover:brightness-110 active:scale-95 transition-all duration-300 rounded-[20px] shadow-lg h-14 w-14 bg-[#d0bcff] border border-[#483c5e]/30 shadow-black/20 cursor-pointer"
+              className="flex items-center justify-center mt-12 text-m3-onPrimary hover:brightness-110 active:scale-95 transition-all duration-300 rounded-[20px] shadow-lg h-14 w-14 bg-m3-primary border-none shadow-black/20 cursor-pointer"
               title="Close Pass"
               type="button"
             >
@@ -481,7 +491,7 @@ function App() {
             </p>
 
             {/* Sleek Glass Credit Slip */}
-            <div className="w-full bg-white/[0.03] backdrop-blur-3xl py-6 px-5 rounded-[28px] border-2 border-white/15 shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] mt-6 flex flex-col items-center relative overflow-hidden max-w-[340px]">
+            <div className="w-full bg-white/[0.03] backdrop-blur-3xl py-6 px-5 rounded-[28px] border-2 border-transparent shadow-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] mt-6 flex flex-col items-center relative overflow-hidden max-w-[340px]">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-white/30 to-white/10"></div>
               
               <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Pickup PIN</span>
@@ -507,7 +517,7 @@ function App() {
 
             <button
               onClick={() => setActiveTab('home')}
-              className="mt-6 px-8 py-3.5 bg-white text-[#141a27] hover:bg-slate-50 font-black rounded-xl shadow-lg transition-all duration-300 text-xs uppercase tracking-wider z-10 cursor-pointer active:scale-95"
+              className="mt-6 px-8 py-3.5 bg-m3-primary text-m3-onPrimary hover:brightness-110 font-black rounded-xl shadow-lg transition-all duration-300 text-xs uppercase tracking-wider z-10 cursor-pointer active:scale-95"
             >
               Done & Back Home
             </button>
@@ -636,7 +646,7 @@ function App() {
         {activeTab === 'canteen' && canteenCart.length > 0 && (
           <button
             onClick={() => setActiveTab('canteen_cart')}
-            className={`absolute bottom-6 right-6 z-[999] bg-[#d0bcff] text-[#381e72] rounded-[20px] w-16 h-16 shadow-2xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
+            className={`absolute bottom-6 right-6 z-[999] bg-m3-primary text-m3-onPrimary rounded-[20px] w-16 h-16 shadow-2xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
               isCartPopping ? 'scale-110' : 'active:scale-90 hover:brightness-110'
             }`}
             type="button"
@@ -724,48 +734,51 @@ function CanteenTicketModal({ order, onClose }) {
   return (
     <div className="absolute inset-0 bg-black/60 z-[9999] flex items-center justify-center p-6" onClick={onClose}>
       <div 
-        className="w-full max-w-[320px] m3-surface-card backdrop-blur-md border border-[#483c5e]/40 shadow-2xl py-6 px-5 flex flex-col items-center relative overflow-hidden select-none animate-fade-in"
+        className="w-full max-w-[320px] m3-surface-card backdrop-blur-md border border-transparent shadow-2xl py-6 px-5 flex flex-col items-center relative overflow-hidden select-none animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* Header with Title and Ticket Icon */}
-        <div className="flex items-center justify-between w-full pb-3 mb-4 border-b border-[#483c5e]/20">
-          <span className="text-[#d0bcff] font-bold uppercase tracking-wider text-[10px]">Canteen Slip</span>
-          <Ticket size={18} className="text-[#d0bcff]/70" />
+        <div 
+          className="flex items-center justify-between w-full pb-3 mb-4"
+          style={{ borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}
+        >
+          <span className="text-m3-primary font-bold uppercase tracking-wider text-[10px]">Canteen Slip</span>
+          <Ticket size={18} className="text-m3-primary/70" />
         </div>
 
         {/* Live Timer Indicator */}
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-[#ba1a1a]/10 border border-[#ba1a1a]/30 text-[#ffb4ab] rounded-full text-[9px] font-bold tracking-wider uppercase mb-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#ffb4ab] animate-pulse"></span>
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-m3-errorContainer/10 border border-transparent text-m3-error rounded-full text-[9px] font-bold tracking-wider uppercase mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-m3-error animate-pulse"></span>
           {timeLeft}
         </div>
 
-        <span className="text-[#cac4d0] text-[10px] font-bold uppercase tracking-widest mt-1">Pickup PIN</span>
+        <span className="text-m3-onSurfaceVariant text-[10px] font-bold uppercase tracking-widest mt-1">Pickup PIN</span>
         <div className="my-4 text-5xl font-black tracking-widest text-white select-all">
           {order.PickupPIN}
         </div>
 
         {/* Order Items List */}
-        <div className="w-full mt-1 mb-2 py-3 border-t border-b border-[#483c5e]/20 text-left flex flex-col gap-2 max-h-[140px] overflow-y-auto scrollbar-none font-sans">
-          <span className="text-[#cac4d0] text-[8px] font-bold uppercase tracking-wider block mb-1">Order Items</span>
+        <div className="w-full mt-1 mb-2 py-3 text-left flex flex-col gap-2 max-h-[140px] overflow-y-auto scrollbar-none font-sans" style={{ borderTop: '1px solid color-mix(in srgb, var(--m3-outline-variant) 12%, transparent)', borderBottom: '1px solid color-mix(in srgb, var(--m3-outline-variant) 12%, transparent)' }}>
+          <span className="text-m3-onSurfaceVariant text-[8px] font-bold uppercase tracking-wider block mb-1">Order Items</span>
           {order.ItemsArray && order.ItemsArray.map((item, idx) => (
             <div key={idx} className="flex justify-between items-center text-[10px] text-white/95 font-medium">
               <span className="pr-2 truncate">{item.Name}</span>
-              <span className="font-bold text-[#d0bcff] shrink-0">x{item.Quantity}</span>
+              <span className="font-bold text-m3-primary shrink-0">x{item.Quantity}</span>
             </div>
           ))}
         </div>
 
         <div className="w-full mt-1 flex flex-col gap-2.5 text-left font-sans">
-          <div className="flex justify-between items-center text-[10px] font-bold text-[#cac4d0]">
+          <div className="flex justify-between items-center text-[10px] font-bold text-m3-onSurfaceVariant">
             <span>Customer:</span>
             <span className="font-bold text-white">{order.StudentName || 'Student'}</span>
           </div>
-          <div className="flex justify-between items-center text-[10px] font-bold text-[#cac4d0]">
+          <div className="flex justify-between items-center text-[10px] font-bold text-m3-onSurfaceVariant">
             <span>Total Amount:</span>
-            <span className="text-xs font-black text-[#fb923c]">₹{order.TotalAmount || 0}</span>
+            <span className="text-xs font-black text-m3-tertiary">₹{order.TotalAmount || 0}</span>
           </div>
-          <div className="flex justify-between items-center text-[10px] font-bold text-[#cac4d0]">
+          <div className="flex justify-between items-center text-[10px] font-bold text-m3-onSurfaceVariant">
             <span>Items Count:</span>
             <span className="font-bold text-white">{order.ItemCount || 0} items</span>
           </div>
@@ -774,7 +787,7 @@ function CanteenTicketModal({ order, onClose }) {
         {/* Action Button inside modal */}
         <button
           onClick={onClose}
-          className="mt-6 w-full py-3.5 bg-[#d0bcff] text-[#381e72] hover:brightness-110 active:scale-[0.97] font-bold rounded-2xl shadow-lg transition-all duration-300 text-[10px] uppercase tracking-wider cursor-pointer text-center"
+          className="mt-6 w-full py-3.5 bg-m3-primary text-m3-onPrimary hover:brightness-110 active:scale-[0.97] font-bold rounded-2xl shadow-lg transition-all duration-300 text-[10px] uppercase tracking-wider cursor-pointer text-center"
         >
           Dismiss Ticket
         </button>

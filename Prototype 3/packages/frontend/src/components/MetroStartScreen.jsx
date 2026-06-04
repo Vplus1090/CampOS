@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Megaphone,
   Coffee,
@@ -13,6 +14,8 @@ import {
   ChevronLeft,
   LayoutDashboard,
   WifiOff,
+  Palette,
+  X,
 } from 'lucide-react';
 
 function PillLabel({ icon: Icon, children, badge }) {
@@ -63,6 +66,18 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   const [activePass, setActivePass] = useState(null);
   const [remainingMinutes, setRemainingMinutes] = useState(0);
   const [activeOrder, setActiveOrder] = useState(null);
+
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    return localStorage.getItem('campos-theme') || 'lavender';
+  });
+
+  const applyTheme = (themeId) => {
+    setCurrentTheme(themeId);
+    localStorage.setItem('campos-theme', themeId);
+    document.body.classList.remove('theme-lavender', 'theme-blue', 'theme-green', 'theme-orange', 'theme-yellow');
+    document.body.classList.add(`theme-${themeId}`);
+  };
 
   useEffect(() => {
     if (!currentUser) return;
@@ -286,7 +301,14 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
           <p className="home-screen__welcome">{greeting}</p>
           <h1 className="home-screen__name">{displayName}</h1>
         </div>
-        <div className="w-12 h-12 shrink-0 opacity-0 pointer-events-none" /> {/* Spacer to center titles */}
+        <button
+          type="button"
+          className="home-screen__theme-btn"
+          onClick={() => setShowThemeSelector(true)}
+          title="Select Theme"
+        >
+          <Palette className="home-screen__theme-btn-icon" strokeWidth={2.25} aria-hidden />
+        </button>
       </header>
 
       {(activePass || activeOrder) && (
@@ -295,19 +317,22 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
             <button
               type="button"
               onClick={() => onTileClick('MESS_QR_FULL')}
-              className="w-full rounded-[28px] bg-[#211a30] border border-white/5 px-6 py-5 flex items-center justify-between text-left active:scale-[0.99] transition-all duration-300 shadow-xl cursor-pointer"
+              className="w-full rounded-[28px] bg-m3-surfaceContainerHigh border-none px-6 py-5 flex items-center justify-between text-left active:scale-[0.99] transition-all duration-300 shadow-xl cursor-pointer"
             >
               <div className="flex flex-col gap-1.5">
                 <h4 className="text-lg font-bold text-white tracking-tight">Mess Access</h4>
                 <p className="text-sm font-bold text-white leading-tight">
                   Pass active • {remainingMinutes} min left
                 </p>
-                <div className="flex items-center gap-1.5 text-xs text-[#cac4d0] mt-1 font-medium select-none">
+                <div className="flex items-center gap-1.5 text-xs text-m3-onSurfaceVariant/85 mt-1 font-medium select-none">
                   <WifiOff size={14} className="opacity-80" />
                   <span>Tap for QR</span>
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-full bg-[#4f378b]/40 text-[#eaddff] flex items-center justify-center shrink-0 shadow-inner">
+              <div 
+                className="w-12 h-12 rounded-full text-m3-onPrimaryContainer flex items-center justify-center shrink-0 shadow-inner"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--m3-primary-container) 30%, transparent)' }}
+              >
                 <QrCode size={20} />
               </div>
             </button>
@@ -316,19 +341,22 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
             <button
               type="button"
               onClick={() => onTileClick('SUCCESS')}
-              className="w-full rounded-[28px] bg-[#211a30] border border-white/5 px-6 py-5 flex items-center justify-between text-left active:scale-[0.99] transition-all duration-300 shadow-xl cursor-pointer"
+              className="w-full rounded-[28px] bg-m3-surfaceContainerHigh border-none px-6 py-5 flex items-center justify-between text-left active:scale-[0.99] transition-all duration-300 shadow-xl cursor-pointer"
             >
               <div className="flex flex-col gap-1.5">
                 <h4 className="text-lg font-bold text-white tracking-tight">Canteen Order</h4>
-                <p className="text-sm font-semibold text-[#e6e1e5]">
-                  Pickup PIN • <span className="text-[#fb923c] font-black">{activeOrder.PickupPIN}</span>
+                <p className="text-sm font-semibold text-m3-onSurface">
+                  Pickup PIN • <span className="text-m3-tertiary font-black">{activeOrder.PickupPIN}</span>
                 </p>
-                <div className="flex items-center gap-1.5 text-xs text-[#cac4d0] mt-1 font-medium select-none">
+                <div className="flex items-center gap-1.5 text-xs text-m3-onSurfaceVariant/85 mt-1 font-medium select-none">
                   <Clock size={14} className="opacity-80" />
                   <span>Tap for Receipt</span>
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-full bg-[#fb923c]/20 text-[#fb923c] flex items-center justify-center shrink-0 shadow-inner">
+              <div 
+                className="w-12 h-12 rounded-full text-m3-tertiary flex items-center justify-center shrink-0 shadow-inner"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--m3-tertiary) 15%, transparent)' }}
+              >
                 <Ticket size={20} />
               </div>
             </button>
@@ -352,6 +380,65 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
       )}
 
       {isSuperAdmin && adminGrid}
+
+      {/* 🎨 Theme Selector Popup Overlay */}
+      <AnimatePresence>
+        {showThemeSelector && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 z-[99999] flex items-end justify-center" 
+            onClick={() => setShowThemeSelector(false)}
+          >
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+              className="backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10" 
+              style={{ backgroundColor: 'color-mix(in srgb, var(--m3-surface-container) 75%, transparent)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-xl font-bold text-m3-onSurface">
+                  <Palette size={22} className="text-m3-primary" /> Active Theme
+                </h3>
+                <button onClick={() => setShowThemeSelector(false)} className="p-2 -mr-2 text-m3-onSurfaceVariant hover:text-m3-primary rounded-full hover:bg-white/5 transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-center gap-5 py-4 w-full">
+                {[
+                  { id: 'lavender', hex: '#d0bcff', name: 'Lavender' },
+                  { id: 'blue', hex: '#a8c7ff', name: 'Sapphire Blue' },
+                  { id: 'green', hex: '#85d996', name: 'Emerald Green' },
+                  { id: 'orange', hex: '#ffb77c', name: 'Sunset Orange' },
+                  { id: 'yellow', hex: '#e6c449', name: 'Amber Yellow' },
+                ].map((theme) => {
+                  const isActive = currentTheme === theme.id;
+                  return (
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.15 }}
+                      key={theme.id}
+                      onClick={() => applyTheme(theme.id)}
+                      className={`w-12 h-12 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none ${
+                        isActive 
+                          ? 'ring-4 ring-m3-primary ring-offset-4 ring-offset-m3-surfaceContainer'
+                          : 'hover:ring-2 hover:ring-m3-outlineVariant/50'
+                      }`}
+                      style={{ backgroundColor: theme.hex }}
+                      title={`${theme.name} Theme`}
+                    />
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

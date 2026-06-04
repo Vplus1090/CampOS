@@ -71,33 +71,33 @@ export default function AcademicCalendar({ setActiveTab }) {
   const themeStyles = {
     teal: {
       border: 'border-white/10',
-      bg: 'bg-[#211a30]/60',
-      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
-      iconColor: 'text-[#d0bcff]'
+      bg: 'bg-m3-surfaceContainer/60',
+      badge: 'bg-m3-surfaceContainerHighest text-m3-primary border-transparent',
+      iconColor: 'text-m3-primary'
     },
     rose: {
       border: 'border-white/10',
-      bg: 'bg-[#211a30]/60',
-      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
-      iconColor: 'text-[#d0bcff]'
+      bg: 'bg-m3-surfaceContainer/60',
+      badge: 'bg-m3-surfaceContainerHighest text-m3-tertiary border-transparent',
+      iconColor: 'text-m3-tertiary'
     },
     amber: {
       border: 'border-white/10',
-      bg: 'bg-[#211a30]/60',
-      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
-      iconColor: 'text-[#d0bcff]'
+      bg: 'bg-m3-surfaceContainer/60',
+      badge: 'bg-m3-surfaceContainerHighest text-m3-secondary border-transparent',
+      iconColor: 'text-m3-secondary'
     },
     magenta: {
       border: 'border-white/10',
-      bg: 'bg-[#211a30]/60',
-      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
-      iconColor: 'text-[#d0bcff]'
+      bg: 'bg-m3-surfaceContainer/60',
+      badge: 'bg-m3-tertiaryContainer text-m3-onTertiaryContainer border-transparent',
+      iconColor: 'text-m3-onTertiaryContainer'
     },
     purple: {
       border: 'border-white/10',
-      bg: 'bg-[#211a30]/60',
-      badge: 'bg-[#292035] text-[#d0bcff] border-[#483c5e]/30',
-      iconColor: 'text-[#d0bcff]'
+      bg: 'bg-m3-surfaceContainer/60',
+      badge: 'bg-m3-primaryContainer text-m3-onPrimaryContainer border-transparent',
+      iconColor: 'text-m3-primary'
     }
   };
 

@@ -285,19 +285,19 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         <div onScroll={handleScroll} className="m3-screen__scroll">
           {loading ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
-              <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+              <RefreshCw className="animate-spin text-m3-primary" size={28} />
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Loading checkout...</span>
             </div>
           ) : error ? (
             <div className="m3-surface-card p-6 flex flex-col items-center gap-3 text-center">
-              <p className="text-sm font-semibold text-[#e6e1e5]">⚠️ {error}</p>
+              <p className="text-sm font-semibold text-m3-onSurface">⚠️ {error}</p>
               <button className="m3-filled-button" style={{ maxWidth: 160 }} onClick={fetchMenuAndOrders}>Retry</button>
             </div>
           ) : (
             <div className="w-full flex flex-col gap-5">
               {/* Selected Items */}
               <div className="m3-surface-card p-5 flex flex-col gap-4 text-left">
-                <div className="flex justify-between items-center border-b border-[#483c5e]/30 pb-3">
+                <div className="flex justify-between items-center border-b pb-3" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>
                   <h3 className="m3-title-medium">Selected Items</h3>
                   {cart.length > 0 && (
                     <span className="m3-badge">{cart.reduce((sum, ci) => sum + ci.quantity, 0)}</span>
@@ -306,10 +306,10 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
 
                 {cart.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 gap-3 text-center select-none">
-                    <div className="w-12 h-12 rounded-2xl bg-[#4f378b]/30 flex items-center justify-center text-[#d0bcff] shadow-md">
+                    <div className="w-12 h-12 rounded-2xl bg-m3-primaryContainer/30 flex items-center justify-center text-m3-primary shadow-md">
                       <Search size={22} />
                     </div>
-                    <h4 className="text-sm text-[#e6e1e5] font-extrabold uppercase tracking-widest">Cart empty</h4>
+                    <h4 className="text-sm text-m3-onSurface font-extrabold uppercase tracking-widest">Cart empty</h4>
                     <span className="text-xs text-slate-400 font-medium">Go back and add some items!</span>
                     <button
                       className="m3-filled-button mt-2"
@@ -330,17 +330,18 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                           key={cartItem._id}
                           className={`rounded-[var(--m3-shape-xl)] p-4 flex flex-col gap-2.5 border transition-all ${
                             isCurrentlyUnavailable
-                              ? 'border-[#8c1d18]/40 bg-[#8c1d18]/8 opacity-70'
-                              : 'border-[#483c5e]/25 bg-[#292035]/40'
+                              ? 'bg-m3-error/8 opacity-70'
+                              : 'bg-m3-surfaceContainerHigh'
                           }`}
+                          style={{ borderColor: isCurrentlyUnavailable ? 'color-mix(in srgb, var(--m3-error) 25%, transparent)' : 'transparent' }}
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="text-sm font-bold text-[#e6e1e5] leading-tight">{cartItem.Name}</h4>
+                              <h4 className="text-sm font-bold text-m3-onSurface leading-tight">{cartItem.Name}</h4>
                               <span className="m3-body-small mt-0.5 block">₹{cartItem.Price} each</span>
                             </div>
                             <button
-                              className="w-8 h-8 rounded-full bg-[#292035] hover:bg-[#352a48] text-[#cac4d0] hover:text-[#f2b8b5] flex items-center justify-center transition-all cursor-pointer"
+                              className="w-8 h-8 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-m3-error flex items-center justify-center transition-all cursor-pointer"
                               onClick={() => removeFromCart(cartItem._id)}
                               title="Remove Item"
                             >
@@ -349,24 +350,24 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                           </div>
                           
                           {isCurrentlyUnavailable && (
-                            <span className="text-[10px] font-bold text-[#f2b8b5] uppercase tracking-wider">
+                            <span className="text-[10px] font-bold text-m3-error uppercase tracking-wider">
                               Sold out — remove to checkout
                             </span>
                           )}
 
-                          <div className="flex justify-between items-center border-t border-[#483c5e]/20 pt-2.5">
-                            <span className="text-[10px] font-bold text-[#cac4d0] uppercase tracking-wider">Quantity</span>
+                          <div className="flex justify-between items-center border-t pt-2.5" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 12%, transparent)' }}>
+                            <span className="text-[10px] font-bold text-m3-onSurfaceVariant uppercase tracking-wider">Quantity</span>
                             <div className="flex items-center gap-2.5">
                               <button
-                                className="w-7 h-7 rounded-full bg-[#292035] hover:bg-[#352a48] text-[#d0bcff] flex items-center justify-center text-sm font-bold transition cursor-pointer"
+                                className="w-7 h-7 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center text-sm font-bold transition cursor-pointer"
                                 disabled={isCurrentlyUnavailable}
                                 onClick={() => updateQuantity(cartItem._id, -1)}
                               >
                                 −
                               </button>
-                              <span className="text-sm font-bold text-[#e6e1e5] w-5 text-center">{cartItem.quantity}</span>
+                              <span className="text-sm font-bold text-m3-onSurface w-5 text-center">{cartItem.quantity}</span>
                               <button
-                                className="w-7 h-7 rounded-full bg-[#292035] hover:bg-[#352a48] text-[#d0bcff] flex items-center justify-center text-sm font-bold transition cursor-pointer"
+                                className="w-7 h-7 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center text-sm font-bold transition cursor-pointer"
                                 disabled={isCurrentlyUnavailable}
                                 onClick={() => updateQuantity(cartItem._id, 1)}
                               >
@@ -384,22 +385,22 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               {/* Bill Summary */}
               {cart.length > 0 && (
                 <div className="m3-surface-card p-5 flex flex-col gap-3 text-left">
-                  <h3 className="m3-title-small text-[#cac4d0] uppercase tracking-widest text-[10px] border-b border-[#483c5e]/30 pb-2">Bill Details</h3>
-                  <div className="flex justify-between items-center text-xs text-[#cac4d0] font-medium">
+                  <h3 className="m3-title-small text-m3-onSurfaceVariant uppercase tracking-widest text-[10px] border-b pb-2" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>Bill Details</h3>
+                  <div className="flex justify-between items-center text-xs text-m3-onSurfaceVariant font-medium">
                     <span>Item Total</span>
-                    <span className="font-bold text-[#e6e1e5]">₹{totalAmount}</span>
+                    <span className="font-bold text-m3-onSurface">₹{totalAmount}</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs text-[#948baf] font-medium">
+                  <div className="flex justify-between items-center text-xs text-m3-outline font-medium">
                     <span>Taxes & GST</span>
                     <span>₹0</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs text-[#948baf] font-medium">
+                  <div className="flex justify-between items-center text-xs text-m3-outline font-medium">
                     <span>Delivery & Handling</span>
                     <span>₹0</span>
                   </div>
-                  <div className="border-t border-[#483c5e]/30 pt-3 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-[#e6e1e5] uppercase tracking-widest">Grand Total</span>
-                    <span className="text-base font-extrabold text-[#d0bcff]">₹{totalAmount}</span>
+                  <div className="border-t pt-3 flex justify-between items-center" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>
+                    <span className="text-[10px] font-bold text-m3-onSurface uppercase tracking-widest">Grand Total</span>
+                    <span className="text-base font-extrabold text-m3-primary">₹{totalAmount}</span>
                   </div>
                 </div>
               )}
@@ -408,7 +409,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               {cart.length > 0 && (
                 <form onSubmit={handleCheckout} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Student Registration ID</span>
+                    <span className="text-[9px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest pl-1">Student Registration ID</span>
                     <input
                       type="text"
                       placeholder="e.g., Vardaan"
@@ -435,20 +436,20 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               {/* Recent Orders log */}
               {orders.length > 0 && (
                 <div className="m3-surface-card p-5 flex flex-col gap-4 text-left">
-                  <h3 className="m3-title-small text-[#cac4d0] uppercase tracking-widest text-[10px] border-b border-[#483c5e]/30 pb-2">Orders Log</h3>
+                  <h3 className="m3-title-small text-m3-onSurfaceVariant uppercase tracking-widest text-[10px] border-b pb-2" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>Orders Log</h3>
                   <div className="flex flex-col gap-3">
                     {orders.map((order) => (
-                      <div key={order._id || order.id} className="rounded-[var(--m3-shape-xl)] bg-[#292035]/40 border border-[#483c5e]/25 p-4 flex flex-col gap-2.5 text-left">
+                      <div key={order._id || order.id} className="rounded-[var(--m3-shape-xl)] bg-m3-surfaceContainerHigh p-4 flex flex-col gap-2.5 text-left">
                         <div className="flex items-center justify-between">
                           <span className="m3-body-small font-bold">#{String(order._id).substring(18)}</span>
                           <span className="m3-assist-chip text-[10px]">{order.OrderStatus}</span>
                         </div>
-                        <span className="text-xs font-semibold text-[#e6e1e5] leading-snug">
+                        <span className="text-xs font-semibold text-m3-onSurface leading-snug">
                           {order.ItemsArray.map(i => `${i.Name} ×${i.Quantity}`).join(', ')}
                         </span>
-                        <div className="flex justify-between items-center border-t border-[#483c5e]/20 pt-2 text-[10px]">
-                          <span className="font-medium text-[#cac4d0]">Reg: {order.StudentId}</span>
-                          <span className="font-extrabold text-[#d0bcff]">₹{order.TotalAmount}</span>
+                        <div className="flex justify-between items-center border-t pt-2 text-[10px]" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 12%, transparent)' }}>
+                          <span className="font-medium text-m3-onSurfaceVariant">Reg: {order.StudentId}</span>
+                          <span className="font-extrabold text-m3-primary">₹{order.TotalAmount}</span>
                         </div>
                       </div>
                     ))}
@@ -478,7 +479,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
           <div className="flex justify-end items-center w-full px-1 mb-2 shrink-0">
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-1.5 shadow-sm cursor-pointer bg-[#d0bcff] text-[#381e72] hover:brightness-110 active:scale-95"
+              className="px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-1.5 shadow-sm cursor-pointer bg-m3-primary text-m3-onPrimary hover:brightness-110 active:scale-95"
               type="button"
             >
               <Plus size={14} />
@@ -513,7 +514,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         {/* Search Field */}
         {!loading && !error && (
           <div className="relative w-full shrink-0 mb-1">
-            <span className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-[#948baf] z-10">
+            <span className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-m3-outline z-10">
               <Search size={16} />
             </span>
             <input
@@ -529,7 +530,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         {/* Loading State */}
         {loading && (
           <div className="flex-1 flex flex-col items-center justify-center gap-3.5 select-none py-16 text-center">
-            <RefreshCw className="animate-spin text-[#d0bcff]" size={28} />
+            <RefreshCw className="animate-spin text-m3-primary" size={28} />
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Loading canteen menu...</span>
           </div>
         )}
@@ -537,7 +538,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
         {/* Error State */}
         {!loading && error && (
           <div className="m3-surface-card p-6 flex flex-col items-center gap-3 text-center">
-            <p className="text-sm font-semibold text-[#e6e1e5]">⚠️ {error}</p>
+            <p className="text-sm font-semibold text-m3-onSurface">⚠️ {error}</p>
             <button className="m3-filled-button" style={{ maxWidth: 160 }} onClick={fetchMenuAndOrders}>Retry</button>
           </div>
         )}
@@ -547,10 +548,10 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
           <div className="w-full flex flex-col gap-4">
             {filteredMenu.length === 0 ? (
               <div className="m3-surface-card p-8 flex flex-col items-center justify-center gap-3 text-center select-none">
-                <div className="w-12 h-12 rounded-2xl bg-[#4f378b]/30 flex items-center justify-center text-[#d0bcff] shadow-md">
+                <div className="w-12 h-12 rounded-2xl bg-m3-primaryContainer/30 flex items-center justify-center text-m3-primary shadow-md">
                   <Search size={22} />
                 </div>
-                <h4 className="text-sm text-[#e6e1e5] font-extrabold uppercase tracking-widest">No items found</h4>
+                <h4 className="text-sm text-m3-onSurface font-extrabold uppercase tracking-widest">No items found</h4>
                 <span className="text-xs text-slate-400 font-medium leading-relaxed max-w-[240px]">
                   Try a different search term or category filter.
                 </span>
@@ -569,7 +570,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                     <div className="flex items-center justify-between gap-2">
                       <span className="m3-assist-chip">{item.Category}</span>
                       <span className={`text-[10px] font-black uppercase tracking-wider ${
-                        isSoldOut ? 'text-[#f2b8b5]' : 'text-[#d0bcff]'
+                        isSoldOut ? 'text-m3-error' : 'text-m3-primary'
                       }`}>
                         {isSoldOut ? 'Sold Out' : 'Available'}
                       </span>
@@ -591,14 +592,14 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                           onChange={(e) => setEditPrice(e.target.value)}
                         />
                         <button 
-                          className="w-9 h-9 shrink-0 rounded-xl bg-[#4f378b] hover:bg-[#5f479b] text-[#eaddff] flex items-center justify-center text-xs font-bold transition active:scale-90 cursor-pointer"
+                          className="w-9 h-9 shrink-0 rounded-xl bg-m3-primaryContainer hover:brightness-110 text-m3-onPrimaryContainer flex items-center justify-center text-xs font-bold transition active:scale-90 cursor-pointer"
                           onClick={() => handleUpdatePrice(item._id)}
                           disabled={savingPrice}
                         >
                           ✓
                         </button>
                         <button 
-                          className="w-9 h-9 shrink-0 rounded-xl bg-[#292035] hover:bg-[#352a48] text-[#cac4d0] flex items-center justify-center text-xs font-bold transition active:scale-90 cursor-pointer"
+                          className="w-9 h-9 shrink-0 rounded-xl bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant flex items-center justify-center text-xs font-bold transition active:scale-90 cursor-pointer"
                           onClick={() => { setEditingItemId(null); setEditPrice(''); }}
                         >
                           ✕
@@ -609,7 +610,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                         <span className="m3-badge text-[11px] font-bold">₹{item.Price}</span>
                         {isCanteenAdmin && (
                           <button
-                            className="w-7 h-7 rounded-full hover:bg-[#352a48] text-[#cac4d0] hover:text-[#d0bcff] flex items-center justify-center transition cursor-pointer text-xs"
+                            className="w-7 h-7 rounded-full hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-m3-primary flex items-center justify-center transition cursor-pointer text-xs"
                             onClick={() => { setEditingItemId(item._id); setEditPrice(item.Price); }}
                             title="Edit Price"
                           >
@@ -622,9 +623,9 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                     {/* Actions Row */}
                     <div className="w-full mt-0.5">
                       {isCanteenAdmin ? (
-                        <div className="flex justify-between items-center border-t border-[#483c5e]/25 pt-3">
+                        <div className="flex justify-between items-center border-t pt-3" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>
                           <button
-                            className="flex items-center gap-1.5 text-[10px] font-bold text-[#f2b8b5]/60 hover:text-[#f2b8b5] transition cursor-pointer uppercase tracking-wider"
+                            className="flex items-center gap-1.5 text-[10px] font-bold text-m3-error/60 hover:text-m3-error transition cursor-pointer uppercase tracking-wider"
                             onClick={() => handleDeleteItem(item._id)}
                             title="Delete Item"
                           >
@@ -632,21 +633,26 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                           </button>
 
                           <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => toggleAvailability(item._id)}>
-                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-300 ${item.IsAvailable ? 'bg-[#4f378b]' : 'bg-[#292035]'}`}>
-                              <div className={`w-4 h-4 rounded-full bg-[#d0bcff] transition-transform duration-300 shadow-sm ${item.IsAvailable ? 'translate-x-4' : 'translate-x-0'}`} />
+                            <div className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-300 ${item.IsAvailable ? 'bg-m3-primary' : 'bg-m3-surfaceContainer'}`}>
+                              <div className={`w-4 h-4 rounded-full bg-m3-onPrimary transition-transform duration-300 shadow-sm ${item.IsAvailable ? 'translate-x-4' : 'translate-x-0'}`} />
                             </div>
-                            <span className="text-[10px] font-bold text-[#cac4d0] uppercase tracking-wider">In Stock</span>
+                            <span className="text-[10px] font-bold text-m3-onSurfaceVariant uppercase tracking-wider">In Stock</span>
                           </div>
                         </div>
                       ) : (
                         <button
                           className={`w-full py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                             isSoldOut 
-                              ? 'bg-[#292035]/50 text-[#948baf]/50 cursor-not-allowed' 
-                              : addedItemIds[item._id]
-                                ? 'bg-[#4f378b] text-[#eaddff]'
-                                : 'bg-[#292035] hover:bg-[#352a48] text-[#d0bcff] active:scale-[0.98] shadow-sm'
+                              ? 'bg-m3-surfaceContainerHigh/50 text-m3-outline/50 cursor-not-allowed border-none' 
+                              : 'hover:brightness-110 active:scale-[0.98] shadow-md'
                           }`}
+                          style={
+                            isSoldOut 
+                              ? {} 
+                              : addedItemIds[item._id]
+                                ? { background: 'var(--m3-primary-container)', color: 'var(--m3-on-primary-container)', border: 'none' }
+                                : { background: 'linear-gradient(135deg, var(--m3-primary) 0%, var(--m3-tertiary) 100%)', color: 'var(--m3-on-primary)', border: 'none' }
+                          }
                           disabled={isSoldOut}
                           onClick={() => handleAddToCartClick(item)}
                         >
@@ -666,17 +672,17 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
       {showAddModal && isCanteenAdmin && (
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[99999] flex items-center justify-center p-6" onClick={() => setShowAddModal(false)}>
           <div
-            className="w-full max-w-sm rounded-[var(--m3-shape-2xl)] bg-[#211a30] border border-[#483c5e]/40 p-6 shadow-2xl flex flex-col gap-5"
+            className="w-full max-w-sm rounded-[var(--m3-shape-2xl)] bg-m3-surfaceContainer border border-transparent p-6 shadow-2xl flex flex-col gap-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-[#483c5e]/30 pb-3">
+            <div className="flex items-center justify-between border-b pb-3" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 15%, transparent)' }}>
               <h3 className="m3-title-medium">Add Menu Item</h3>
-              <button className="w-8 h-8 rounded-full hover:bg-[#352a48] text-[#cac4d0] flex items-center justify-center transition cursor-pointer font-bold" onClick={() => setShowAddModal(false)}>✕</button>
+              <button className="w-8 h-8 rounded-full hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant flex items-center justify-center transition cursor-pointer font-bold" onClick={() => setShowAddModal(false)}>✕</button>
             </div>
             
             <form onSubmit={handleAddItem} className="flex flex-col gap-4 text-left">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Item Name</span>
+                <span className="text-[9px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest pl-1">Item Name</span>
                 <input
                   type="text"
                   placeholder="Paneer Patty, Mango Shake"
@@ -688,7 +694,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Price (₹)</span>
+                <span className="text-[9px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest pl-1">Price (₹)</span>
                 <input
                   type="number"
                   placeholder="Price"
@@ -700,7 +706,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Category</span>
+                <span className="text-[9px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest pl-1">Category</span>
                 <div className="m3-select-wrap">
                   <select
                     value={newCategory}
@@ -715,14 +721,14 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                     <option value="Snacks">Snacks</option>
                     <option value="Desserts">Desserts</option>
                   </select>
-                  <div className="absolute -translate-y-1/2 pointer-events-none text-[#cac4d0] right-4 top-1/2">
+                  <div className="absolute -translate-y-1/2 pointer-events-none text-m3-onSurfaceVariant right-4 top-1/2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-bold text-[#cac4d0] uppercase tracking-widest pl-1">Availability</span>
+                <span className="text-[9px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest pl-1">Availability</span>
                 <div className="m3-select-wrap">
                   <select
                     value={newAvailable ? 'yes' : 'no'}
@@ -733,7 +739,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
                     <option value="yes">In Stock (Available)</option>
                     <option value="no">Out of Stock (Unavailable)</option>
                   </select>
-                  <div className="absolute -translate-y-1/2 pointer-events-none text-[#cac4d0] right-4 top-1/2">
+                  <div className="absolute -translate-y-1/2 pointer-events-none text-m3-onSurfaceVariant right-4 top-1/2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                   </div>
                 </div>
@@ -742,7 +748,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
               <div className="flex gap-3 pt-2">
                 <button 
                   type="button" 
-                  className="flex-1 h-[48px] rounded-full border-none bg-[#292035] hover:bg-[#352a48] text-[#cac4d0] font-bold text-xs uppercase tracking-wider cursor-pointer transition-all" 
+                  className="flex-1 h-[48px] rounded-full border-none bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant font-bold text-xs uppercase tracking-wider cursor-pointer transition-all" 
                   onClick={() => setShowAddModal(false)}
                 >
                   Cancel
@@ -765,27 +771,27 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
       {orderSuccess && (
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-[99999] flex items-center justify-center p-6" onClick={() => setOrderSuccess(null)}>
           <div
-            className="w-full max-w-sm rounded-[var(--m3-shape-2xl)] bg-[#211a30] border border-[#483c5e]/40 p-6 shadow-2xl flex flex-col gap-5 text-center"
+            className="w-full max-w-sm rounded-[var(--m3-shape-2xl)] bg-m3-surfaceContainer border border-transparent p-6 shadow-2xl flex flex-col gap-5 text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-14 h-14 rounded-full bg-[#4f378b]/40 flex items-center justify-center text-[#d0bcff] mx-auto shadow-lg text-2xl">
+            <div className="w-14 h-14 rounded-full bg-m3-primaryContainer/40 flex items-center justify-center text-m3-primary mx-auto shadow-lg text-2xl">
               🎉
             </div>
             <h3 className="m3-title-medium">Order Placed!</h3>
-            <p className="text-xs leading-relaxed text-[#cac4d0]">Your order has been received by the kitchen team and is now being processed.</p>
+            <p className="text-xs leading-relaxed text-m3-onSurfaceVariant">Your order has been received by the kitchen team and is now being processed.</p>
             
-            <div className="rounded-[var(--m3-shape-xl)] bg-[#292035]/50 border border-[#483c5e]/25 p-4 flex flex-col gap-2.5 text-left text-xs">
+            <div className="rounded-[var(--m3-shape-xl)] bg-m3-surfaceContainerHigh p-4 flex flex-col gap-2.5 text-left text-xs">
               <div className="flex justify-between items-center">
-                <span className="text-[#cac4d0]">Order Reference</span>
-                <span className="font-bold text-[#e6e1e5]">#{orderSuccess._id}</span>
+                <span className="text-m3-onSurfaceVariant">Order Reference</span>
+                <span className="font-bold text-m3-onSurface">#{orderSuccess._id}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#cac4d0]">Student ID</span>
-                <span className="font-bold text-[#e6e1e5]">{orderSuccess.StudentId}</span>
+                <span className="text-m3-onSurfaceVariant">Student ID</span>
+                <span className="font-bold text-m3-onSurface">{orderSuccess.StudentId}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#cac4d0]">Total Amount</span>
-                <span className="font-extrabold text-[#d0bcff]">₹{orderSuccess.TotalAmount}</span>
+                <span className="text-m3-onSurfaceVariant">Total Amount</span>
+                <span className="font-extrabold text-m3-primary">₹{orderSuccess.TotalAmount}</span>
               </div>
             </div>
 

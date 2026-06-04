@@ -163,10 +163,10 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
               
               const badgeStyle = 
                 priority === 'high' 
-                  ? 'bg-[#ba1a1a]/15 text-[#ffb4ab] border-[#ffb4ab]/20' 
+                  ? 'bg-m3-errorContainer/15 text-m3-error border-m3-error/20' 
                   : priority === 'medium'
                   ? 'bg-m3-primaryContainer/20 text-m3-primary border-m3-primaryContainer/40'
-                  : 'bg-white/[0.04] text-slate-400 border-white/10';
+                  : 'bg-white/[0.04] text-slate-400 border-transparent';
 
               return (
                 <article 
@@ -211,7 +211,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                     {/* Only Super Admin can delete announcements */}
                     {isSuperAdmin && (
                       <button 
-                        className="w-8 h-8 rounded-full hover:bg-[#ba1a1a]/15 text-[#ffb4ab] flex items-center justify-center transition-colors duration-200 active:scale-90"
+                        className="w-8 h-8 rounded-full hover:bg-m3-errorContainer/15 text-m3-error flex items-center justify-center transition-colors duration-200 active:scale-90"
                         onClick={() => handleDelete(notice.id || notice._id)}
                         title="Remove Announcement"
                         type="button"
@@ -254,11 +254,12 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              className="bg-m3-surfaceContainer/75 backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10"
+              className="backdrop-blur-xl rounded-t-[32px] rounded-b-none p-6 w-full shadow-2xl flex flex-col gap-6 text-left border-t border-white/10"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--m3-surface-container) 75%, transparent)' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-[#e6e1e5] flex items-center gap-2">
+                <h3 className="text-xl font-bold text-m3-onSurface flex items-center gap-2">
                   <Megaphone size={20} className="text-m3-primary" /> Post Campus Notice
                 </h3>
                 <button 
