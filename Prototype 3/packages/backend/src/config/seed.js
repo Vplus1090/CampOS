@@ -1,9 +1,11 @@
+import fs from 'fs';
 import User from '../models/User.js';
 import CalendarEvent from '../models/CalendarEvent.js';
 import MessDailyMenu from '../models/MessDailyMenu.js';
 import MessWeeklyMenu from '../models/MessWeeklyMenu.js';
 import TimetableClass from '../models/TimetableClass.js';
 import TimetableMetadata from '../models/TimetableMetadata.js';
+import StudyMaterial from '../models/StudyMaterial.js';
 
 /**
  * Seed default accounts.
@@ -17,7 +19,7 @@ const seedUsers = async () => {
     if (!adminExists) {
       await User.create({
         email: 'admin@campos.local',
-        password: 'CampOS@Admin123',
+        password: '$2b$12$GlT5mlcNr.Nb/bT5AoX1mOt5TCRvN9/FFanXd3KWAjFZH9/4aKQhW',
         role: 'admin',
         firstName: 'System',
         lastName: 'Admin',
@@ -29,7 +31,7 @@ const seedUsers = async () => {
       console.log('🔐 DEFAULT ADMIN ACCOUNT CREATED');
       console.log('═'.repeat(60));
       console.log(`   Email:    admin@campos.local`);
-      console.log(`   Password: CampOS@Admin123`);
+      console.log(`   Password: [ENCRYPTED]`);
       console.log(`   Role:     admin`);
       console.log('═'.repeat(60) + '\n');
     } else {
@@ -39,7 +41,7 @@ const seedUsers = async () => {
     if (!superAdminExists) {
       await User.create({
         email: 'superadmin@campos.local',
-        password: 'CampOS@SuperAdmin123',
+        password: '$2b$12$7Ow.Jub1ZSWQk7DTTHU6cOYhiYjaBnTVw0/t5.DybIi48Mr3oA/Ci',
         role: 'super_admin',
         firstName: 'Super',
         lastName: 'Admin',
@@ -51,7 +53,7 @@ const seedUsers = async () => {
       console.log('🔐 DEFAULT SUPER ADMIN ACCOUNT CREATED');
       console.log('═'.repeat(60));
       console.log(`   Email:    superadmin@campos.local`);
-      console.log(`   Password: CampOS@SuperAdmin123`);
+      console.log(`   Password: [ENCRYPTED]`);
       console.log(`   Role:     super_admin`);
       console.log('═'.repeat(60) + '\n');
     } else {
@@ -61,7 +63,7 @@ const seedUsers = async () => {
     if (!canteenAdminExists) {
       await User.create({
         email: 'canteen@campos.local',
-        password: 'Canteen@123',
+        password: '$2b$12$aedVPIUW4Chn.4d.hRri7eYSNOZd0GsWzZUOaObQjv4ER822EttZK',
         role: 'canteen_admin',
         firstName: 'Canteen',
         lastName: 'Counter',
@@ -73,7 +75,7 @@ const seedUsers = async () => {
       console.log('🔐 DEFAULT CANTEEN COUNTER ADMIN ACCOUNT CREATED');
       console.log('═'.repeat(60));
       console.log(`   Email:    canteen@campos.local`);
-      console.log(`   Password: Canteen@123`);
+      console.log(`   Password: [ENCRYPTED]`);
       console.log(`   Role:     canteen_admin`);
       console.log('═'.repeat(60) + '\n');
     } else {
@@ -85,7 +87,7 @@ const seedUsers = async () => {
     if (!studentExists) {
       await User.create({
         email: 'student@campos.local',
-        password: 'Student@123',
+        password: '$2b$12$pJ9oB8JBj18KWE/LVOCQge66/rLnZpsEiP2h0fl3PE9DbqCNA3eZe',
         role: 'student',
         firstName: 'Student',
         lastName: 'Gahlot',
@@ -94,7 +96,7 @@ const seedUsers = async () => {
         studentProfile: {
           enrollmentId: 'DEMO-0001',
           grade: '1st Year',
-          branch: 'Computer Science',
+          branch: 'Computer Science & Engineering',
           section: 'A',
           hostel: 'Hostel Block D',
           roomNumber: '404',
@@ -105,11 +107,18 @@ const seedUsers = async () => {
       console.log('🔐 DEFAULT DEMO STUDENT ACCOUNT CREATED');
       console.log('═'.repeat(60));
       console.log(`   Email:    student@campos.local`);
-      console.log(`   Password: Student@123`);
-      console.log(`   Role:     student (demo — no JPortal link)`);
+      console.log(`   Password: [ENCRYPTED]`);
+      console.log(`   Role:     student`);
+      console.log(`   Enroll:   DEMO-0001`);
       console.log('═'.repeat(60) + '\n');
     } else {
-      console.log('🎓 Demo student account already exists. Skipping seed.');
+      if (studentExists.studentProfile?.branch === 'Computer Science') {
+        studentExists.studentProfile.branch = 'Computer Science & Engineering';
+        await studentExists.save();
+        console.log('🔄 Updated demo student profile branch to Computer Science & Engineering');
+      } else {
+        console.log('🎓 Demo student account already exists. Skipping seed.');
+      }
     }
 
     // Seed Vardaan's student account
@@ -117,7 +126,7 @@ const seedUsers = async () => {
     if (!vardaanExists) {
       await User.create({
         email: '2501200031@campos.local',
-        password: 'kyamujheKrishsepyaarhai?',
+        password: '$2b$12$kFbmoNrmkH7CbEZLfgi9eeNdQPl1T1trrvZOju1KoguKCQ8qRWeFG',
         role: 'student',
         firstName: 'Vardaan',
         lastName: 'Gahlot',
@@ -137,18 +146,35 @@ const seedUsers = async () => {
       console.log('🔐 VARDAAN STUDENT ACCOUNT CREATED');
       console.log('═'.repeat(60));
       console.log(`   Email:    2501200031@campos.local`);
-      console.log(`   Password: kyamujheKrishsepyaarhai?`);
+      console.log(`   Password: [ENCRYPTED]`);
       console.log(`   Role:     student`);
       console.log(`   Enroll:   2501200031`);
       console.log('═'.repeat(60) + '\n');
     } else {
+      let updated = false;
       if (vardaanExists.email === 'vardaan@campos.local') {
         vardaanExists.email = '2501200031@campos.local';
-        await vardaanExists.save();
+        updated = true;
         console.log('🔄 Updated Vardaan student account email to 2501200031@campos.local');
+      }
+      if (vardaanExists.studentProfile?.branch === 'Computer Science') {
+        vardaanExists.studentProfile.branch = 'Computer Science & Engineering';
+        updated = true;
+        console.log('🔄 Updated Vardaan student profile branch to Computer Science & Engineering');
+      }
+      if (updated) {
+        await vardaanExists.save();
       } else {
         console.log('🎓 Vardaan student account already exists. Skipping seed.');
       }
+    }
+    // Migrate any user accounts that still have "Computer Science" as branch to "Computer Science & Engineering"
+    const migrationResult = await User.updateMany(
+      { 'studentProfile.branch': 'Computer Science' },
+      { $set: { 'studentProfile.branch': 'Computer Science & Engineering' } }
+    );
+    if (migrationResult.modifiedCount > 0) {
+      console.log(`🔄 Migrated ${migrationResult.modifiedCount} student accounts from 'Computer Science' to 'Computer Science & Engineering'`);
     }
   } catch (err) {
     console.error('❌ Failed to seed user accounts:', err.message);
@@ -290,7 +316,12 @@ const seedMess = async () => {
  */
 const seedTimetable = async () => {
   try {
-    const metaExists = await TimetableMetadata.findOne({});
+    let metaExists = await TimetableMetadata.findOne({});
+    if (metaExists && !metaExists.courses) {
+      console.log('⌛ Existing TimetableMetadata is missing "courses" field. Deleting and re-seeding...');
+      await TimetableMetadata.deleteMany({});
+      metaExists = null;
+    }
     const classesExists = await TimetableClass.findOne({});
 
     if (!metaExists || !classesExists) {
@@ -312,6 +343,7 @@ const seedTimetable = async () => {
       if (!metaExists) {
         if (metadata) {
           await TimetableMetadata.create({
+            courses: metadata.courses,
             semesters: metadata.semesters,
             phases: metadata.phases,
             batches: metadata.batches
@@ -320,6 +352,10 @@ const seedTimetable = async () => {
         } else {
           // Mock metadata fallback
           await TimetableMetadata.create({
+            courses: [
+              { id: "btech-62", name: "B.Tech Sec-62" },
+              { id: "btech-128", name: "B.Tech Sec-128" }
+            ],
             semesters: { "btech-62": [{ id: "sem2", name: "2" }] },
             phases: { "btech-62": { "sem2": [{ id: "phase1", name: "1" }] } },
             batches: { "btech-62": { "sem2": { "phase1": [{ id: "g2", name: "G2" }] } } }
@@ -379,11 +415,38 @@ const seedTimetable = async () => {
   }
 };
 
+const seedStudyMaterials = async () => {
+  try {
+    const count = await StudyMaterial.countDocuments({});
+    // If the database has fewer than 100 materials (meaning it only had the old mock seed), we clear and seed the full list.
+    if (count < 100) {
+      console.log('📚 Clearing and seeding full study materials directory from SaatvikChauhan/JIIT-Shelf...');
+      await StudyMaterial.deleteMany({});
+
+      const filePath = new URL('./extracted_materials.json', import.meta.url);
+      const fileData = fs.readFileSync(filePath, 'utf8');
+      const defaultMaterials = JSON.parse(fileData);
+
+      const chunkSize = 1000;
+      for (let i = 0; i < defaultMaterials.length; i += chunkSize) {
+        const chunk = defaultMaterials.slice(i, i + chunkSize);
+        await StudyMaterial.insertMany(chunk);
+      }
+      console.log(`📚 Study materials seeded successfully (${defaultMaterials.length} items)!`);
+    } else {
+      console.log('📚 Study materials already seeded. Skipping.');
+    }
+  } catch (err) {
+    console.error('❌ Failed to seed study materials:', err.message);
+  }
+};
+
 const seedAdmin = async () => {
   await seedUsers();
   await seedCalendar();
   await seedMess();
   await seedTimetable();
+  await seedStudyMaterials();
 };
 
 export default seedAdmin;

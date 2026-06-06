@@ -434,6 +434,10 @@ body {
   color: #ffb4ab !important;
 }
 
+body.mode-light .home-pill--notices-unread {
+  color: var(--m3-error) !important;
+}
+
 .home-pill--notices-unread:hover {
   background: color-mix(in srgb, #ba1a1a 18%, var(--home-pill)) !important;
 }
@@ -674,4 +678,38 @@ textarea,
     animation: none !important;
   }
 }
+
+/* Force mobile-first/stacked layout rules inside the mobile screen simulator on desktop viewports */
+.mobile-screen-viewport .sm\:grid-cols-2 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+.mobile-screen-viewport .sm\:grid-cols-3 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+.mobile-screen-viewport .md\:grid-cols-3 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+.mobile-screen-viewport .lg\:grid-cols-3 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+.mobile-screen-viewport .lg\:col-span-1,
+.mobile-screen-viewport .lg\:col-span-2 {
+  grid-column: span 1 / span 1 !important;
+}
+.mobile-screen-viewport .sm\:flex-row {
+  flex-direction: column !important;
+}
+.mobile-screen-viewport .sm\:items-center {
+  align-items: stretch !important;
+}
+.mobile-screen-viewport .sm\:max-w-xs {
+  max-width: 100% !important;
+}
+.mobile-screen-viewport .sm\:w-auto {
+  width: 100% !important;
+}
+.mobile-screen-viewport .sm\:flex-none {
+  flex: 1 1 0% !important;
+}
+
 

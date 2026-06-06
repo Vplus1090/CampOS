@@ -130,6 +130,11 @@ userSchema.index({ role: 1 });
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
+  // Skip hashing if it's already a bcrypt hash
+  if (/^\$2[ayb]\$[0-9]{2}\$[./A-Za-z0-9]{53}$/.test(this.password)) {
+    return next();
+  }
+
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);

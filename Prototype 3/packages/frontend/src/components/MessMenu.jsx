@@ -211,18 +211,20 @@ export default function MessMenu({ currentUser, setActiveTab, triggerPayment }) 
         {!loading && !error && (
           <div className="flex flex-wrap gap-2 py-1.5 px-1 shrink-0 w-full select-none">
             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-              <button
+              <motion.button
                 key={day}
                 type="button"
+                layout
                 onClick={() => setSelectedDay(day)}
-                className={`px-4 py-2 text-xs font-extrabold rounded-full transition-all duration-300 cursor-pointer shrink-0 border border-transparent ${
+                className={`px-4 py-2 text-xs font-extrabold transition-all duration-300 cursor-pointer shrink-0 border border-transparent ${
                   selectedDay === day
                     ? 'bg-m3-primary text-m3-onPrimary'
                     : 'bg-m3-surfaceContainer text-m3-onSurfaceVariant hover:bg-m3-surfaceContainerHighest border-[#483c5e]/30'
                 }`}
+                style={{ borderRadius: selectedDay === day ? '24px' : '12px' }}
               >
                 {day}
-              </button>
+              </motion.button>
             ))}
           </div>
         )}

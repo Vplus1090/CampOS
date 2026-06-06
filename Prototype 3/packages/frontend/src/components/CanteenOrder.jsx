@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Search, Plus, RefreshCw } from 'lucide-react';
+import { Trash2, Search, Plus, RefreshCw, Filter, SlidersHorizontal } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import M3ScreenHeader from './M3ScreenHeader';
 import { API_BASE } from '../config/api';
 
@@ -21,6 +22,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
   // M3 screen state
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   const handleAddToCartClick = (item) => {
     addToCart(item);
@@ -88,6 +90,17 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
   useEffect(() => {
     fetchMenuAndOrders();
   }, []);
+
+  useEffect(() => {
+    if (showFilterModal) {
+      document.body.classList.add('canteen-filter-open');
+    } else {
+      document.body.classList.remove('canteen-filter-open');
+    }
+    return () => {
+      document.body.classList.remove('canteen-filter-open');
+    };
+  }, [showFilterModal]);
 
   // Shopping Cart Actions (Only for Students!)
   const addToCart = (item) => {
@@ -544,28 +557,7 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
           </div>
         )}
 
-        {/* Category Chips */}
-        {!loading && !error && (!isCanteenAdmin || adminSubTab === 'menu') && categories.length > 1 && (
-          <div className="flex flex-col gap-2 shrink-0 mb-2">
-            <div className="m3-segmented-chips flex-wrap gap-y-2">
-              {categories.map((cat) => {
-                const isActive = selectedCategory === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`m3-segmented-chip m3-segmented-chip--sm ${
-                      isActive ? 'm3-segmented-chip--selected' : ''
-                    }`}
-                    type="button"
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+
 
         {/* Search Field */}
         {!loading && !error && (!isCanteenAdmin || adminSubTab === 'menu') && (
@@ -963,6 +955,84 @@ export default function CanteenOrder({ currentUser, onUpdate, setActiveTab, trig
           </div>
         </div>
       )}
+
+      {/* Floating Filter FAB */}
+      {!loading && !error && (!isCanteenAdmin || adminSubTab === 'menu') && categories.length > 1 && (
+        <button
+          onClick={() => setShowFilterModal(true)}
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[998] bg-[#1c1b1f]/95 hover:bg-[#2b2930] text-[#eaddff] rounded-full px-5 py-3 flex items-center gap-2 text-xs font-black uppercase tracking-wider shadow-lg active:scale-95 transition-all cursor-pointer border border-[#483c5e]/30"
+          type="button"
+        >
+          <SlidersHorizontal size={14} />
+          <span>Filters {selectedCategory !== 'All' && `• ${selectedCategory}`}</span>
+        </button>
+      )}
+
+      {/* Bottom Sheet Categories Filter Modal */}
+      <AnimatePresence>
+        {showFilterModal && (
+          <div 
+            className="absolute inset-0 bg-black/60 z-[9999] flex items-end justify-center" 
+            onClick={() => setShowFilterModal(false)}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="w-full max-w-md p-6 rounded-t-[28px] flex flex-col gap-4 max-h-[85vh] overflow-y-auto backdrop-blur-xl border-t border-l border-r"
+              style={{
+                backgroundColor: 'color-mix(in srgb, var(--m3-surface-container) 70%, transparent)',
+                borderColor: 'color-mix(in srgb, var(--m3-outline-variant) 60%, transparent)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b pb-3" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}>
+                <h3 className="m3-title-medium font-bold text-m3-onSurface flex items-center gap-2">
+                  <Filter size={18} className="text-m3-primary" /> Filter Categories
+                </h3>
+                <button
+                  className="w-8 h-8 rounded-full hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant flex items-center justify-center transition cursor-pointer font-bold"
+                  onClick={() => setShowFilterModal(false)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2.5 pt-2 select-none">
+                {categories.map((cat) => {
+                  const isActive = selectedCategory === cat;
+                  const count = cat === 'All' 
+                    ? menu.length 
+                    : menu.filter(item => item.Category === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        setSelectedCategory(cat);
+                        setShowFilterModal(false);
+                      }}
+                      className={`w-full p-4 rounded-2xl border transition-all text-left flex justify-between items-center cursor-pointer ${
+                        isActive
+                          ? 'bg-m3-primaryContainer border-m3-primary text-m3-onPrimaryContainer font-bold'
+                          : 'bg-m3-surfaceContainerLow border-m3-outlineVariant/50 text-m3-onSurface hover:bg-m3-surfaceContainerHighest'
+                      }`}
+                      type="button"
+                    >
+                      <span className="text-sm font-bold tracking-wide">{cat}</span>
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-extrabold ${
+                        isActive ? 'bg-m3-primary text-m3-onPrimary' : 'bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant'
+                      }`}>
+                        {count} {count === 1 ? 'item' : 'items'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

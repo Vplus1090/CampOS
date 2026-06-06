@@ -144,7 +144,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
         {/* Content Feed */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <div className="w-8 h-8 rounded-full border border-transparent border-t-white border-r-white animate-spin" />
+            <div className="w-8 h-8 rounded-full border border-transparent border-t-m3-primary border-r-m3-primary animate-spin" />
             <p className="text-xs font-semibold m3-text-variant uppercase tracking-widest">Syncing notice feed...</p>
           </div>
         ) : error ? (
@@ -166,7 +166,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                   ? 'bg-m3-errorContainer/15 text-m3-error border-m3-error/20' 
                   : priority === 'medium'
                   ? 'bg-m3-primaryContainer/20 text-m3-primary border-m3-primaryContainer/40'
-                  : 'bg-white/[0.04] text-slate-400 border-transparent';
+                  : 'bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant border-m3-outlineVariant/60';
 
               return (
                 <article 
@@ -264,7 +264,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                 </h3>
                 <button 
                   onClick={() => setShowModal(false)} 
-                  className="p-2 -mr-2 text-slate-400 hover:text-white rounded-full hover:bg-white/5 transition-colors"
+                  className="p-2 -mr-2 text-m3-onSurfaceVariant hover:text-m3-onSurface rounded-full hover:bg-m3-surfaceContainerHighest transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -301,7 +301,7 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                   <label className="m3-title-small m3-text-variant pl-1" htmlFor="notice-priority">Priority Level</label>
                   <div className="m3-select-wrap">
                     <select
-                      id="notice-priority"
+                       id="notice-priority"
                       value={priority}
                       onChange={(e) => setPriority(e.target.value)}
                       className="m3-select"
@@ -332,14 +332,14 @@ export default function NoticesFeed({ currentUser, onUpdate, setActiveTab }) {
                 <div className="flex justify-between items-center gap-3 pt-3">
                   <button 
                     type="button" 
-                    className="flex-1 min-h-[52px] border border-white/10 text-white rounded-full font-bold flex items-center justify-center hover:bg-white/5 active:scale-98 transition-all cursor-pointer" 
+                    className="flex-grow min-h-[52px] border border-m3-outlineVariant text-m3-onSurface rounded-full font-bold flex items-center justify-center hover:bg-m3-surfaceContainerHighest active:scale-98 transition-all cursor-pointer" 
                     onClick={() => setShowModal(false)}
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit" 
-                    className="flex-1 m3-filled-button min-h-[52px] cursor-pointer"
+                    className="flex-grow m3-filled-button min-h-[52px] cursor-pointer"
                     disabled={submitting}
                   >
                     {submitting ? 'Posting...' : 'Publish'}

@@ -513,7 +513,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
               </div>
 
               <div className="flex flex-col gap-5 py-2 w-full">
-                <div className="flex items-center justify-center gap-5 w-full">
+                <div className="flex items-center justify-center gap-3.5 w-full">
                   {[
                     { id: 'lavender', hex: '#d0bcff', name: 'Lavender' },
                     { id: 'blue', hex: '#a8c7ff', name: 'Sapphire Blue' },
@@ -528,7 +528,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                         whileHover={{ scale: 1.15 }}
                         key={theme.id}
                         onClick={() => applyTheme(theme.id)}
-                        className={`w-12 h-12 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none ${
+                        className={`w-10 h-10 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none shrink-0 border border-m3-outlineVariant/50 ${
                           isActive 
                             ? 'ring-4 ring-m3-primary ring-offset-4 ring-offset-m3-surfaceContainer'
                             : 'hover:ring-2 hover:ring-m3-outlineVariant/50'
@@ -541,7 +541,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                 </div>
 
                 <div className="flex items-center justify-center w-full px-2 mt-2">
-                  <div className="m3-segmented-chips w-full max-w-xs justify-between bg-m3-surfaceContainerLow p-1 rounded-full border border-m3-outlineVariant/30">
+                  <div className="m3-segmented-chips w-full max-w-xs justify-between bg-m3-surfaceContainerLow p-1 rounded-full border border-m3-outlineVariant/60">
                     <button
                       type="button"
                       onClick={() => applyMode('light')}

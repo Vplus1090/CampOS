@@ -10,6 +10,7 @@ import messRouter from './mess.js';
 import webportalRouter from './webportal.js';
 import calendarRouter from './calendar.js';
 import timetableRouter from './timetable.js';
+import studymaterialsRouter from './studymaterials.js';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/mess', messRouter);
 router.use('/webportal', webportalRouter);
 router.use('/calendar', calendarRouter);
 router.use('/timetable', timetableRouter);
+router.use('/studymaterials', studymaterialsRouter);
 
 export default router;

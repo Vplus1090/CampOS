@@ -75,8 +75,13 @@ async function hit(path, jsonPayload, token = null) {
 }
 
 async function run() {
-  const username = "2501200031";
-  const password = "kyamujheKrishsepyaarhai?";
+  const username = process.env.LIVE_PORTAL_USERNAME || "2501200031";
+  const password = process.env.LIVE_PORTAL_PASSWORD;
+
+  if (!password) {
+    console.error("❌ Error: LIVE_PORTAL_PASSWORD environment variable is not set.");
+    process.exit(1);
+  }
 
   console.log(`[1] Authenticating Enrollment ${username} via pretoken...`);
   const pretokenPayload = serialize_payload({

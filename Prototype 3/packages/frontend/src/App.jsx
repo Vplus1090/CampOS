@@ -671,7 +671,7 @@ function App() {
             <MessMenu currentUser={currentUser} setActiveTab={setActiveTab} triggerPayment={triggerPayment} />
           )}
           {activeTab === 'materials' && allowedTabs.includes('materials') && (
-            <StudyMaterials setActiveTab={setActiveTab} />
+            <StudyMaterials currentUser={currentUser} setActiveTab={setActiveTab} />
           )}
           {activeTab === 'calendar' && allowedTabs.includes('calendar') && (
             <AcademicCalendar currentUser={currentUser} setActiveTab={setActiveTab} />
@@ -694,7 +694,7 @@ function App() {
         {activeTab === 'canteen' && canteenCart.length > 0 && (
           <button
             onClick={() => setActiveTab('canteen_cart')}
-            className={`absolute bottom-6 right-6 z-[999] bg-m3-primary text-m3-onPrimary rounded-[20px] w-16 h-16 shadow-2xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
+            className={`canteen-cart-btn absolute bottom-6 right-6 z-[999] bg-m3-primary text-m3-onPrimary rounded-[20px] w-16 h-16 shadow-2xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
               isCartPopping ? 'scale-110' : 'active:scale-90 hover:brightness-110'
             }`}
             type="button"

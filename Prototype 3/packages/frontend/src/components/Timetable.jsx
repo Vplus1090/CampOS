@@ -44,7 +44,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
   const [selectedSemester, setSelectedSemester] = useState('sem2');
   const [selectedPhase, setSelectedPhase] = useState('phase1');
   const [selectedBatch, setSelectedBatch] = useState('g2');
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Scroll detection state
   const [isScrolled, setIsScrolled] = useState(false);
@@ -389,20 +389,22 @@ export default function Timetable({ currentUser, setActiveTab }) {
         )}
 
         {/* Day selection horizontal bar list */}
-        <div className="flex gap-2 overflow-x-auto py-1.5 px-1 shrink-0 scrollbar-none w-full">
+        <div className="flex flex-wrap gap-2 py-1.5 px-1 shrink-0 w-full select-none">
           {weekDays.filter(d => d !== 'Sunday').map((day) => (
-            <button
+            <motion.button
               key={day}
               type="button"
+              layout
               onClick={() => setSelectedDay(day)}
-              className={`px-4 py-2 text-xs font-extrabold rounded-full transition-all duration-300 cursor-pointer shrink-0 border border-transparent ${
+              className={`px-4 py-2 text-xs font-extrabold transition-all duration-300 cursor-pointer shrink-0 border border-transparent ${
                 selectedDay === day
                   ? 'bg-m3-primary text-m3-onPrimary'
                   : 'bg-m3-surfaceContainer text-m3-onSurfaceVariant hover:bg-m3-surfaceContainerHighest border-[#483c5e]/30'
               }`}
+              style={{ borderRadius: selectedDay === day ? '24px' : '12px' }}
             >
               {day}
-            </button>
+            </motion.button>
           ))}
         </div>
 
@@ -506,7 +508,7 @@ export default function Timetable({ currentUser, setActiveTab }) {
         {/* Breaks in the Day Section */}
         {!loadingDb && !dbError && breaks.length > 0 && (
           <div className="w-full mt-2 shrink-0">
-            <div className="m3-surface-card p-5 flex flex-col gap-4 text-left border-dashed border bg-transparent" style={{ borderColor: 'color-mix(in srgb, var(--m3-outline-variant) 30%, transparent)' }}>
+            <div className="m3-surface-card p-5 flex flex-col gap-4 text-left border-dashed border bg-transparent" style={{ borderColor: 'color-mix(in srgb, var(--m3-outline-variant) 60%, transparent)' }}>
               <h4 className="text-[11px] font-black uppercase tracking-wider text-m3-primary border-b border-white/5 pb-2 flex items-center gap-1.5 select-none">
                 <Sparkles size={12} className="text-m3-primary" /> Breaks in the Day
               </h4>

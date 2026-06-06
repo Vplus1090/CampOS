@@ -30,6 +30,10 @@ body.mode-light {
   --accent-border: color-mix(in srgb, var(--m3-primary) 15%, transparent);
 }
 
+body.mode-light .m3-student-navbar {
+  background-color: #ffffff !important;
+}
+
 
 /* ─── Global Dashboard Container ────────────────────────────────────────────────── */
 
@@ -2919,4 +2923,15 @@ input:checked + .slider:before {
   --tw-shadow-colored: 0 0 #0000 !important;
   --tw-drop-shadow: drop-shadow(0 0 #0000) !important;
   box-shadow: none !important;
+}
+
+/* Fade out canteen cart button when categories filter sheet is open */
+.canteen-cart-btn {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+body.canteen-filter-open .canteen-cart-btn {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0.8) !important;
 }

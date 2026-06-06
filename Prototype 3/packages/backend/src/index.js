@@ -37,8 +37,15 @@ const allowedOrigins = env.CORS_ORIGIN
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Allow requests with no origin (mobile apps, curl, same-origin, etc.)
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      // Allow requests with no origin, matched configured origins, or any localhost origin
+      if (
+        !origin || 
+        allowedOrigins.includes(origin) || 
+        /^https?:\/\/localhost(:\d+)?$/.test(origin) || 
+        /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)
+      ) {
+        return cb(null, true);
+      }
       cb(new Error('Not allowed by CORS'));
     },
     credentials: true,

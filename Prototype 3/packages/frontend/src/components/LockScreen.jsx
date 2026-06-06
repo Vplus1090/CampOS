@@ -22,6 +22,20 @@ export default function LockScreen({ onLoginSuccess }) {
   const [submitting, setSubmitting] = useState(false);
   const [loginError, setLoginError] = useState(null);
 
+  const [rememberMe, setRememberMe] = useState(() => {
+    return localStorage.getItem('campos-remember-me') === 'true';
+  });
+
+  // Pre-fill credentials if remember me was active
+  useEffect(() => {
+    if (localStorage.getItem('campos-remember-me') === 'true') {
+      const savedEmail = localStorage.getItem('campos-remember-email') || '';
+      const savedPassword = localStorage.getItem('campos-remember-password') || '';
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+    }
+  }, []);
+
   // Portal online/offline status
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -44,7 +58,7 @@ export default function LockScreen({ onLoginSuccess }) {
   const [showGuestShelf, setShowGuestShelf] = useState(false);
   const [showDemoProfiles, setShowDemoProfiles] = useState(false);
   const [showShelfSetup, setShowShelfSetup] = useState(false);
-  const [setupBranch, setSetupBranch] = useState('Computer Science');
+  const [setupBranch, setSetupBranch] = useState('Computer Science & Engineering');
   const [setupSemester, setSetupSemester] = useState('Semester 1');
   const [guestShelfBranch, setGuestShelfBranch] = useState('All Branches');
   const [guestShelfSemester, setGuestShelfSemester] = useState('All Semesters');
@@ -145,6 +159,17 @@ export default function LockScreen({ onLoginSuccess }) {
 
       const data = await parseJsonResponse(res);
       if (!res.ok) throw new Error(data.message || 'Login failed');
+
+      // Save credentials if rememberMe is enabled
+      if (rememberMe) {
+        localStorage.setItem('campos-remember-me', 'true');
+        localStorage.setItem('campos-remember-email', email.trim());
+        localStorage.setItem('campos-remember-password', password);
+      } else {
+        localStorage.removeItem('campos-remember-me');
+        localStorage.removeItem('campos-remember-email');
+        localStorage.removeItem('campos-remember-password');
+      }
 
       onLoginSuccess(data.user);
     } catch (err) {
@@ -268,7 +293,7 @@ export default function LockScreen({ onLoginSuccess }) {
         animate="visible"
       >
         {/* Spacer to shift everything down */}
-        <div className="h-8" />
+        <div className="h-16" />
 
         {/* Playful M3 Expressive Header */}
         <motion.header variants={itemVariants} className="flex flex-col items-start text-left w-full mb-2">
@@ -348,6 +373,24 @@ export default function LockScreen({ onLoginSuccess }) {
             </div>
           </div>
 
+          {/* Remember Me Option */}
+          <div className="flex items-center gap-3 pl-1 select-none cursor-pointer" onClick={() => setRememberMe(!rememberMe)}>
+            <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${
+              rememberMe 
+                ? 'bg-m3-primary border-m3-primary text-m3-onPrimary' 
+                : 'border-m3-outlineVariant hover:border-m3-primary bg-m3-surfaceContainerLow'
+            }`}>
+              {rememberMe && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </div>
+            <span className="text-sm font-medium text-m3-onSurfaceVariant">
+              Remember me
+            </span>
+          </div>
+
           <AnimatePresence>
             {loginError && (
               <motion.div 
@@ -403,7 +446,7 @@ export default function LockScreen({ onLoginSuccess }) {
             whileTap={{ scale: 0.92 }}
             type="button"
             onClick={() => {
-              setSetupBranch('Computer Science');
+              setSetupBranch('Computer Science & Engineering');
               setSetupSemester('Semester 1');
               setShowShelfSetup(true);
             }}
@@ -473,9 +516,6 @@ export default function LockScreen({ onLoginSuccess }) {
               <div className="flex flex-col gap-3">
                 {[
                   { label: 'Student (Demo)', user: 'student', pass: 'Student@123', color: 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface' },
-                  { label: 'Canteen Admin', user: 'canteen', pass: 'Canteen@123', color: 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface' },
-                  { label: 'Admin', user: 'admin', pass: 'CampOS@Admin123', color: 'bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface' },
-                  { label: 'Super Admin', user: 'superadmin', pass: 'CampOS@SuperAdmin123', color: 'bg-m3-primaryContainer hover:bg-m3-primaryContainer/90 text-m3-onPrimaryContainer' },
                 ].map((profile) => (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
@@ -535,9 +575,11 @@ export default function LockScreen({ onLoginSuccess }) {
                   onChange={(e) => setSetupBranch(e.target.value)}
                   className="w-full bg-m3-surfaceContainerHigh text-m3-onSurface rounded-[18px] px-4 py-4 text-sm font-bold outline-none border-none appearance-none"
                 >
-                  <option value="Computer Science">Computer Science</option>
+                  <option value="Computer Science & Engineering">Computer Science & Engineering</option>
                   <option value="Electronics & Communication">Electronics & Communication</option>
                   <option value="Information Technology">Information Technology</option>
+                  <option value="Mathematics and Computing">Mathematics and Computing</option>
+                  <option value="Robotics and Artificial Intelligence">Robotics and Artificial Intelligence</option>
                   <option value="Biotechnology">Biotechnology</option>
                 </select>
               </div>
@@ -602,7 +644,7 @@ export default function LockScreen({ onLoginSuccess }) {
               </div>
 
               <div className="flex flex-col gap-5 py-2 w-full">
-                <div className="flex items-center justify-center gap-5 w-full">
+                <div className="flex items-center justify-center gap-3.5 w-full">
                   {[
                     { id: 'lavender', hex: '#d0bcff', name: 'Lavender' },
                     { id: 'blue', hex: '#a8c7ff', name: 'Sapphire Blue' },
@@ -617,7 +659,7 @@ export default function LockScreen({ onLoginSuccess }) {
                         whileHover={{ scale: 1.15 }}
                         key={theme.id}
                         onClick={() => applyTheme(theme.id)}
-                        className={`w-12 h-12 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none ${
+                        className={`w-10 h-10 rounded-full cursor-pointer transition-all duration-300 relative focus:outline-none shrink-0 border border-m3-outlineVariant/50 ${
                           isActive 
                             ? 'ring-4 ring-m3-primary ring-offset-4 ring-offset-m3-surfaceContainer'
                             : 'hover:ring-2 hover:ring-m3-outlineVariant/50'
@@ -630,7 +672,7 @@ export default function LockScreen({ onLoginSuccess }) {
                 </div>
 
                 <div className="flex items-center justify-center w-full px-2 mt-2">
-                  <div className="m3-segmented-chips w-full max-w-xs justify-between bg-m3-surfaceContainerLow p-1 rounded-full border border-m3-outlineVariant/30">
+                  <div className="m3-segmented-chips w-full max-w-xs justify-between bg-m3-surfaceContainerLow p-1 rounded-full border border-m3-outlineVariant/60">
                     <button
                       type="button"
                       onClick={() => applyMode('light')}
