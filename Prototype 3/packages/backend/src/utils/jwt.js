@@ -84,7 +84,7 @@ export const setTokenCookies = (res, accessToken, refreshToken) => {
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 60 * 60 * 1000, // 1 hour
     path: '/',
   });
@@ -93,7 +93,7 @@ export const setTokenCookies = (res, accessToken, refreshToken) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: parseExpiryToMs(env.JWT_REFRESH_EXPIRY),
     path: '/api/auth', // only sent to auth endpoints
   });
@@ -105,6 +105,15 @@ export const setTokenCookies = (res, accessToken, refreshToken) => {
  * @param {object} res - Express response object
  */
 export const clearTokenCookies = (res) => {
-  res.clearCookie('accessToken', { path: '/' });
-  res.clearCookie('refreshToken', { path: '/api/auth' });
+  const isProduction = env.isProd;
+  res.clearCookie('accessToken', {
+    path: '/',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  });
+  res.clearCookie('refreshToken', {
+    path: '/api/auth',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  });
 };
