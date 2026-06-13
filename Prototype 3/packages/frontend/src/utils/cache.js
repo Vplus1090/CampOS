@@ -379,6 +379,36 @@ export const setShowTimetableInNavbar = (v) => { try { localStorage.setItem('sho
 export const getProfileDataRaw = () => { try { const raw = localStorage.getItem('profileData') || localStorage.getItem('pd') || '{}'; return JSON.parse(raw); } catch (e) { return {}; } };
 
 export const clearAllCache = () => { try { localStorage.clear(); } catch (e) { } };
+
+export const clearPortalCache = () => {
+  try {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (
+        key.startsWith('attendance-') ||
+        key.startsWith('grades-') ||
+        key.startsWith('subject-') ||
+        key.startsWith('registered-subjects-') ||
+        key.startsWith('subject-choices-') ||
+        key.startsWith('exam-semesters-') ||
+        key.startsWith('exam-events-') ||
+        key.startsWith('exam-schedule-') ||
+        key.startsWith('gpaData-') ||
+        key.startsWith('semesters-') ||
+        key === 'latestSemester' ||
+        key === 'semestersData' ||
+        key === 'gradeCardSemesters' ||
+        key === 'mess-menu' ||
+        key === 'profileData' ||
+        key === 'pd'
+      ) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (e) {
+    console.error('Failed to clear portal cache:', e);
+  }
+};
 export const getCgpaCalculatorSemesters = () => { try { const raw = localStorage.getItem('cgpaCalculatorSemesters'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } };
 export const setCgpaCalculatorSemesters = (data) => { try { localStorage.setItem('cgpaCalculatorSemesters', JSON.stringify(data)); } catch (e) { } };
 export const getCgpaCalculatorTargetCgpa = () => { try { return localStorage.getItem('cgpaCalculatorTargetCgpa') || ''; } catch (e) { return ''; } };

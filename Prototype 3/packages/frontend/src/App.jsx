@@ -15,6 +15,7 @@ import UserManagement from './components/UserManagement';
 import { API_BASE } from './config/api';
 import { parseJsonResponse } from './utils/parseJsonResponse';
 import { applyThemeMode, initGeolocation } from './utils/theme';
+import { clearPortalCache } from './utils/cache';
 import './App.css';
 
 function App() {
@@ -197,6 +198,7 @@ function App() {
     } catch (e) {
       // Ignore logout API failures and clear state anyway
     } finally {
+      clearPortalCache();
       setCurrentUser(null);
       setActiveTab('home');
     }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Utensils, Calendar, BookOpen, KeyRound, X, QrCode, SmartphoneNfc, CreditCard, Eye, EyeOff, Lock, Palette, Sun, Moon, SunMoon } from 'lucide-react';
 import { applyThemeMode, initGeolocation } from '../utils/theme';
+import { clearPortalCache } from '../utils/cache';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -473,6 +474,7 @@ export default function LockScreen({ onLoginSuccess }) {
               Object.keys(localStorage).forEach((key) => {
                 if (key.startsWith('cp_')) localStorage.removeItem(key);
               });
+              clearPortalCache();
               window.dispatchEvent(new Event('storage'));
               alert('Demo environment reset successfully!');
               window.location.reload();
