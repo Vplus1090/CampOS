@@ -21,8 +21,16 @@ import {
   SunMoon,
   ClipboardList,
   Users,
+  User,
+  MoreVertical,
+  KeyRound,
+  LogOut,
+  Eye,
+  EyeOff,
+  Lock,
 } from 'lucide-react';
 import { applyThemeMode, initGeolocation } from '../utils/theme';
+import { API_BASE } from '../config/api';
 
 function PillLabel({ icon: Icon, children, badge }) {
   return (
@@ -80,6 +88,88 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   const [currentMode, setCurrentMode] = useState(() => {
     return localStorage.getItem('campos-mode') || 'dark';
   });
+
+  // 3-Dot Menu & Reset Password States
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetError, setResetError] = useState(null);
+  const [resetSuccess, setResetSuccess] = useState(null);
+
+  const resetPasswordForm = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setResetError(null);
+    setResetSuccess(null);
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) return;
+
+    if (newPassword.length < 8) {
+      setResetError('New password must be at least 8 characters.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setResetError('Confirm new password does not match.');
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      setResetError('New password must be different from current password.');
+      return;
+    }
+
+    try {
+      setResetSubmitting(true);
+      setResetError(null);
+      setResetSuccess(null);
+
+      const res = await fetch(`${API_BASE}/api/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+        credentials: 'include',
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to update password');
+      }
+
+      setResetSuccess('Password changed successfully! Logging out...');
+      
+      setTimeout(() => {
+        setShowResetPasswordModal(false);
+        resetPasswordForm();
+        onLogout();
+      }, 2000);
+
+    } catch (err) {
+      setResetError(err.message);
+    } finally {
+      setResetSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!showMoreMenu) return;
+    const handleCloseMenu = () => setShowMoreMenu(false);
+    window.addEventListener('click', handleCloseMenu);
+    return () => window.removeEventListener('click', handleCloseMenu);
+  }, [showMoreMenu]);
 
   const applyTheme = (themeId) => {
     setCurrentTheme(themeId);
@@ -158,7 +248,8 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
     try {
       const cached = localStorage.getItem('profileData');
       if (cached) {
-        const profile = JSON.parse(cached);
+        const parsed = JSON.parse(cached);
+        const profile = parsed?.data || parsed;
         const fullName = profile?.name || profile?.generalinformation?.name;
         if (fullName) {
           const first = fullName.trim().split(/\s+/)[0];
@@ -170,6 +261,20 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
     }
     if (currentUser?.firstName) return currentUser.firstName;
     return 'Guest';
+  }, [currentUser]);
+
+  const avatarUrl = useMemo(() => {
+    try {
+      const cached = localStorage.getItem('profileData');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        const profile = parsed?.data || parsed;
+        return profile?.avatar || null;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
   }, [currentUser]);
 
   const greeting = useMemo(() => {
@@ -387,21 +492,76 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
   return (
     <div className="home-screen text-m3-onSurface font-sans select-none relative z-10">
       <header className="home-screen__header">
-        <button type="button" className="home-screen__logout" onClick={onLogout} title="Log out">
-          <ChevronLeft className="home-screen__logout-icon" strokeWidth={2.75} aria-hidden />
-        </button>
+        <div className="home-screen__avatar-container">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Profile" className="home-screen__avatar-image" />
+          ) : (
+            <User className="home-screen__avatar-placeholder" strokeWidth={2.25} />
+          )}
+        </div>
         <div className="home-screen__titles">
           <p className="home-screen__welcome">{greeting}</p>
           <h1 className="home-screen__name">{displayName}</h1>
         </div>
         <button
           type="button"
-          className="home-screen__theme-btn"
-          onClick={() => setShowThemeSelector(true)}
-          title="Select Theme"
+          className="home-screen__more-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowMoreMenu(!showMoreMenu);
+          }}
+          title="More options"
         >
-          <Palette className="home-screen__theme-btn-icon" strokeWidth={2.25} aria-hidden />
+          <MoreVertical className="home-screen__more-btn-icon" strokeWidth={2.25} aria-hidden />
         </button>
+
+        {/* 3-Dot Dropdown Menu */}
+        <AnimatePresence>
+          {showMoreMenu && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12, ease: 'easeOut' }}
+              className="home-screen__menu-dropdown"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                className="home-screen__menu-item"
+                onClick={() => {
+                  setShowMoreMenu(false);
+                  setShowThemeSelector(true);
+                }}
+              >
+                <Palette className="home-screen__menu-item-icon" />
+                <span>Theme Options</span>
+              </button>
+              <button
+                type="button"
+                className="home-screen__menu-item"
+                onClick={() => {
+                  setShowMoreMenu(false);
+                  setShowResetPasswordModal(true);
+                }}
+              >
+                <KeyRound className="home-screen__menu-item-icon" />
+                <span>Reset Password</span>
+              </button>
+              <button
+                type="button"
+                className="home-screen__menu-item text-m3-error"
+                onClick={() => {
+                  setShowMoreMenu(false);
+                  onLogout();
+                }}
+              >
+                <LogOut className="home-screen__menu-item-icon !text-m3-error" />
+                <span>Log Out</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {(activePass || activeOrder) && (
@@ -491,7 +651,7 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 backdrop-blur-md z-[99999] flex items-end justify-center" 
+            className="absolute inset-0 bg-black/50 z-[99999] flex items-end justify-center" 
             onClick={() => setShowThemeSelector(false)}
           >
             <motion.div 
@@ -578,6 +738,153 @@ export default function MetroStartScreen({ currentUser, stats, onTileClick, onLo
                   </div>
                 </div>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🔐 Reset Password Modal Overlay */}
+      <AnimatePresence>
+        {showResetPasswordModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 z-[99999] flex items-center justify-center p-6"
+            onClick={() => {
+              if (!resetSubmitting) {
+                setShowResetPasswordModal(false);
+                resetPasswordForm();
+              }
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="w-full max-w-sm rounded-[var(--m3-shape-2xl)] m3-frosted-dialog p-6 shadow-2xl flex flex-col gap-5 max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b pb-3" style={{ borderBottomColor: 'color-mix(in srgb, var(--m3-outline-variant) 55%, transparent)' }}>
+                <h3 className="m3-title-medium flex items-center gap-2">
+                  <Lock size={18} className="text-m3-primary" /> Reset Password
+                </h3>
+                <button
+                  disabled={resetSubmitting}
+                  className="w-8 h-8 rounded-full hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant flex items-center justify-center transition cursor-pointer font-bold border-none bg-transparent"
+                  onClick={() => {
+                    setShowResetPasswordModal(false);
+                    resetPasswordForm();
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleResetPassword} className="flex flex-col gap-4 text-left">
+                {/* Current Password */}
+                <div className="flex flex-col gap-1 relative">
+                  <span className="text-[9px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest pl-1">Current Password</span>
+                  <div className="relative w-full">
+                    <input
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      placeholder="Enter current password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                      disabled={resetSubmitting}
+                      className="m3-filled-field !h-11 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant hover:text-m3-onSurface transition cursor-pointer border-none bg-transparent"
+                    >
+                      {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New Password */}
+                <div className="flex flex-col gap-1 relative">
+                  <span className="text-[9px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest pl-1">New Password</span>
+                  <div className="relative w-full">
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      placeholder="At least 8 characters"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      disabled={resetSubmitting}
+                      className="m3-filled-field !h-11 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant hover:text-m3-onSurface transition cursor-pointer border-none bg-transparent"
+                    >
+                      {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm New Password */}
+                <div className="flex flex-col gap-1 relative">
+                  <span className="text-[9px] font-bold text-m3-onSurfaceVariant uppercase tracking-widest pl-1">Confirm New Password</span>
+                  <div className="relative w-full">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Re-enter new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      disabled={resetSubmitting}
+                      className="m3-filled-field !h-11 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-m3-onSurfaceVariant hover:text-m3-onSurface transition cursor-pointer border-none bg-transparent"
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Success/Error Banners */}
+                {resetError && (
+                  <div className="text-xs font-semibold text-m3-onError bg-m3-errorContainer/20 border border-m3-error/30 p-2.5 rounded-xl text-center">
+                    ⚠️ {resetError}
+                  </div>
+                )}
+                {resetSuccess && (
+                  <div className="text-xs font-semibold text-m3-primary bg-m3-primaryContainer/30 border border-m3-primary/30 p-2.5 rounded-xl text-center">
+                    ✅ {resetSuccess}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2 select-none">
+                  <button
+                    type="button"
+                    disabled={resetSubmitting}
+                    className="flex-1 h-[48px] rounded-full border-none bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant font-bold text-xs uppercase tracking-wider cursor-pointer transition-all disabled:opacity-50"
+                    onClick={() => {
+                      setShowResetPasswordModal(false);
+                      resetPasswordForm();
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="m3-filled-button flex-1"
+                    style={{ minHeight: 48 }}
+                    disabled={resetSubmitting}
+                  >
+                    {resetSubmitting ? 'Updating...' : 'Update'}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

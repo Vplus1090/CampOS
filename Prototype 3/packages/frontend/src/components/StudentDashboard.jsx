@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   ChevronLeft, ChevronDown, ChevronUp, RefreshCw, X, Shield, Lock, 
   MapPin, Phone, Mail, User, Building, Landmark, Percent,
-  ArrowLeft, Download, Eye, EyeOff, Calculator, Grid3x3, ListFilter, SortAsc, SortDesc, Archive, Plus, Trash2,
+  ArrowLeft, Download, Eye, EyeOff, Calculator, Target, Grid3x3, ListFilter, SortAsc, SortDesc, Archive, Plus, Trash2,
   ArrowRight, Award, Calendar, BookOpen, Clock, 
   DollarSign, CheckCircle2, AlertTriangle, TrendingUp,
   Wallet, Tag, Hash, GitBranch, AlertCircle, Info
@@ -18,10 +18,16 @@ import {
   getExamScheduleFromCache, saveExamScheduleToCache,
   getUsername, getPassword, setCredentials, clearCredentials,
   getAttendanceGoal, setAttendanceGoal, getCachedValueIfAny, getFromCache, saveToCache,
-  saveRegisteredSubjectsToCache, getRegisteredSubjectsFromCache
+  saveRegisteredSubjectsToCache, getRegisteredSubjectsFromCache,
+  clearPortalCache,
+  getCgpaCalculatorSemesters, setCgpaCalculatorSemesters,
+  getCgpaCalculatorTargetCgpa, setCgpaCalculatorTargetCgpa,
+  getCgpaCalculatorSelectedSemester, setCgpaCalculatorSelectedSemester,
+  getSubjectSemestersData, setSubjectSemestersData
 } from '../utils/cache';
 import { 
-  calculateClassesNeeded, calculateClassesCanMiss
+  calculateClassesNeeded, calculateClassesCanMiss,
+  calculateSGPA, calculateCGPA, calculateRequiredSGPA
 } from '../utils/math';
 import { API_BASE } from '../config/api';
 import { resolveCurrentSemesterLabel, formatStyNumber } from '../utils/semester';
@@ -205,6 +211,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncPhase, setSyncPhase] = useState('idle'); // 'idle', 'auth', 'attendance', 'grades', 'profile', 'exams', 'fees'
   const [error, setError] = useState(null);
+  const autoRetryCountRef = React.useRef(0);
+  const autoRetryTimerRef = React.useRef(null);
 
   // --- Real-time Scraping Datastore ---
   const [studentProfile, setStudentProfile] = useState(() => {
@@ -324,7 +332,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
   // --- Subjects & GPA Calculator States ---
   const [subjectsList, setSubjectsList] = useState([]);
-  const [selectedSubjectsSem, setSelectedSubjectsSem] = useState(() => getInitialSemester());
+  const [registeredSemestersList, setRegisteredSemestersList] = useState([]); // from get_registered_semesters()
+  const [selectedSubjectsSem, setSelectedSubjectsSem] = useState(null);
   const [subjectsLoading, setSubjectsLoading] = useState(false);
   const [subjectsError, setSubjectsError] = useState(null);
   const [subjectsSubTab, setSubjectsSubTab] = useState('registered'); // 'registered' | 'choices'
@@ -336,13 +345,21 @@ export default function StudentDashboard({ currentUser, onClose }) {
   const [choicesError, setChoicesError] = useState(null);
   const [subjectsRefreshCount, setSubjectsRefreshCount] = useState(0);
 
-  const [calcMode, setCalcMode] = useState('sgpa'); // 'sgpa' | 'cgpa' | 'target'
-  const [calcSubjects, setCalcSubjects] = useState([]);
-  const [cgpaPrevCgpa, setCgpaPrevCgpa] = useState('');
-  const [cgpaPrevCredits, setCgpaPrevCredits] = useState('');
-  const [targetCgpa, setTargetCgpa] = useState('');
-  const [targetSelectedSem, setTargetSelectedSem] = useState(() => getInitialSemester());
-  const [calculatorSelectedSem, setCalculatorSelectedSem] = useState(() => getInitialSemester());
+  // --- Consolidated GPA/CGPA Calculator States (jportal2 style) ---
+  const [calcSubTab, setCalcSubTab] = useState('sgpa'); // 'sgpa' | 'cgpa'
+  const [calcSemesters, setCalcSemesters] = useState([]);
+  const [calcSelectedSemester, setCalcSelectedSemester] = useState(null);
+  const [calcSubjectData, setCalcSubjectData] = useState({});
+  const [calcLoadingSemesters, setCalcLoadingSemesters] = useState(false);
+  const [calcLoadingSubjects, setCalcLoadingSubjects] = useState(false);
+  const [calcFetchedSemesters, setCalcFetchedSemesters] = useState([]);
+  const [cgpaSemesters, setCgpaSemesters] = useState(() => [
+    { g: "", c: "" },
+    { g: "", c: "" },
+  ]);
+  const [sgpaSubjects, setSgpaSubjects] = useState([]);
+  const [calcTargetCgpa, setCalcTargetCgpa] = useState("");
+  const [gradeCardCache, setGradeCardCache] = useState({});
 
   // --- Real-time Synchronized Component Marks Cache ---
   const cachedSemMarks = useMemo(() => {
@@ -443,6 +460,13 @@ export default function StudentDashboard({ currentUser, onClose }) {
       setEnrollmentNo(enrollmentNo);
       setPassword(password);
     }
+
+    // Cleanup: clear any pending auto-retry timers on unmount
+    return () => {
+      if (autoRetryTimerRef.current) {
+        clearTimeout(autoRetryTimerRef.current);
+      }
+    };
   }, []);
 
   // --- Main Real-time Scraper Function ---
@@ -465,6 +489,17 @@ export default function StudentDashboard({ currentUser, onClose }) {
       setSyncPhase('fetching_profile');
       const profile = await wp.get_personal_info();
       let sgpaCurrentSem = null;
+      const rawPhoto = profile?.["photo&signature"]?.photo ||
+                       profile?.photoAndSignature?.photo ||
+                       profile?.generalinformation?.studentphoto || 
+                       profile?.generalinformation?.studentPhoto || 
+                       profile?.generalinformation?.photo || 
+                       profile?.generalinformation?.studentimage;
+      
+      const avatar = rawPhoto 
+        ? (rawPhoto.startsWith('data:image') ? rawPhoto : `data:image/jpeg;base64,${rawPhoto}`)
+        : null;
+
       const profileData = {
         name: profile?.generalinformation?.name || session.name,
         enrollment: profile?.generalinformation?.enrollmentno || session.enrollmentno,
@@ -473,7 +508,8 @@ export default function StudentDashboard({ currentUser, onClose }) {
         hostel: profile?.hostelinformation?.hostelname || '—',
         room: profile?.hostelinformation?.roomno || 'Not Assigned',
         address: profile?.parentinformation?.permanentaddress || 'Not Available',
-        parents: profile?.parentinformation?.fathername || '—'
+        parents: profile?.parentinformation?.fathername || '—',
+        avatar: avatar
       };
 
       // 3. Fetch SGPA/CGPA (includes authoritative current semester stynumber)
@@ -722,11 +758,38 @@ export default function StudentDashboard({ currentUser, onClose }) {
       }
 
       setSyncPhase('completed');
+      // Reset retry counter on success
+      autoRetryCountRef.current = 0;
+      if (autoRetryTimerRef.current) {
+        clearTimeout(autoRetryTimerRef.current);
+        autoRetryTimerRef.current = null;
+      }
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Scraping transaction aborted. Please verify details.');
       setSyncPhase('failed');
-      if (!isSilent) setIsAuthenticated(false);
+      if (isSilent) {
+        // Auto-retry silently up to 3 times before showing the error banner
+        const MAX_RETRIES = 3;
+        const RETRY_DELAYS = [2000, 5000, 12000];
+        const retryCount = autoRetryCountRef.current;
+        if (retryCount < MAX_RETRIES) {
+          autoRetryCountRef.current = retryCount + 1;
+          const delay = RETRY_DELAYS[retryCount];
+          console.log(`Auto-retry ${retryCount + 1}/${MAX_RETRIES} in ${delay}ms...`);
+          autoRetryTimerRef.current = setTimeout(() => {
+            const enr = getUsername(currentUser?.email);
+            const pwd = getPassword(currentUser?.email);
+            if (enr && pwd) handlePortalSync(enr, pwd, true);
+          }, delay);
+          // Don't show error yet — it will retry automatically
+        } else {
+          // All retries exhausted — surface the error
+          setError(err.message || 'Scraping transaction aborted. Please verify details.');
+        }
+      } else {
+        setError(err.message || 'Scraping transaction aborted. Please verify details.');
+        setIsAuthenticated(false);
+      }
     } finally {
       setIsSyncing(false);
     }
@@ -873,260 +936,682 @@ export default function StudentDashboard({ currentUser, onClose }) {
   };
 
   const handleSubjectsSemesterChange = (semObj) => {
+    setSubjectsList([]); // clear so the effect fetches fresh data for new semester
     setSelectedSubjectsSem(semObj);
   };
 
-  const populateCalcFromSemester = async (sem) => {
-    if (!sem) return;
-    const enroll = getUsername(currentUser?.email);
-    if (!enroll) return;
+  const normalizeCourseCode = (code) => {
+    return String(code || "")
+      .trim()
+      .replace(/[^A-Z0-9]/gi, "")
+      .toUpperCase();
+  };
 
-    let subjects = [];
-    const cached = await getRegisteredSubjectsFromCache(enroll, sem);
-    if (cached && cached.length > 0) {
-      subjects = cached;
-    } else {
+  const getSemesterCacheKey = (semester, username) => {
+    const semIdentifier = semester?.registration_code || semester?.registrationcode || semester?.registration_id || semester?.registrationid || "unknown";
+    return `marks-${semIdentifier}-${username}`;
+  };
+
+  const findMarksCacheForSemester = useCallback(async (semester, username, subjectCodes = []) => {
+    const candidates = [
+      getSemesterCacheKey(semester, username),
+      `marks-${semester?.registration_id || ""}-${username}`,
+      `marks-${semester?.registration_code || ""}-${username}`,
+      `marks-${username}`,
+      `marks`, 
+      `marksData`
+    ].filter(Boolean);
+
+    const uniqueCandidates = [...new Set(candidates)];
+    const normalizedSubjectCodes = new Set(subjectCodes.map(normalizeCourseCode));
+
+    const checkPayload = (raw) => {
+      if (!raw) return false;
+      const payload = raw?.data || raw;
+      const courses = payload?.courses || payload?.marks || payload?.subjectMarks || [];
+      if (!Array.isArray(courses)) return false;
+      if (subjectCodes.length === 0) return true;
+      
+      return courses.some((course) => {
+        const code = normalizeCourseCode(course?.code || course?.subjectcode || course?.subjectCode || course?.subject_code);
+        return code && normalizedSubjectCodes.has(code);
+      });
+    };
+
+    for (const candidate of uniqueCandidates) {
       try {
-        const pass = getPassword(currentUser?.email);
-        if (pass) {
-          await wp.student_login(enroll, pass);
-          const res = await wp.get_registered_subjects_and_faculties(sem);
-          subjects = res?.subjectlist || [];
-          await saveRegisteredSubjectsToCache(subjects, enroll, sem);
+        const cached = await getFromCache(candidate);
+        if (cached && checkPayload(cached)) {
+          return cached;
         }
-      } catch (err) {
-        console.warn('Failed to fetch subjects for calculator:', err);
+      } catch {
+        // Continue
       }
     }
+    
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
 
-    if (subjects.length > 0) {
-      const formatted = subjects.map(s => ({
-        id: s.subjectcode || Math.random().toString(36).substr(2, 9),
-        name: s.subjectdesc || s.subjectcode,
-        code: s.subjectcode,
-        credits: getSubjectCredits(s.subjectcode),
-        selectedGrade: ''
+        const rawStr = localStorage.getItem(key);
+        if (!rawStr || (!rawStr.includes('{') && !rawStr.includes('['))) continue;
+
+        try {
+          const raw = JSON.parse(rawStr);
+          if (checkPayload(raw)) {
+            return raw;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to scan cached marks entries:', e);
+    }
+
+    return null;
+  }, []);
+
+  const getGradeCardForSemester = useCallback(async (semester) => {
+    if (!semester || !wp || !wp.get_semesters_for_grade_card || !wp.get_grade_card) {
+      return null;
+    }
+
+    const cacheKey = semester.registration_id || semester.registration_code || semester.registrationcode || semester.registrationid || null;
+    if (cacheKey && gradeCardCache[cacheKey]) {
+      return gradeCardCache[cacheKey];
+    }
+
+    try {
+      const gradeCardSemesters = await wp.get_semesters_for_grade_card();
+      const matchingSemester = Array.isArray(gradeCardSemesters)
+        ? gradeCardSemesters.find((s) =>
+            (s.registration_id && s.registration_id === semester.registration_id) ||
+            (s.registration_id && s.registration_id === semester.registrationcode) ||
+            (s.registration_code && s.registration_code === semester.registration_code) ||
+            (s.registration_code && s.registration_code === semester.registrationcode) ||
+            (s.registrationcode && s.registrationcode === semester.registration_code) ||
+            (s.registrationcode && s.registrationcode === semester.registrationcode)
+          )
+        : null;
+
+      if (!matchingSemester) return null;
+      const gradeCard = await wp.get_grade_card(matchingSemester);
+      if (cacheKey && gradeCard) {
+        setGradeCardCache((prev) => ({ ...prev, [cacheKey]: gradeCard }));
+      }
+      return gradeCard;
+    } catch (error) {
+      console.warn('No grade card available for semester:', error);
+      return null;
+    }
+  }, [wp, gradeCardCache]);
+
+  const fetchSubjectSemesters = useCallback(async () => {
+    setCalcLoadingSemesters(true);
+    try {
+      try {
+        const semesters = await wp.get_registered_semesters();
+        if (semesters && semesters.length > 0) {
+          setCalcSemesters(semesters);
+          const cachedSemester = getCgpaCalculatorSelectedSemester();
+          const matchedSemester = cachedSemester
+            ? semesters.find(sem =>
+                sem.registration_id === cachedSemester.registration_id ||
+                sem.registration_code === cachedSemester.registration_code
+              )
+            : null;
+          const currentYear = new Date().getFullYear().toString();
+          const currentYearSemester = semesters.find(sem =>
+            sem.registration_code && sem.registration_code.includes(currentYear)
+          );
+          setCalcSelectedSemester(matchedSemester || currentYearSemester || semesters[0]);
+          return;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch registered semesters from portal, will try cache:', err);
+      }
+
+      try {
+        const cached = getSubjectSemestersData();
+        if (cached) {
+          setCalcSemesters(cached || []);
+          const cachedSemester = getCgpaCalculatorSelectedSemester();
+          const matchedSemester = cachedSemester
+            ? (cached || []).find(sem =>
+                sem.registration_id === cachedSemester.registration_id ||
+                sem.registration_code === cachedSemester.registration_code
+              )
+            : null;
+          if (!calcSelectedSemester && matchedSemester) {
+            setCalcSelectedSemester(matchedSemester);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load cached subject semesters:', err);
+      }
+    } catch (error) {
+      console.error('Failed to fetch subject semesters:', error);
+    } finally {
+      setCalcLoadingSemesters(false);
+    }
+  }, [wp, calcSelectedSemester]);
+
+  const processSubjectsForSGPA = (subjects) => {
+    const groupedSubjects = subjects.reduce((acc, subject) => {
+      const baseCode = subject.subjectcode || subject.subject_code;
+      const audt = subject.audtsubject || subject.auditsubject;
+      if (baseCode && !acc[baseCode] && audt !== "Y") {
+        acc[baseCode] = {
+          name: subject.subjectdesc || subject.subject_desc || baseCode,
+          code: baseCode,
+          credits: parseInt(subject.credits) || getSubjectCredits(baseCode) || 0,
+          grade: "A",
+          gradePoints: 9
+        };
+      }
+      return acc;
+    }, {});
+
+    return Object.values(groupedSubjects);
+  };
+
+  const fetchSubjectsForSemester = useCallback(async (semester) => {
+    setCalcLoadingSubjects(true);
+    
+    const enroll = enrollmentNo || getUsername(currentUser?.email);
+
+    const prefillMarksAndGrades = async (processedSubjects, enrollVal) => {
+      try {
+        const username = wp?.session?.enrollmentno || enrollVal || "user";
+        const subjectCodes = processedSubjects.map((subject) => subject.code).filter(Boolean);
+        const cached = await findMarksCacheForSemester(semester, username, subjectCodes);
+        const cachedPayload = cached?.data || cached;
+        const marksMap = {};
+
+        const cachedCourses = cachedPayload?.courses || cachedPayload?.marks || cachedPayload?.subjectMarks || [];
+        if (Array.isArray(cachedCourses)) {
+          cachedCourses.forEach((course) => {
+            const courseCode = normalizeCourseCode(course.code || course.subjectcode || course.subjectCode || course.subject_code);
+            if (!courseCode) return;
+
+            const total = Object.values(course.exams || {}).reduce((acc, exam) => ({
+              obtained: acc.obtained + Number(exam?.OM ?? exam?.om ?? exam?.obtained ?? exam?.obtained_marks ?? 0),
+              full: acc.full + Number(exam?.FM ?? exam?.fm ?? exam?.full ?? exam?.full_marks ?? 0)
+            }), { obtained: 0, full: 0 });
+
+            marksMap[courseCode] = total;
+          });
+        }
+
+        const gradeCard = await getGradeCardForSemester(semester);
+        const gradeList = gradeCard?.response?.gradecard || gradeCard?.gradecard || [];
+        const gradeMap = {};
+        if (Array.isArray(gradeList)) {
+          gradeList.forEach((course) => {
+            const courseCode = normalizeCourseCode(course.subjectcode || course.subject_code || course.subjectCode || course.code);
+            if (courseCode && course.grade) {
+              gradeMap[courseCode] = course.grade;
+            }
+          });
+        }
+
+        const withMarksAndGrades = processedSubjects.map((s) => {
+          const normalizedCode = normalizeCourseCode(s.code);
+          const prefillerGrade = gradeMap[normalizedCode] || s.grade;
+          return {
+            ...s,
+            marks: marksMap[normalizedCode] || null,
+            grade: prefillerGrade,
+            gradePoints: gradePointMap[prefillerGrade] || 0,
+          };
+        });
+
+        setSgpaSubjects(withMarksAndGrades);
+      } catch (e) {
+        console.error('Failed to attach marks cache or grade data:', e);
+        setSgpaSubjects(processedSubjects);
+      }
+    };
+
+    const getFallbackSubjectsForSemester = async (enrollVal) => {
+      const cachedReg = await getRegisteredSubjectsFromCache(enrollVal, semester);
+      if (cachedReg && cachedReg.length > 0) {
+        return cachedReg;
+      }
+
+      const cachedAtt = await getAttendanceFromCache(enrollVal, semester);
+      const attList = cachedAtt ? (cachedAtt.data || cachedAtt) : null;
+      if (Array.isArray(attList) && attList.length > 0) {
+        return attList.map(a => ({
+          subjectcode: a.code,
+          subjectdesc: a.name,
+          credits: getSubjectCredits(a.code)
+        }));
+      }
+
+      try {
+        const gradeCard = await getGradeCardForSemester(semester);
+        const gradeList = gradeCard?.response?.gradecard || gradeCard?.gradecard || [];
+        if (Array.isArray(gradeList) && gradeList.length > 0) {
+          return gradeList.map(g => ({
+            subjectcode: g.subjectcode || g.subject_code || g.code,
+            subjectdesc: g.subjectdesc || g.subject_desc || g.name || g.subjectname,
+            credits: g.coursecreditpoint || g.credits || getSubjectCredits(g.subjectcode || g.code),
+            grade: g.grade
+          }));
+        }
+      } catch (e) {
+        console.warn('Fallback grade card check failed:', e);
+      }
+
+      return null;
+    };
+
+    try {
+      // 1. Try caches first
+      if (enroll) {
+        const fallbackList = await getFallbackSubjectsForSemester(enroll);
+        if (fallbackList && fallbackList.length > 0) {
+          const processedSubjects = processSubjectsForSGPA(fallbackList);
+          if (processedSubjects.length > 0) {
+            await prefillMarksAndGrades(processedSubjects, enroll);
+            setCalcLoadingSubjects(false);
+            return;
+          }
+        }
+      }
+
+      // 2. Fallback to live API
+      const pass = getPassword(currentUser?.email);
+      if (pass && enroll) {
+        await wp.student_login(enroll, pass);
+      }
+
+      const res = await wp.get_registered_subjects_and_faculties(semester);
+      const subjectsList = res?.subjectlist || res?.subjects || [];
+      setCalcSubjectData(prev => ({
+        ...prev,
+        [semester.registration_id]: res
       }));
-      setCalcSubjects(formatted);
-    } else {
-      setCalcSubjects([]);
+
+      if (Array.isArray(subjectsList) && subjectsList.length > 0) {
+        if (enroll) {
+          await saveRegisteredSubjectsToCache(subjectsList, enroll, semester);
+        }
+        const processedSubjects = processSubjectsForSGPA(subjectsList);
+        await prefillMarksAndGrades(processedSubjects, enroll);
+      } else {
+        // Live returned nothing, try fallback one more time (in case of connection error in early step)
+        if (enroll) {
+          const fallbackList = await getFallbackSubjectsForSemester(enroll);
+          if (fallbackList && fallbackList.length > 0) {
+            const processedSubjects = processSubjectsForSGPA(fallbackList);
+            if (processedSubjects.length > 0) {
+              await prefillMarksAndGrades(processedSubjects, enroll);
+              return;
+            }
+          }
+        }
+        setSgpaSubjects([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch subjects:', error);
+      // Try fallback on error
+      if (enroll) {
+        const fallbackList = await getFallbackSubjectsForSemester(enroll);
+        if (fallbackList && fallbackList.length > 0) {
+          const processedSubjects = processSubjectsForSGPA(fallbackList);
+          if (processedSubjects.length > 0) {
+            await prefillMarksAndGrades(processedSubjects, enroll);
+            return;
+          }
+        }
+      }
+      setSgpaSubjects([]);
+    } finally {
+      setCalcLoadingSubjects(false);
+    }
+  }, [wp, calcSemesters, getGradeCardForSemester, findMarksCacheForSemester, enrollmentNo, currentUser]);
+
+  const handleGradeChange = (index, grade) => {
+    setSgpaSubjects(prev => prev.map((subject, i) =>
+      i === index
+        ? { ...subject, grade, gradePoints: gradePointMap[grade] || 0 }
+        : subject
+    ));
+  };
+
+  const handleCalculatorSemesterChange = (semesterId) => {
+    const semester = calcSemesters.find(sem => sem.registration_id === semesterId);
+    setCalcSelectedSemester(semester);
+
+    if (semester && wp) {
+      fetchSubjectsForSemester(semester);
+    }
+  };
+
+  const handleCgpaChange = (i, f, v) => {
+    setCgpaSemesters((prev) =>
+      prev.map((sem, j) => {
+        if (j !== i) return sem;
+        let val = v.replace(/[^\d.]/g, "");
+        if (f === "g") {
+          let n = parseFloat(val);
+          if (!isNaN(n)) {
+            if (n > 10) n = 10;
+            val = n.toString();
+          }
+        }
+        return { ...sem, [f]: val };
+      })
+    );
+  };
+
+  const addSemester = () => {
+    if (cgpaSemesters.length < 10) {
+      setCgpaSemesters([...cgpaSemesters, { g: "", c: "" }]);
+    }
+  };
+
+  const removeSemester = (i) => {
+    if (cgpaSemesters.length > 1) {
+      setCgpaSemesters(cgpaSemesters.filter((_, j) => j !== i));
     }
   };
 
   const addCustomCalcSubject = () => {
     const newSub = {
-      id: 'custom-' + Date.now(),
       name: 'Custom Course',
       code: 'CUSTOM',
       credits: 3,
-      selectedGrade: ''
+      grade: 'A',
+      gradePoints: 9,
+      isCustom: true
     };
-    setCalcSubjects([...calcSubjects, newSub]);
+    setSgpaSubjects([...sgpaSubjects, newSub]);
   };
 
-  const removeCalcSubject = (id) => {
-    setCalcSubjects(calcSubjects.filter(sub => sub.id !== id));
+  const removeCalcSubject = (index) => {
+    setSgpaSubjects(sgpaSubjects.filter((_, i) => i !== index));
   };
 
-  const updateCalcSubjectGrade = (id, grade) => {
-    setCalcSubjects(calcSubjects.map(sub => sub.id === id ? { ...sub, selectedGrade: grade } : sub));
+  const updateCalcSubjectName = (index, name) => {
+    setSgpaSubjects(sgpaSubjects.map((sub, i) => i === index ? { ...sub, name } : sub));
   };
 
-  const updateCalcSubjectCredits = (id, credits) => {
-    setCalcSubjects(calcSubjects.map(sub => sub.id === id ? { ...sub, credits: Number(credits) || 0 } : sub));
+  const updateCalcSubjectCredits = (index, credits) => {
+    setSgpaSubjects(sgpaSubjects.map((sub, i) => i === index ? { ...sub, credits: Number(credits) || 0 } : sub));
   };
 
-  const updateCalcSubjectName = (id, name) => {
-    setCalcSubjects(calcSubjects.map(sub => sub.id === id ? { ...sub, name } : sub));
+  const calculateSGPAValue = () => {
+    const res = calculateSGPA(
+      sgpaSubjects.map(s => ({
+        credits: s.credits,
+        grade: s.grade
+      }))
+    );
+    return res !== null ? res.toFixed(2) : "-";
   };
 
-  const calculatedSgpaResult = useMemo(() => {
-    let totalPoints = 0;
-    let totalCredits = 0;
-    
-    calcSubjects.forEach(sub => {
-      const grade = sub.selectedGrade;
-      const credits = Number(sub.credits) || 0;
-      if (grade && gradePointMap[grade] !== undefined) {
-        totalPoints += gradePointMap[grade] * credits;
-        totalCredits += credits;
-      }
-    });
+  const calculateProjectedCGPA = () => {
+    const currentSgpa = parseFloat(calculateSGPAValue());
+    if (isNaN(currentSgpa)) return "-";
 
-    if (totalCredits === 0) return { sgpa: '0.00', credits: 0 };
-    return {
-      sgpa: (totalPoints / totalCredits).toFixed(2),
-      credits: totalCredits
-    };
-  }, [calcSubjects]);
+    const currentCredits = sgpaSubjects.reduce((acc, s) => acc + (s.credits > 0 ? s.credits : 0), 0);
+    if (currentCredits === 0) return "-";
 
-  const calculatedCgpaResult = useMemo(() => {
-    const prevCgpa = parseFloat(cgpaPrevCgpa) || 0;
-    const prevCredits = parseFloat(cgpaPrevCredits) || 0;
-    const currentSgpa = parseFloat(calculatedSgpaResult.sgpa) || 0;
-    const currentCredits = parseFloat(calculatedSgpaResult.credits) || 0;
+    const pastSemesters = (Array.isArray(calcFetchedSemesters) ? calcFetchedSemesters : [])
+      .map(sem => ({
+        sgpa: parseFloat(sem.sgpa),
+        credits: parseFloat(sem.totalcoursecredit)
+      }))
+      .filter(s => !isNaN(s.sgpa) && !isNaN(s.credits));
 
-    const totalCredits = prevCredits + currentCredits;
-    if (totalCredits === 0) return '0.00';
-    
-    return ((prevCgpa * prevCredits + currentSgpa * currentCredits) / totalCredits).toFixed(2);
-  }, [cgpaPrevCgpa, cgpaPrevCredits, calculatedSgpaResult]);
+    const allSemesters = [
+      ...pastSemesters,
+      { sgpa: currentSgpa, credits: currentCredits }
+    ];
+
+    const projected = calculateCGPA(allSemesters);
+    return projected !== null ? projected.toFixed(2) : "-";
+  };
+
+  const calculateCGPAValue = () => {
+    const semesters = cgpaSemesters.map(s => ({
+      sgpa: parseFloat(s.g),
+      credits: parseFloat(s.c)
+    })).filter(s => !isNaN(s.sgpa) && !isNaN(s.credits));
+
+    if (semesters.length === 0) return "-";
+
+    const val = calculateCGPA(semesters);
+    return val !== null ? val.toFixed(2) : "-";
+  };
+
+  const calculateRequiredSGPAValue = () => {
+    const t = parseFloat(calcTargetCgpa);
+    if (isNaN(t)) return "-";
+
+    const pastSemesters = (Array.isArray(calcFetchedSemesters) ? calcFetchedSemesters : [])
+      .map(sem => ({
+        sgpa: parseFloat(sem.sgpa),
+        credits: parseFloat(sem.totalcoursecredit)
+      }))
+      .filter(s => !isNaN(s.sgpa) && !isNaN(s.credits));
+
+    const nextIndex = Array.isArray(calcFetchedSemesters) ? calcFetchedSemesters.length : 0;
+    const nextCredits = parseFloat(cgpaSemesters[nextIndex]?.c);
+
+    if (isNaN(nextCredits) || nextCredits <= 0) return "-";
+
+    const required = calculateRequiredSGPA(t, pastSemesters, nextCredits);
+    if (required === null || !isFinite(required)) return "-";
+    return required.toFixed(2);
+  };
 
   const getSemesterCredits = (sem) => {
     if (!sem) return 0;
-    
-    // 1. Try finding it in gpaData.semesterList
-    if (gpaData && Array.isArray(gpaData.semesterList)) {
-      const match = gpaData.semesterList.find(s => String(s.stynumber) === String(sem.stynumber));
-      if (match && Number(match.totalcoursecredit) > 0) {
-        return Number(match.totalcoursecredit);
-      }
+    const match = calcFetchedSemesters.find(s => String(s.stynumber) === String(sem.stynumber));
+    if (match && Number(match.totalcoursecredit) > 0) {
+      return Number(match.totalcoursecredit);
     }
-    
-    // 2. Try loading from calcSubjects if this is the currently loaded calculator semester
-    if (calculatorSelectedSem && (calculatorSelectedSem.registrationid === sem.registrationid) && calcSubjects.length > 0) {
-      const sum = calcSubjects.reduce((total, s) => total + (Number(s.credits) || 0), 0);
-      if (sum > 0) return sum;
-    }
-
-    // 3. Fallback to default credits (typical 20 credits per semester)
     return 20;
   };
 
-  const calculatedRequiredSgpa = useMemo(() => {
-    if (!targetCgpa || isNaN(targetCgpa) || !targetSelectedSem) return null;
-    
-    const target = parseFloat(targetCgpa);
-    if (target < 0 || target > 10) return null;
-    
-    const currentSemCredits = getSemesterCredits(targetSelectedSem);
-    if (!currentSemCredits || currentSemCredits <= 0) return null;
-    
-    // Calculate previous semesters totals from gpaData.semesterList
-    let previousGradePoints = 0;
-    let previousCredits = 0;
-    
-    if (gpaData && Array.isArray(gpaData.semesterList)) {
-      gpaData.semesterList.forEach(sem => {
-        if (Number(sem.stynumber) < Number(targetSelectedSem.stynumber)) {
-          const sgpa = parseFloat(sem.sgpa);
-          const credits = parseFloat(sem.totalcoursecredit);
-          if (!isNaN(sgpa) && !isNaN(credits)) {
-            previousGradePoints += sgpa * credits;
-            previousCredits += credits;
-          }
-        }
-      });
-    }
-    
-    // Required SGPA = (target * (previousCredits + currentSemCredits) - previousGradePoints) / currentSemCredits
-    const totalCreditsAfter = previousCredits + currentSemCredits;
-    const required = (target * totalCreditsAfter - previousGradePoints) / currentSemCredits;
-    
-    return required;
-  }, [targetCgpa, targetSelectedSem, gpaData, calcSubjects, calculatorSelectedSem]);
-
-  const latestCgpa = useMemo(() => {
-    if (gpaData?.cgpa) return gpaData.cgpa;
-    if (Array.isArray(gpaData?.semesterList) && gpaData.semesterList.length > 0) {
-      const sems = [...gpaData.semesterList].sort((a, b) => Number(a.stynumber) - Number(b.stynumber));
-      return sems[sems.length - 1]?.cgpa || '';
-    }
-    return '';
-  }, [gpaData]);
-
-  const estimatedCredits = useMemo(() => {
-    if (Array.isArray(gpaData?.semesterList)) {
-      const completedSemsCount = gpaData.semesterList.filter(s => s.sgpa && s.cgpa).length;
-      return completedSemsCount * 20;
-    }
-    return '';
-  }, [gpaData]);
-
   useEffect(() => {
-    if (latestCgpa && !cgpaPrevCgpa) {
-      setCgpaPrevCgpa(latestCgpa);
-    }
-    if (estimatedCredits && !cgpaPrevCredits) {
-      setCgpaPrevCredits(String(estimatedCredits));
-    }
-  }, [latestCgpa, estimatedCredits]);
-
-  useEffect(() => {
-    if (activeTab === 'subjects' && selectedSubjectsSem) {
-      const load = async () => {
-        if (subjectsSubTab === 'registered') {
-          setSubjectsLoading(true);
-          setSubjectsError(null);
-          try {
-            const cached = await getRegisteredSubjectsFromCache(enrollmentNo, selectedSubjectsSem);
-            if (cached && cached.length > 0) {
-              setSubjectsList(cached);
-              setSubjectsLoading(false);
-              return;
-            }
-            const pass = getPassword(currentUser?.email);
-            if (pass && enrollmentNo) {
-              await wp.student_login(enrollmentNo, pass);
-              const res = await wp.get_registered_subjects_and_faculties(selectedSubjectsSem);
-              const rawSubjects = res.subjectlist || [];
-              setSubjectsList(rawSubjects);
-              await saveRegisteredSubjectsToCache(rawSubjects, enrollmentNo, selectedSubjectsSem);
-            }
-          } catch (err) {
-            console.error('Error fetching subjects:', err);
-            const msg = err.message || '';
-            if (msg.toLowerCase().includes('no record') || msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('empty response')) {
-              setSubjectsList([]);
-            } else {
-              setSubjectsError('Failed to fetch subjects. Please try again.');
-            }
-          } finally {
-            setSubjectsLoading(false);
-          }
+    let mounted = true;
+    const loadCgpaSemesters = async () => {
+      try {
+        let list = [];
+        if (gpaData && Array.isArray(gpaData.semesterList) && gpaData.semesterList.length > 0) {
+          list = gpaData.semesterList;
         } else {
-          setChoicesLoading(true);
-          setChoicesError(null);
           try {
-            const cacheKey = `choices-${enrollmentNo}-${selectedSubjectsSem.registrationid || selectedSubjectsSem.registration_code}`;
-            const cached = localStorage.getItem(cacheKey);
-            if (cached) {
-              try {
-                setChoicesList(JSON.parse(cached));
-                setChoicesLoading(false);
-                return;
-              } catch (e) {}
-            }
-            const pass = getPassword(currentUser?.email);
-            if (pass && enrollmentNo) {
-              await wp.student_login(enrollmentNo, pass);
-              const res = await wp.get_subject_choices(selectedSubjectsSem);
-              const rawChoices = res.choiceprintlist || res.subjectpreference || res.preferencelist || [];
-              setChoicesList(rawChoices);
-              localStorage.setItem(cacheKey, JSON.stringify(rawChoices));
+            const data = await wp.get_sgpa_cgpa();
+            if (data && Array.isArray(data.semesterList) && data.semesterList.length > 0) {
+              list = data.semesterList;
+              setGpaData(data);
             }
           } catch (err) {
-            console.error('Error fetching choices:', err);
-            const msg = err.message || '';
-            if (msg.toLowerCase().includes('no record') || msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('empty response')) {
-              setChoicesList([]);
-            } else {
-              setChoicesError('Failed to fetch choices. Please try again.');
-            }
-          } finally {
-            setChoicesLoading(false);
+            console.warn('Failed to fetch sgpa/cgpa from portal for CGPA calculator, will try cache:', err);
           }
         }
-      };
-      load();
+
+        if (!mounted) return;
+
+        if (list.length > 0) {
+          setCalcFetchedSemesters(list);
+          const updatedSemesters = list.map((s) => ({
+            g: s.sgpa ? s.sgpa.toString() : "",
+            c: s.totalcoursecredit ? s.totalcoursecredit.toString() : "",
+          }));
+          const lastCredits = list[list.length - 1]?.totalcoursecredit || "";
+          updatedSemesters.push({ g: "", c: lastCredits ? lastCredits.toString() : "" });
+          setCgpaSemesters(updatedSemesters);
+          return;
+        }
+
+        const cached = getCgpaCalculatorSemesters();
+        if (cached) {
+          if (Array.isArray(cached) && cached.length > 0) {
+            setCgpaSemesters(cached);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load semesters for CGPA calculator:', error);
+      }
+    };
+
+    loadCgpaSemesters();
+    return () => { mounted = false; };
+  }, [wp, gpaData]);
+
+  useEffect(() => {
+    setCgpaCalculatorSemesters(cgpaSemesters);
+  }, [cgpaSemesters]);
+
+  useEffect(() => {
+    const cachedTargetCgpa = getCgpaCalculatorTargetCgpa();
+    if (cachedTargetCgpa) {
+      setCalcTargetCgpa(cachedTargetCgpa);
     }
+
+    const cachedSelectedSemester = getCgpaCalculatorSelectedSemester();
+    if (cachedSelectedSemester) {
+      try {
+        setCalcSelectedSemester(cachedSelectedSemester);
+      } catch (e) {
+        console.error('Failed to parse cached selected semester:', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    setCgpaCalculatorTargetCgpa(calcTargetCgpa);
+  }, [calcTargetCgpa]);
+
+  useEffect(() => {
+    if (calcSelectedSemester) {
+      setCgpaCalculatorSelectedSemester(calcSelectedSemester);
+    }
+  }, [calcSelectedSemester]);
+
+  useEffect(() => {
+    if (calcSelectedSemester && wp && !calcSubjectData[calcSelectedSemester.registration_id]) {
+      fetchSubjectsForSemester(calcSelectedSemester);
+    }
+  }, [calcSelectedSemester, wp, calcSubjectData, fetchSubjectsForSemester]);
+
+  useEffect(() => {
+    if (activeTab === 'calculator' && wp && calcSemesters.length === 0) {
+      fetchSubjectSemesters();
+    }
+  }, [activeTab, wp, calcSemesters.length, fetchSubjectSemesters]);
+
+  // ─── Phase 1: Fetch the proper registered semesters list when entering subjects tab ───
+  useEffect(() => {
+    if (activeTab !== 'subjects') return;
+    if (registeredSemestersList.length > 0) return; // already loaded
+
+    const fetchSemesters = async () => {
+      try {
+        const pass = getPassword(currentUser?.email);
+        if (!pass || !enrollmentNo) return;
+        await wp.student_login(enrollmentNo, pass);
+        const sems = await wp.get_registered_semesters();
+        // sems = [{ registration_code, registration_id }, ...]
+        if (sems && sems.length > 0) {
+          setRegisteredSemestersList(sems);
+          // Auto-select the most recent semester (index 0 = latest)
+          setSelectedSubjectsSem(sems[0]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch registered semesters:', err);
+        // Fallback: try attendance semestersList as a last resort
+        if (semestersList.length > 0) {
+          setRegisteredSemestersList(semestersList);
+          setSelectedSubjectsSem(semestersList[0]);
+        }
+      }
+    };
+    fetchSemesters();
+  }, [activeTab, enrollmentNo, registeredSemestersList.length, semestersList]);
+
+  // ─── Phase 2: Fetch subjects whenever semester selection changes ───
+  useEffect(() => {
+    if (activeTab !== 'subjects' || !selectedSubjectsSem) return;
+
+    const load = async () => {
+      if (subjectsSubTab === 'registered') {
+        setSubjectsLoading(true);
+        setSubjectsError(null);
+        setSubjectsList([]);
+        try {
+          // 1. Check cache first
+          const cached = await getRegisteredSubjectsFromCache(enrollmentNo, selectedSubjectsSem);
+          if (cached && cached.length > 0) {
+            setSubjectsList(cached);
+            setSubjectsLoading(false);
+            return;
+          }
+
+          // 2. Live fetch via the correct API
+          const pass = getPassword(currentUser?.email);
+          if (!pass || !enrollmentNo) return;
+          await wp.student_login(enrollmentNo, pass);
+          const res = await wp.get_registered_subjects_and_faculties(selectedSubjectsSem);
+          const rawSubjects = res?.subjectlist || res?.subjects || [];
+          setSubjectsList(rawSubjects);
+          if (rawSubjects.length > 0) {
+            await saveRegisteredSubjectsToCache(rawSubjects, enrollmentNo, selectedSubjectsSem);
+          }
+        } catch (err) {
+          console.error('Error fetching subjects:', err);
+          const msg = (err.message || '').toLowerCase();
+          if (msg.includes('no record') || msg.includes('not found') || msg.includes('invalid') || msg.includes('empty response')) {
+            setSubjectsList([]);
+          } else {
+            setSubjectsError(err.message || 'Failed to fetch subjects. Please try again.');
+          }
+        } finally {
+          setSubjectsLoading(false);
+        }
+      } else {
+        // Choices sub-tab
+        setChoicesLoading(true);
+        setChoicesError(null);
+        try {
+          const cacheKey = `choices-${enrollmentNo}-${selectedSubjectsSem.registration_id || selectedSubjectsSem.registrationid || selectedSubjectsSem.registration_code}`;
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            try { setChoicesList(JSON.parse(cached)); setChoicesLoading(false); return; } catch (e) {}
+          }
+          const pass = getPassword(currentUser?.email);
+          if (!pass || !enrollmentNo) return;
+          await wp.student_login(enrollmentNo, pass);
+          const res = await wp.get_subject_choices(selectedSubjectsSem);
+          const rawChoices = res?.choiceprintlist || res?.subjectpreference || res?.preferencelist || [];
+          setChoicesList(rawChoices);
+          localStorage.setItem(cacheKey, JSON.stringify(rawChoices));
+        } catch (err) {
+          console.error('Error fetching choices:', err);
+          const msg = (err.message || '').toLowerCase();
+          if (msg.includes('no record') || msg.includes('not found') || msg.includes('invalid') || msg.includes('empty response')) {
+            setChoicesList([]);
+          } else {
+            setChoicesError('Failed to fetch choices. Please try again.');
+          }
+        } finally {
+          setChoicesLoading(false);
+        }
+      }
+    };
+    load();
   }, [activeTab, selectedSubjectsSem, subjectsSubTab, enrollmentNo, subjectsRefreshCount]);
 
-  useEffect(() => {
-    if (activeTab === 'calculator' && calculatorSelectedSem && calcSubjects.length === 0) {
-      populateCalcFromSemester(calculatorSelectedSem);
-    }
-  }, [activeTab, calculatorSelectedSem]);
+
 
   const filteredGroupedSubjects = useMemo(() => {
     const grouped = groupSubjects(subjectsList);
@@ -1765,6 +2250,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
   // --- Disconnect Registry Credentials ---
   const [showConfirmDisconnect, setShowConfirmDisconnect] = useState(false);
   const handleDisconnect = () => {
+    clearPortalCache();
     clearCredentials(currentUser?.email);
     setIsAuthenticated(false);
     setStudentProfile(null);
@@ -1798,7 +2284,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
   };
 
   return (
-    <div className="m3-screen student-dashboard-shell bg-m3-surface">
+    <div className="m3-screen student-dashboard-shell bg-m3-surface flex-1 h-full">
       
       {/* ─── M3 Collapsing Top App Bar ─── */}
       <header className={`m3-top-app-bar ${isScrolled ? 'm3-top-app-bar--collapsed' : ''}`}>
@@ -1839,7 +2325,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
 
       {/* ─── Immersive Portal Login Form (When Unauthenticated) ─── */}
       {!isAuthenticated && (
-        <div onScroll={handleScroll} className="m3-screen__scroll pb-36">
+        <div onScroll={handleScroll} className="m3-screen__scroll !pb-36">
           <div className="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto gap-5 px-1 select-text pt-4">
             <div className={`${obsidianCardClass} text-center flex flex-col gap-6 py-8 px-6`}>
               
@@ -1948,7 +2434,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
       {/* ─── Fully Synced Dashboard UI Layout (When Authenticated) ─── */}
       {isAuthenticated && (
         <>
-          <div onScroll={handleScroll} className="m3-screen__scroll pb-36">
+          <div onScroll={handleScroll} className="m3-screen__scroll !pb-48">
           {error && (
             <div className="mx-1 mb-4 p-4 bg-m3-errorContainer/10 border rounded-[24px] flex flex-col gap-3 text-left font-sans" style={{ borderColor: 'color-mix(in srgb, var(--m3-error) 25%, transparent)' }}>
               <div className="flex items-start gap-3">
@@ -1961,7 +2447,10 @@ export default function StudentDashboard({ currentUser, onClose }) {
               <div className="flex items-center gap-2 pt-2 border-t justify-between" style={{ borderTopColor: 'color-mix(in srgb, var(--m3-error) 15%, transparent)' }}>
                 <span className="text-[9px] font-bold text-m3-error/70 uppercase">Displaying cached offline data</span>
                 <button
-                  onClick={() => handlePortalSync(enrollmentNo, password, true)}
+                  onClick={() => {
+                    autoRetryCountRef.current = 0;
+                    handlePortalSync(enrollmentNo, password, true);
+                  }}
                   disabled={isSyncing}
                   className="px-3.5 py-1.5 bg-m3-errorContainer/20 border hover:bg-m3-errorContainer/30 active:scale-95 text-m3-onSurface rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                   style={{ borderColor: 'color-mix(in srgb, var(--m3-error) 30%, transparent)' }}
@@ -2930,20 +3419,24 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
                   <div className={`${obsidianCardClass} !pt-3 !pb-3.5 !px-5 flex flex-col gap-1 text-left w-full sm:max-w-xs`}>
                     <span className="text-[9px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans">Academic Term</span>
-                    <select
-                      value={selectedSubjectsSem?.registrationid || ''}
-                      onChange={(e) => {
-                        const match = Array.isArray(semestersList) ? semestersList.find(s => s.registrationid === e.target.value) : null;
-                        if (match) handleSubjectsSemesterChange(match);
-                      }}
-                      className="bg-transparent text-m3-onSurface text-[13px] font-black w-full outline-none cursor-pointer font-sans border-none p-0 pl-0 ml-[-3px] focus:ring-0"
-                    >
-                      {Array.isArray(semestersList) && semestersList.map((sem, sidx) => (
-                        <option key={sidx} value={sem.registrationid} className="bg-m3-surfaceContainer text-m3-onSurface font-sans">
-                          {sem.label}
-                        </option>
-                      ))}
-                    </select>
+                    {registeredSemestersList.length === 0 ? (
+                      <span className="text-m3-onSurfaceVariant text-[13px] font-black animate-pulse">Loading semesters...</span>
+                    ) : (
+                      <select
+                        value={selectedSubjectsSem?.registration_id || selectedSubjectsSem?.registrationid || ''}
+                        onChange={(e) => {
+                          const match = registeredSemestersList.find(s => (s.registration_id || s.registrationid) === e.target.value);
+                          if (match) handleSubjectsSemesterChange(match);
+                        }}
+                        className="bg-transparent text-m3-onSurface text-[13px] font-black w-full outline-none cursor-pointer font-sans border-none p-0 pl-0 ml-[-3px] focus:ring-0"
+                      >
+                        {registeredSemestersList.map((sem, sidx) => (
+                          <option key={sidx} value={sem.registration_id || sem.registrationid} className="bg-m3-surfaceContainer text-m3-onSurface font-sans">
+                            {sem.label || sem.registration_code || sem.registrationcode || `Semester ${sidx + 1}`}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                   
                   {/* Subject count pill */}
@@ -3030,7 +3523,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       </div>
                     ) : subjectsError ? (
                       <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center`}>
-                        <AlertTriangle className="text-red-400 mb-3" size={32} />
+                        <AlertTriangle className="text-m3-error mb-3" size={32} />
                         <p className="text-m3-onSurface font-medium mb-4">{subjectsError}</p>
                         <button
                           onClick={() => setSubjectsRefreshCount(prev => prev + 1)}
@@ -3111,7 +3604,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       </div>
                     ) : choicesError ? (
                       <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center`}>
-                        <AlertTriangle className="text-red-400 mb-3" size={32} />
+                        <AlertTriangle className="text-m3-error mb-3" size={32} />
                         <p className="text-m3-onSurface font-medium mb-4">{choicesError}</p>
                         <button
                           onClick={() => setSubjectsRefreshCount(prev => prev + 1)}
@@ -3171,19 +3664,18 @@ export default function StudentDashboard({ currentUser, onClose }) {
               <div className="flex flex-col gap-4">
                 
                 {/* ─── M3 Segmented Chips Switcher ─── */}
-                <div className="flex justify-center mb-1">
+                <div className="flex justify-center mb-1 select-none">
                   <div className="m3-segmented-chips w-full justify-between">
                     {[
                       { id: 'sgpa', icon: <TrendingUp size={14} />, label: 'SGPA' },
-                      { id: 'cgpa', icon: <Calculator size={14} />, label: 'CGPA' },
-                      { id: 'target', icon: <Award size={14} />, label: 'Target' }
+                      { id: 'cgpa', icon: <Calculator size={14} />, label: 'CGPA' }
                     ].map((sub) => (
                       <button
                         key={sub.id}
                         type="button"
-                        onClick={() => setCalcMode(sub.id)}
+                        onClick={() => setCalcSubTab(sub.id)}
                         className={`flex-1 m3-segmented-chip flex items-center justify-center gap-1.5 py-2.5 transition-all duration-300 ${
-                          calcMode === sub.id
+                          calcSubTab === sub.id
                             ? 'm3-segmented-chip--selected'
                             : 'text-m3-onSurfaceVariant hover:text-m3-onSurface'
                         }`}
@@ -3195,43 +3687,7 @@ export default function StudentDashboard({ currentUser, onClose }) {
                   </div>
                 </div>
 
-                {/* Result Card */}
-                <div className={`${obsidianCardClass} p-5 flex flex-col items-center justify-center text-center bg-gradient-to-br from-m3-primaryContainer/30 to-m3-primary/10 border`} style={{ borderColor: 'color-mix(in srgb, var(--m3-primary) 20%, transparent)' }}>
-                  <span className="text-[10px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans mb-1">
-                    {calcMode === 'sgpa' ? 'Simulated SGPA' : calcMode === 'cgpa' ? 'Projected CGPA' : 'Required SGPA'}
-                  </span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-m3-primary font-sans tracking-tight">
-                      {calcMode === 'sgpa' 
-                        ? calculatedSgpaResult.sgpa 
-                        : calcMode === 'cgpa' 
-                          ? calculatedCgpaResult 
-                          : calculatedRequiredSgpa !== null
-                            ? calculatedRequiredSgpa > 10
-                              ? 'N/A'
-                              : calculatedRequiredSgpa < 0
-                                ? '0.00'
-                                : calculatedRequiredSgpa.toFixed(2)
-                            : '0.00'
-                      }
-                    </span>
-                    <span className="text-xs text-m3-onSurfaceVariant font-bold">/ 10.00</span>
-                  </div>
-                  <span className="text-[11px] text-m3-onSurface mt-2 font-medium">
-                    {calcMode === 'sgpa' 
-                      ? `${calculatedSgpaResult.credits} total credits simulated`
-                      : calcMode === 'cgpa'
-                        ? 'Projected cumulative CGPA after this semester'
-                        : calculatedRequiredSgpa !== null && calculatedRequiredSgpa > 10
-                          ? 'Target CGPA is mathematically not achievable'
-                          : calculatedRequiredSgpa !== null && calculatedRequiredSgpa <= 0
-                            ? 'Target CGPA is already achieved!'
-                            : `SGPA needed in ${targetSelectedSem?.label || 'semester'} (${getSemesterCredits(targetSelectedSem)} credits)`
-                    }
-                  </span>
-                </div>
-
-                {calcMode === 'sgpa' ? (
+                {calcSubTab === 'sgpa' ? (
                   <>
                     <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between w-full">
                       {/* Auto-fill semester selector */}
@@ -3239,28 +3695,26 @@ export default function StudentDashboard({ currentUser, onClose }) {
                         <div className="flex flex-col gap-0.5 w-full">
                           <span className="text-[8px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans">Simulate Semester</span>
                           <select
-                            value={calculatorSelectedSem?.registrationid || ''}
-                            onChange={(e) => {
-                              const match = Array.isArray(semestersList) ? semestersList.find(s => s.registrationid === e.target.value) : null;
-                              if (match) {
-                                setCalculatorSelectedSem(match);
-                                populateCalcFromSemester(match);
-                              }
-                            }}
+                            value={calcSelectedSemester?.registration_id || ''}
+                            onChange={(e) => handleCalculatorSemesterChange(e.target.value)}
                             className="bg-transparent text-m3-onSurface text-xs font-black outline-none cursor-pointer font-sans border-none p-0 focus:ring-0 w-full"
                           >
-                            {Array.isArray(semestersList) && semestersList.map((sem, sidx) => (
-                              <option key={sidx} value={sem.registrationid} className="bg-m3-surfaceContainer text-m3-onSurface font-sans">
-                                {sem.label}
-                              </option>
-                            ))}
+                            {calcLoadingSemesters ? (
+                              <option className="bg-m3-surfaceContainer text-m3-onSurface font-sans">Loading semesters...</option>
+                            ) : (
+                              calcSemesters.map((sem, sidx) => (
+                                <option key={sidx} value={sem.registration_id} className="bg-m3-surfaceContainer text-m3-onSurface font-sans">
+                                  {sem.registration_code}
+                                </option>
+                              ))
+                            )}
                           </select>
                         </div>
                       </div>
 
                       <div className="flex gap-2 w-full sm:w-auto">
                         <button
-                          onClick={() => populateCalcFromSemester(calculatorSelectedSem)}
+                          onClick={() => calcSelectedSemester && fetchSubjectsForSemester(calcSelectedSemester)}
                           className="flex-1 sm:flex-none px-4 py-2.5 bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-onSurface rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200 active:scale-95 border border-m3-outlineVariant/60 cursor-pointer"
                         >
                           Reset Subjects
@@ -3274,257 +3728,289 @@ export default function StudentDashboard({ currentUser, onClose }) {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3">
-                      {calcSubjects.length === 0 ? (
-                        <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center`}>
-                          <BookOpen className="text-m3-onSurfaceVariant mb-2" size={24} />
-                          <p className="text-m3-onSurfaceVariant text-xs font-medium">No subjects added. Select a semester to load courses or add a custom course manually.</p>
-                        </div>
-                      ) : (
-                        calcSubjects.map((sub) => (
-                          <div key={sub.id} className={`${obsidianCardClass} !p-3 flex items-center justify-between gap-3 text-left hover:bg-m3-surfaceContainer transition-all`}>
-                            <div className="flex-1 min-w-0 pr-2">
-                              <input
-                                type="text"
-                                value={sub.name}
-                                onChange={(e) => updateCalcSubjectName(sub.id, e.target.value)}
-                                className="bg-transparent border-none p-0 text-m3-onSurface font-bold text-xs w-full focus:ring-0 outline-none truncate"
-                                placeholder="Course Name"
-                              />
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[9px] font-bold text-m3-onSurfaceVariant/80 font-mono tracking-wider uppercase">
-                                  {sub.code || 'CUSTOM'}
-                                </span>
-                                <span className="text-[9px] text-m3-onSurfaceVariant font-bold flex items-center gap-1">
-                                  Credits: 
+                    {calcLoadingSubjects ? (
+                      <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center`}>
+                        <RefreshCw className="text-m3-primary mb-2 animate-spin" size={24} />
+                        <p className="text-m3-onSurfaceVariant text-xs font-medium">Fetching subjects & grades from Web Portal...</p>
+                      </div>
+                    ) : sgpaSubjects.length === 0 ? (
+                      <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center select-none`}>
+                        <BookOpen className="text-m3-onSurfaceVariant mb-2" size={24} />
+                        <p className="text-m3-onSurfaceVariant text-xs font-medium">No subjects found. Load a semester or add a course manually.</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+                          {sgpaSubjects.map((subject, index) => (
+                            <div key={index} className={`${obsidianCardClass} !p-3 flex items-center justify-between gap-3 text-left hover:bg-m3-surfaceContainer transition-all`}>
+                              <div className="flex-1 min-w-0 pr-2">
+                                {subject.isCustom ? (
                                   <input
-                                    type="number"
-                                    value={sub.credits}
-                                    onChange={(e) => updateCalcSubjectCredits(sub.id, e.target.value)}
-                                    className="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-onSurface border border-m3-outlineVariant/60 rounded px-1.5 py-0.5 text-[9px] font-black w-10 text-center focus:outline-none focus:border-m3-primary"
-                                    min="1"
-                                    max="8"
+                                    type="text"
+                                    value={subject.name}
+                                    onChange={(e) => updateCalcSubjectName(index, e.target.value)}
+                                    className="bg-transparent border-none p-0 text-m3-onSurface font-bold text-xs w-full focus:ring-0 outline-none truncate"
+                                    placeholder="Course Name"
                                   />
-                                </span>
+                                ) : (
+                                  <div className="text-xs font-bold text-m3-onSurface mb-0.5 break-words whitespace-normal line-clamp-2" title={subject.name}>
+                                    {subject.name}
+                                  </div>
+                                )}
+                                <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1 mt-1">
+                                  <span className="text-[10px] font-bold text-m3-onSurfaceVariant/80 font-mono tracking-wider uppercase whitespace-nowrap">
+                                    {subject.code || 'CUSTOM'}
+                                  </span>
+                                  <span className="text-[10px] text-m3-onSurfaceVariant font-bold flex items-center gap-1 whitespace-nowrap">
+                                    Credits: 
+                                    {subject.isCustom ? (
+                                      <input
+                                        type="number"
+                                        value={subject.credits}
+                                        onChange={(e) => updateCalcSubjectCredits(index, e.target.value)}
+                                        className="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-onSurface border border-m3-outlineVariant/60 rounded px-1.5 py-0.5 text-[10px] font-black w-10 text-center focus:outline-none focus:border-m3-primary"
+                                        min="1"
+                                        max="8"
+                                      />
+                                    ) : (
+                                      <span className="text-m3-onSurface font-black">{subject.credits}</span>
+                                    )}
+                                  </span>
+                                  {subject.marks && (subject.marks.obtained !== undefined || subject.marks.full !== undefined) && (
+                                    <span className="text-[10px] text-m3-onSurfaceVariant/80 font-mono font-medium whitespace-nowrap">
+                                      Marks: {subject.marks.obtained ?? 0}/{subject.marks.full ?? 0}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                {/* Grade selector */}
+                                <select
+                                  value={subject.grade}
+                                  onChange={(e) => handleGradeChange(index, e.target.value)}
+                                  className="bg-m3-surfaceContainer/80 text-m3-primary text-xs font-black border border-m3-outlineVariant/70 rounded-xl px-2 py-1 focus:outline-none focus:border-m3-primary cursor-pointer"
+                                >
+                                  {Object.keys(gradePointMap).map((g) => (
+                                    <option key={g} value={g} className="bg-m3-surfaceContainer text-m3-onSurface">
+                                      {g} ({gradePointMap[g]} Pts)
+                                    </option>
+                                  ))}
+                                </select>
+
+                                {/* Delete button */}
+                                <button
+                                  onClick={() => removeCalcSubject(index)}
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center bg-m3-error/10 hover:bg-m3-error/20 text-m3-error transition cursor-pointer"
+                                  title="Remove Course"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
                               </div>
                             </div>
+                          ))}
+                        </div>
 
-                            <div className="flex items-center gap-2 shrink-0">
-                              {/* Grade selector */}
-                              <select
-                                value={sub.selectedGrade}
-                                onChange={(e) => updateCalcSubjectGrade(sub.id, e.target.value)}
-                                className="bg-m3-surfaceContainer/80 text-m3-primary text-xs font-black border border-m3-outlineVariant/70 rounded-xl px-2 py-1 focus:outline-none focus:border-m3-primary cursor-pointer"
-                              >
-                                <option value="" className="bg-m3-surfaceContainer text-m3-onSurfaceVariant">Grade</option>
-                                {Object.keys(gradePointMap).map((g) => (
-                                  <option key={g} value={g} className="bg-m3-surfaceContainer text-m3-onSurface">{g} ({gradePointMap[g]} Pts)</option>
-                                ))}
-                              </select>
-
-                              {/* Delete button */}
-                              <button
-                                onClick={() => removeCalcSubject(sub.id)}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-400 transition cursor-pointer"
-                              >
-                                <Trash2 size={14} />
-                              </button>
+                        {/* Calculated Cards */}
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className={`${obsidianCardClass} p-4 flex items-center justify-between w-full`}>
+                            <div className="flex items-center gap-2 text-left select-none">
+                              <Award className="w-4 h-4 text-m3-onSurfaceVariant" />
+                              <span className="text-xs text-m3-onSurfaceVariant font-bold">Calculated SGPA</span>
                             </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </>
-                ) : calcMode === 'cgpa' ? (
-                  <div className="flex flex-col gap-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className={`${obsidianCardClass} !p-4 flex flex-col gap-1 text-left`}>
-                        <span className="text-[8px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans">Current CGPA</span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={cgpaPrevCgpa}
-                          onChange={(e) => setCgpaPrevCgpa(e.target.value)}
-                          className="bg-transparent border-none p-0 text-m3-onSurface font-extrabold text-sm w-full focus:ring-0 outline-none"
-                          placeholder="e.g. 7.50"
-                          min="0"
-                          max="10"
-                        />
-                      </div>
-                      <div className={`${obsidianCardClass} !p-4 flex flex-col gap-1 text-left`}>
-                        <span className="text-[8px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans">Completed Credits</span>
-                        <input
-                          type="number"
-                          value={cgpaPrevCredits}
-                          onChange={(e) => setCgpaPrevCredits(e.target.value)}
-                          className="bg-transparent border-none p-0 text-m3-onSurface font-extrabold text-sm w-full focus:ring-0 outline-none"
-                          placeholder="e.g. 80"
-                          min="0"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className={`${obsidianCardClass} p-4 flex flex-col gap-3 text-left font-sans text-xs`}>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-m3-onSurface border-b border-m3-outlineVariant/50 pb-1.5 select-none">
-                        Calculation Breakdown
-                      </h4>
-                      <div className="flex justify-between items-center w-full">
-                        <span className="text-m3-onSurfaceVariant">Previous Total Points</span>
-                        <span className="text-m3-onSurface font-bold">
-                          {((parseFloat(cgpaPrevCgpa) || 0) * (parseFloat(cgpaPrevCredits) || 0)).toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center w-full border-t border-m3-outlineVariant/50 pt-2">
-                        <span className="text-m3-onSurfaceVariant">Simulated Semester Points</span>
-                        <span className="text-m3-onSurface font-bold">
-                          {(parseFloat(calculatedSgpaResult.sgpa) * parseFloat(calculatedSgpaResult.credits)).toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center w-full border-t border-m3-outlineVariant/50 pt-2">
-                        <span className="text-m3-onSurfaceVariant">Projected Total Credits</span>
-                        <span className="text-m3-onSurface font-bold">
-                          {(parseFloat(cgpaPrevCredits) || 0) + parseFloat(calculatedSgpaResult.credits)}
-                        </span>
-                      </div>
-                      <div className="border-t border-m3-outlineVariant/60 pt-2.5 flex justify-between items-center w-full">
-                        <span className="text-m3-primary font-bold">Projected CGPA</span>
-                        <span className="text-m3-primary font-black text-sm">
-                          {calculatedCgpaResult}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Target Semester Selector */}
-                      <div className={`${obsidianCardClass} !p-4 flex flex-col gap-1.5 text-left`}>
-                        <span className="text-[8px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans">Target Semester</span>
-                        <select
-                          value={targetSelectedSem?.registrationid || ''}
-                          onChange={(e) => {
-                            const match = Array.isArray(semestersList) ? semestersList.find(s => s.registrationid === e.target.value) : null;
-                            if (match) {
-                              setTargetSelectedSem(match);
-                            }
-                          }}
-                          className="bg-transparent text-m3-onSurface text-xs font-black outline-none cursor-pointer font-sans border-none p-0 focus:ring-0 w-full"
-                        >
-                          {Array.isArray(semestersList) && semestersList.map((sem, sidx) => {
-                            const credits = getSemesterCredits(sem);
-                            return (
-                              <option key={sidx} value={sem.registrationid} className="bg-m3-surfaceContainer text-m3-onSurface font-sans">
-                                {sem.label} ({credits} Credits)
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </div>
-
-                      {/* Target CGPA Input */}
-                      <div className={`${obsidianCardClass} !p-4 flex flex-col gap-1 text-left`}>
-                        <span className="text-[8px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans">Target CGPA</span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="10"
-                          value={targetCgpa}
-                          onChange={(e) => setTargetCgpa(e.target.value)}
-                          className="bg-transparent border-none p-0 text-m3-onSurface font-extrabold text-sm w-full focus:ring-0 outline-none"
-                          placeholder="e.g. 8.50"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Result Messages */}
-                    {(() => {
-                      const required = calculatedRequiredSgpa;
-                      if (required === null) {
-                        return (
-                          <div className={`${obsidianCardClass} p-8 text-center flex flex-col items-center justify-center`}>
-                            <Calculator className="text-m3-onSurfaceVariant mb-2" size={24} />
-                            <p className="text-m3-onSurfaceVariant text-xs font-medium">Enter a target CGPA to see required semester SGPA.</p>
-                          </div>
-                        );
-                      }
-
-                      const targetVal = parseFloat(targetCgpa) || 0;
-
-                      if (required > 10.0) {
-                        return (
-                          <div className={`${obsidianCardClass} p-5 flex flex-col items-center justify-center text-center bg-red-500/10 border border-red-500/30 text-red-200`}>
-                            <span className="text-[10px] font-black text-red-400 uppercase tracking-widest font-sans mb-1 font-bold">Status</span>
-                            <h4 className="text-lg font-black font-sans text-red-400">Not Achievable</h4>
-                            <p className="text-xs mt-2 max-w-sm">
-                              To reach a CGPA of <strong className="text-white">{targetVal.toFixed(2)}</strong> by the end of {targetSelectedSem?.label || 'semester'}, you would need an SGPA of <strong className="text-white">{required.toFixed(2)}</strong>, which exceeds the maximum possible 10.00.
-                            </p>
-                          </div>
-                        );
-                      }
-
-                      if (required <= 0.0) {
-                        return (
-                          <div className={`${obsidianCardClass} p-5 flex flex-col items-center justify-center text-center bg-green-500/10 border border-green-500/30 text-green-200`}>
-                            <span className="text-[10px] font-black text-green-400 uppercase tracking-widest font-sans mb-1 font-bold">Status</span>
-                            <h4 className="text-lg font-black font-sans text-green-400">Already Achieved!</h4>
-                            <p className="text-xs mt-2 max-w-sm">
-                              Your current CGPA already meets or exceeds your target of <strong className="text-white">{targetVal.toFixed(2)}</strong>. You do not need any additional points in this semester to achieve your goal.
-                            </p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className={`${obsidianCardClass} p-5 flex flex-col items-center justify-center text-center bg-gradient-to-br from-m3-primaryContainer/30 to-m3-primary/10 border`} style={{ borderColor: 'color-mix(in srgb, var(--m3-primary) 20%, transparent)' }}>
-                          <span className="text-[10px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans mb-1 font-bold">Required SGPA</span>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-4xl font-black text-m3-primary font-sans tracking-tight">
-                              {required.toFixed(2)}
+                            <span className={`text-xl font-black ${calculateSGPAValue() !== "-" && parseFloat(calculateSGPAValue()) < 6 ? "text-m3-error" : "text-m3-primary"}`}>
+                              {calculateSGPAValue()}
                             </span>
-                            <span className="text-xs text-m3-onSurfaceVariant font-bold">/ 10.00</span>
                           </div>
-                          <p className="text-xs text-m3-onSurface mt-3 max-w-sm">
-                            Achieve an SGPA of <strong className="text-m3-primary">{required.toFixed(2)}</strong> in <strong className="text-m3-primary">{targetSelectedSem?.label || 'selected semester'}</strong> ({getSemesterCredits(targetSelectedSem)} credits) to reach your target CGPA of <strong className="text-m3-primary">{targetVal.toFixed(2)}</strong>.
-                          </p>
-                        </div>
-                      );
-                    })()}
 
-                    {/* Academic Stats Breakdown */}
-                    {gpaData && Array.isArray(gpaData.semesterList) && gpaData.semesterList.length > 0 && (
-                      <div className={`${obsidianCardClass} p-4 flex flex-col gap-3 text-left font-sans text-xs`}>
-                        <h4 className="text-xs font-black uppercase tracking-wider text-m3-onSurface border-b border-m3-outlineVariant/50 pb-1.5 select-none">
-                          Current Academic Stats
-                        </h4>
-                        <div className="flex justify-between items-center w-full">
-                          <span className="text-m3-onSurfaceVariant">Previous Semesters Count</span>
-                          <span className="text-m3-onSurface font-bold">
-                            {gpaData.semesterList.filter(sem => Number(sem.stynumber) < Number(targetSelectedSem?.stynumber)).length}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center w-full border-t border-m3-outlineVariant/50 pt-2">
-                          <span className="text-m3-onSurfaceVariant">Previous Accumulated Credits</span>
-                          <span className="text-m3-onSurface font-bold">
-                            {gpaData.semesterList
-                              .filter(sem => Number(sem.stynumber) < Number(targetSelectedSem?.stynumber))
-                              .reduce((sum, sem) => sum + (parseFloat(sem.totalcoursecredit) || 0), 0)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center w-full border-t border-m3-outlineVariant/50 pt-2">
-                          <span className="text-m3-onSurfaceVariant">Current Cumulative CGPA</span>
-                          <span className="text-m3-onSurface font-bold">
-                            {(() => {
-                              const prevSems = gpaData.semesterList.filter(sem => Number(sem.stynumber) < Number(targetSelectedSem?.stynumber));
-                              if (prevSems.length === 0) return '0.00';
-                              const totalPoints = prevSems.reduce((sum, sem) => sum + (parseFloat(sem.sgpa) * parseFloat(sem.totalcoursecredit)), 0);
-                              const totalCredits = prevSems.reduce((sum, sem) => sum + parseFloat(sem.totalcoursecredit), 0);
-                              return totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
-                            })()}
-                          </span>
+                          <div className={`${obsidianCardClass} p-4 flex items-center justify-between w-full`}>
+                            <div className="flex items-center gap-2 text-left select-none">
+                              <TrendingUp className="w-4 h-4 text-m3-onSurfaceVariant" />
+                              <span className="text-xs text-m3-onSurfaceVariant font-bold">Projected CGPA</span>
+                            </div>
+                            <span className={`text-xl font-black ${calculateProjectedCGPA() !== "-" && parseFloat(calculateProjectedCGPA()) < 6 ? "text-m3-error" : "text-m3-primary"}`}>
+                              {calculateProjectedCGPA()}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     )}
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {/* Target & Required CGPA side-by-side */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Target CGPA Input */}
+                      <div className={`${obsidianCardClass} !p-4 flex items-center gap-3 text-left`}>
+                        <Target className="w-4 h-4 text-m3-onSurfaceVariant shrink-0 select-none" />
+                        <div className="flex flex-col flex-1">
+                          <span className="text-[8px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans select-none">Target CGPA (next)</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.01"
+                            placeholder="e.g. 8.50"
+                            value={calcTargetCgpa}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^\d.]/g, "");
+                              if (raw === "") { setCalcTargetCgpa(""); return; }
+                              let n = parseFloat(raw);
+                              if (isNaN(n)) { setCalcTargetCgpa(""); return; }
+                              if (n > 10) n = 10;
+                              if (n < 0) n = 0;
+                              setCalcTargetCgpa(n.toString());
+                            }}
+                            className="bg-transparent border-none p-0 text-m3-primary font-black text-xl w-full focus:ring-0 outline-none mt-0.5 placeholder:text-m3-onSurfaceVariant/35"
+                            inputMode="decimal"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Required SGPA Output */}
+                      <div className={`${obsidianCardClass} !p-4 flex items-center justify-between text-left`}>
+                        <div className="flex items-center gap-2 select-none">
+                          <Award className="w-4 h-4 text-m3-onSurfaceVariant" />
+                          <div className="flex flex-col">
+                            <span className="text-[8px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans">Required SGPA (next)</span>
+                            <span className="text-[10px] text-m3-onSurfaceVariant font-bold mt-0.5">
+                              {(() => {
+                                const nextIndex = Array.isArray(calcFetchedSemesters) ? calcFetchedSemesters.length : 0;
+                                const nextCredits = getSemesterCredits(calcSemesters[nextIndex] || { stynumber: nextIndex + 1 });
+                                return `For next sem (${nextCredits} credits)`;
+                              })()}
+                            </span>
+                          </div>
+                        </div>
+                        {(() => {
+                          const req = calculateRequiredSGPAValue();
+                          const n = parseFloat(req);
+                          const impossible = !isNaN(n) && (n > 10 || n < 0);
+                          if (req === "-" || isNaN(n)) {
+                            return <span className="text-m3-onSurface text-xl font-extrabold select-none">-</span>;
+                          }
+                          if (impossible) {
+                            return <span className="text-m3-error text-xs font-black uppercase tracking-wider select-none">Impossible</span>;
+                          }
+                          return (
+                            <span className="text-m3-primary text-xl font-black">
+                              {n.toFixed(2)}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* OR Divider */}
+                    <div className="relative my-2 select-none">
+                      <div className="h-[1px] w-full bg-m3-outlineVariant/30"></div>
+                      <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 top-1/2">
+                        <span className="px-3 py-1 text-[9px] font-black tracking-widest text-m3-onSurfaceVariant bg-m3-surfaceContainerLow border border-m3-outlineVariant/20 rounded-full">OR</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between select-none">
+                      <h3 className="text-xs font-black uppercase tracking-wider text-m3-onSurface">Long-term Planner</h3>
+                    </div>
+
+                    {/* Long term list */}
+                    <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+                      {cgpaSemesters.map((sem, i) => {
+                        const isPrevious = i < (calcFetchedSemesters.length || 0);
+                        return (
+                          <div
+                            key={i}
+                            className={`${obsidianCardClass} !p-3.5 flex flex-col gap-2.5 border transition-colors ${
+                              isPrevious
+                                ? 'bg-m3-primaryContainer/10 border-m3-primary/30'
+                                : 'hover:bg-m3-surfaceContainer'
+                            }`}
+                          >
+                            {/* Top Row: Semester Title & Remove button */}
+                            <div className="flex items-center justify-between w-full select-none">
+                              <h4 className="text-xs font-black text-m3-onSurface uppercase tracking-wider">
+                                Sem {i + 1} {isPrevious && <span className="text-[9px] text-m3-primary font-bold font-sans ml-1">(Prev)</span>}
+                              </h4>
+                              {i === cgpaSemesters.length - 1 && cgpaSemesters.length > 1 && i >= (calcFetchedSemesters.length || 0) && (
+                                <button
+                                  onClick={() => removeSemester(i)}
+                                  className="w-7 h-7 rounded-lg flex items-center justify-center bg-m3-error/10 hover:bg-m3-error/20 text-m3-error transition shrink-0 cursor-pointer"
+                                  title="Remove Semester"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Bottom Row: Inputs Grid */}
+                            <div className="grid grid-cols-2 gap-3 w-full">
+                              <div className="flex flex-col text-left">
+                                <span className="text-[10px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans mb-1 select-none">SGPA</span>
+                                {isPrevious ? (
+                                  <div className="bg-m3-surfaceContainerHighest/40 border border-m3-outlineVariant/20 rounded-xl px-2.5 py-1.5 text-xs font-black text-m3-onSurface/80 text-center min-h-[30px] flex items-center justify-center font-sans select-none">
+                                    {sem.g || "0.00"}
+                                  </div>
+                                ) : (
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    value={sem.g}
+                                    onChange={e => handleCgpaChange(i, "g", e.target.value)}
+                                    className="bg-m3-surfaceContainerLow border border-m3-outlineVariant/30 rounded-xl px-2.5 py-1.5 text-xs font-black text-m3-onSurface focus:outline-none focus:border-m3-primary w-full transition"
+                                    inputMode="decimal"
+                                  />
+                                )}
+                              </div>
+
+                              <div className="flex flex-col text-left">
+                                <span className="text-[10px] font-black text-m3-onSurfaceVariant uppercase tracking-widest font-sans mb-1 select-none">Credits</span>
+                                {isPrevious ? (
+                                  <div className="bg-m3-surfaceContainerHighest/40 border border-m3-outlineVariant/20 rounded-xl px-2.5 py-1.5 text-xs font-black text-m3-onSurface/80 text-center min-h-[30px] flex items-center justify-center font-sans select-none">
+                                    {sem.c || "0"}
+                                  </div>
+                                ) : (
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="40"
+                                    step="0.5"
+                                    placeholder="0"
+                                    value={sem.c}
+                                    onChange={e => handleCgpaChange(i, "c", e.target.value)}
+                                    className="bg-m3-surfaceContainerLow border border-m3-outlineVariant/30 rounded-xl px-2.5 py-1.5 text-xs font-black text-m3-onSurface focus:outline-none focus:border-m3-primary w-full transition"
+                                    inputMode="decimal"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-3 mt-2">
+                      <button
+                        onClick={addSemester}
+                        disabled={cgpaSemesters.length >= 10}
+                        className="w-full sm:w-auto px-4 py-2.5 bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHighest text-m3-onSurface rounded-xl text-xs font-bold uppercase tracking-wider transition duration-200 active:scale-95 border border-m3-outlineVariant/60 cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 select-none"
+                      >
+                        <Plus size={14} />
+                        Add Semester
+                      </button>
+
+                      <div className={`${obsidianCardClass} p-4 flex items-center justify-between w-full flex-1`}>
+                        <div className="flex items-center gap-2 text-left select-none">
+                          <Award className="w-4 h-4 text-m3-onSurfaceVariant" />
+                          <span className="text-xs text-m3-onSurfaceVariant font-bold">Calculated CGPA</span>
+                        </div>
+                        <span className="text-xl font-black text-m3-primary">
+                          {calculateCGPAValue()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -3539,8 +4025,14 @@ export default function StudentDashboard({ currentUser, onClose }) {
                 <div className={`${obsidianCardClass} p-5 flex flex-col gap-4 `}>
                   <div className="flex justify-between items-start w-full">
                     <div className="flex items-center gap-3.5 text-left">
-                      <div className="w-12 h-12 rounded-full bg-m3-primaryContainer flex items-center justify-center font-black text-m3-onSurface font-sans shadow-md shrink-0 select-none uppercase">
-                        {(studentProfile.name || '').split(' ').map(n => n[0]).join('').substring(0, 2)}
+                      <div className="w-12 h-12 rounded-full bg-m3-primaryContainer flex items-center justify-center overflow-hidden shrink-0 select-none shadow-md">
+                        {studentProfile.avatar ? (
+                          <img src={studentProfile.avatar} alt="Student Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-black text-m3-onSurface font-sans uppercase">
+                            {(studentProfile.name || '').split(' ').map(n => n[0]).join('').substring(0, 2)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-col gap-2">
                         <h3 className="text-base font-extrabold text-m3-onSurface leading-tight font-sans tracking-wide">{studentProfile.name}</h3>
@@ -3633,9 +4125,11 @@ export default function StudentDashboard({ currentUser, onClose }) {
                     </div>
                   </div>
                 </div>
-
               </div>
             )}
+
+            {/* Bottom spacer to prevent content overlap with floating bottom nav */}
+            <div className="h-28 shrink-0" />
 
           </div>
 
